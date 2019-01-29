@@ -1,6 +1,8 @@
 import Builder from './builder/base'
 import NodeBuilder from './builder/node'
+import NodeZipBuilder from './builder/node-zip'
 import NodeUploader from './uploader/node'
+import NodeZipUploader from './uploader/node-zip'
 import NodeController from './controller/node'
 import * as path from 'path'
 import * as del from 'del'
@@ -18,7 +20,7 @@ export default class Deploy {
 }
 
 
-export class AppDeploy extends Deploy {
+export class NodeDeploy extends Deploy {
     _config: INodeDeployConfig
     constructor(config: INodeDeployConfig = {
         host: '',
@@ -30,8 +32,8 @@ export class AppDeploy extends Deploy {
         remotePath: '/root/'
     }) {
         super(config)
-        this.builder = new NodeBuilder(config)
-        this.uploader = new NodeUploader(config)
+        this.builder = new NodeZipBuilder(config)
+        this.uploader = new NodeZipUploader(config)
         this.controller = new NodeController(config)
     }
 
@@ -63,12 +65,12 @@ interface IFunctionDeployConfig {
 
 }
 
-new AppDeploy({
+new NodeDeploy({
     host: '10.85.27.207',
     username: 'root',
     port: 36000,
     password: 'tpcloud@123',
-    entry: './app.js',
+    entry: './test/server.js',
     distPath: './dist',
     remotePath: '/root/dist'
 }).deploy()
