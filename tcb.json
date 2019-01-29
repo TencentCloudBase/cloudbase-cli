@@ -1,0 +1,21 @@
+{
+    "deploys": [
+        {
+            "entry": "app.js",
+            "type": "node",
+            "config": {
+                "host": "10.85.27.207",
+                "username": "root",
+                "port": 36000,
+                "password": "tpcloud@123",
+                "distPath": "./dist",
+                "remotePath": "/root/dist"
+            }
+        },
+        {
+            "entry": "my-cloud-function.js",
+            "type": "function",
+            "config": {}
+        }
+    ]
+}

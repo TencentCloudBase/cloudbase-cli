@@ -1,0 +1,13 @@
+#!/usr/bin/env node
+
+const program = require('commander');
+const { update } = require('./index')
+
+program
+  .command('update <entry>')
+  .description('update app')
+  .action(async function (entry) {
+      await update(entry)
+  })
+ 
+program.parse(process.argv)
