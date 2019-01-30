@@ -1,6 +1,6 @@
 {
-  "name": "now",
-  "version": "1.0.0",
+  "name": "@cloud-base/cli",
+  "version": "0.0.1",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
@@ -18,8 +18,8 @@
     "chalk": "^2.4.2",
     "commander": "^2.19.0",
     "del": "^3.0.0",
-    "express": "^4.16.4",
     "make-dir": "^1.3.0",
-    "node-ssh": "^5.1.2"
+    "node-ssh": "^5.1.2",
+    "qcloudapi-sdk": "^0.2.1"
   }
 }

@@ -1,0 +1,20 @@
+{
+    "common": {
+        "secretId": "xxxxxxxxx",
+        "secretKey": "xxxxxxx",
+        "server": {
+            "host": "1.2.3.4",
+            "username": "root",
+            "port": 36000,
+            "password": "xxxxxxxxxxx"
+        }
+    },
+    "deploys": [
+        {
+            "name": "add",
+            "path": "./",
+            "type": "function",
+            "envId": "test-e48fe1"
+        }
+    ]
+}

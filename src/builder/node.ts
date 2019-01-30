@@ -1,4 +1,4 @@
-import Builder, { IBuildResult } from './base'
+import { IBuildResult } from './base'
 import * as ncc from '@zeit/ncc'
 import * as fs from 'fs'
 import * as path from 'path'
@@ -7,10 +7,10 @@ import Logger from '../logger'
 
 const logger = new Logger('NodeBuilder')
 
-export default class NodeBuilder extends Builder {
+export default class NodeBuilder {
     _options: INodeBuilderOptions
     constructor(options: INodeBuilderOptions) {
-        super(options)
+        this._options = options
     }
 
     /**
@@ -44,7 +44,7 @@ export default class NodeBuilder extends Builder {
     }
 }
 
-export interface INodeBuilderOptions {
+interface INodeBuilderOptions {
     entry: string
     distPath: string
 }

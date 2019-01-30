@@ -1,13 +1,14 @@
 import * as node_ssh from 'node-ssh'
 import * as path from 'path'
 import Logger from '../logger';
+import { INodeDeployConfig } from '../deploy/node'
 
 const logger = new Logger('NodeController')
 
 export default class NodeController {
     ssh: any
-    _options: INodeControllerOptions
-    constructor(options: INodeControllerOptions) {
+    _options: INodeDeployConfig
+    constructor(options: INodeDeployConfig) {
         this.ssh = new node_ssh()
         this._options = options
     }
@@ -63,14 +64,4 @@ export default class NodeController {
         console.log(stdout)
         this.ssh.dispose()
     }
-}
-
-interface INodeControllerOptions {
-    host: string
-    username: string
-    port: number
-    password: string
-
-    remotePath: string
-    entry: string
 }

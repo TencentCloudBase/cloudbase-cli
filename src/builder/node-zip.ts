@@ -1,17 +1,17 @@
-import Builder, { IBuildResult } from './base'
-import * as ncc from '@zeit/ncc'
-import * as fs from 'fs'
 import * as path from 'path'
+import { IBuildResult } from './base'
 import * as makeDir from 'make-dir'
 import Logger from '../logger'
-import * as archiver from 'archiver'
+import { zipDir } from '../utils'
+import { INodeDeployConfig } from '../deploy/node'
+import * as del from 'del';
 
 const logger = new Logger('NodeZipBuilder')
 
-export default class NodeZipBuilder extends Builder {
-    _options: INodeZipBuilderOptions
-    constructor(options: INodeZipBuilderOptions) {
-        super(options)
+export default class NodeZipBuilder {
+    _options: INodeDeployConfig
+    constructor(options: INodeDeployConfig) {
+        this._options = options
     }
 
     /**
@@ -35,29 +35,9 @@ export default class NodeZipBuilder extends Builder {
             assets: [zipPath]
         }
     }
-}
 
-export interface INodeZipBuilderOptions {
-    distPath: string
-}
-
-async function zipDir(dirPath, outputPath) {
-    return new Promise((resolve, reject) => {
-        var output = fs.createWriteStream(outputPath);
-        var archive = archiver('zip');
-
-        output.on('close', function () {
-            // console.log(archive.pointer() + ' total bytes');
-            // console.log('archiver has been finalized and the output file descriptor has closed.');
-            resolve()
-        });
-
-        archive.on('error', function (err) {
-            reject(err)
-        });
-
-        archive.pipe(output);
-        archive.directory(dirPath, '');
-        archive.finalize();
-    })
+    async clean(){
+        const distPath = path.resolve(process.cwd(), this._options.distPath)
+        del.sync([distPath])
+    }
 }

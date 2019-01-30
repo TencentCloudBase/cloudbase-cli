@@ -3,10 +3,12 @@
 const package = require('../package.json')
 const program = require('commander');
 const fs = require('fs')
-const { NodeDeploy } = require('../')
+const NodeDeploy = require('../lib/deploy/node').default
 const NodeZipBuilder = require('../lib/builder/node-zip').default
 const NodeZipUploader = require('../lib/uploader/node-zip').default
 const NodeController = require('../lib/controller/node').default
+const FunctionBuilder = require('../lib/builder/function').default
+const FunctionDeploy = require('../lib/deploy/function').default
 const readline = require('readline')
 
 program
@@ -15,23 +17,30 @@ program
   .description('执行完整的发布')
   .option('--start', '发布后启动')
   .action(async function (name, options) {
-    const deploys = getDeploys(name)
+    const { deploys, common } = getDeploys(name)
     for (let i = 0; i < deploys.length; i++) {
       const deploy = deploys[i]
       if (deploy.type === 'node') {
         if (!deploy.entry) {
           throw new Error('未指定入口文件')
         }
-        if (!deploy.config.host) {
+        if (!common.server.host && !deploy.config.host) {
           deploy.config.host = await askForInput('请输入服务器IP：')
         }
-        if (!deploy.config.password) {
+        if (!common.server.password && !deploy.config.password) {
           deploy.config.password = await askForInput('请输入服务器密码：')
         }
         await new NodeDeploy({
+          ...common.server,
+          ...deploy.config,
           entry: deploy.entry,
-          ...deploy.config
         }).deploy(options.start)
+      }
+      if (deploy.type === 'function') {
+        await new FunctionDeploy({
+          ...common,
+          ...deploy
+        }).deploy()
       }
     }
   })
@@ -40,7 +49,7 @@ program
   .command('build [name]')
   .description('构建')
   .action(async function (name) {
-    const deploys = getDeploys(name)
+    const { deploys } = getDeploys(name)
     for (let i = 0; i < deploys.length; i++) {
       const deploy = deploys[i]
       if (deploy.type === 'node') {
@@ -56,7 +65,7 @@ program
   .command('upload [name]')
   .description('上传')
   .action(async function (name) {
-    const deploys = getDeploys(name)
+    const { deploys } = getDeploys(name)
     for (let i = 0; i < deploys.length; i++) {
       const deploy = deploys[i]
       if (deploy.type === 'node') {
@@ -72,7 +81,7 @@ program
   .command('reload [name]')
   .description('热重载')
   .action(async function (name) {
-    const deploys = getDeploys(name)
+    const { deploys } = getDeploys(name)
     for (let i = 0; i < deploys.length; i++) {
       const deploy = deploys[i]
       if (deploy.type === 'node') {
@@ -88,7 +97,7 @@ program
   .command('start [name]')
   .description('启动')
   .action(async function (name) {
-    const deploys = getDeploys(name)
+    const { deploys } = getDeploys(name)
 
     for (let i = 0; i < deploys.length; i++) {
       const deploy = deploys[i]
@@ -105,7 +114,7 @@ program
   .command('show <name>')
   .description('查看状态')
   .action(async function (name) {
-    const deploy = getDeploys(name)[0]
+    const deploy = getDeploys(name).deploys[0]
     if (deploy.type === 'node') {
       await new NodeController({
         entry: deploy.entry,
@@ -126,7 +135,10 @@ function getDeploys(name) {
   if (name) {
     deploys = tcbConfig.deploys.filter(d => d.name === name)
   }
-  return deploys
+  return {
+    common: tcbConfig.common,
+    deploys
+  }
 }
 
 function askForInput(question) {

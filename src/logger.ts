@@ -12,4 +12,11 @@ export default class Logger {
             console.log(chalk.blue('[' + this.moduleName + ']') + ` ${msg}`)
         }
     }
+    error(msg) {
+        if (!this.moduleName) {
+            console.log(msg)
+        } else {
+            console.log(chalk.red('[' + this.moduleName + ']') + ` ${msg}`)
+        }
+    }
 }
