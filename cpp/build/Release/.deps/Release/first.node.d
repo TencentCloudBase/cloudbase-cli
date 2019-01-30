@@ -1,1 +1,0 @@
-cmd_Release/first.node := c++ -bundle -undefined dynamic_lookup -Wl,-no_pie -Wl,-search_paths_first -mmacosx-version-min=10.7 -arch x86_64 -L./Release -stdlib=libc++  -o Release/first.node Release/obj.target/first/first.o 

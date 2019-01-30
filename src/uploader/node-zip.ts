@@ -2,7 +2,7 @@ import * as node_ssh from 'node-ssh'
 import * as path from 'path'
 import Logger from '../logger'
 
-const logger = new Logger('NodeUploader')
+const logger = new Logger('NodeZipUploader')
 
 export default class NodeUploader {
     ssh: any
@@ -27,7 +27,10 @@ export default class NodeUploader {
         await this.ssh.putDirectory(path.resolve(process.cwd(), distPath), remotePath)
 
         logger.log('Unzip...')
-        const { stdout } = await this.ssh.execCommand(`cd ${distPath} && unzip dist.zip`)
+        logger.log(`cd ${distPath} && unzip dist.zip`)
+        const { stdout, stderr } = await this.ssh.execCommand(`cd ${remotePath} && unzip dist.zip`)
+
+        if (stderr) console.log(stderr)
 
         this.ssh.dispose()
     }

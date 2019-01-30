@@ -1,6 +1,7 @@
 {
     "deploys": [
         {
+            "name": "app",
             "entry": "app.js",
             "type": "node",
             "config": {
@@ -11,11 +12,6 @@
                 "distPath": "./dist",
                 "remotePath": "/root/dist"
             }
-        },
-        {
-            "entry": "my-cloud-function.js",
-            "type": "function",
-            "config": {}
         }
     ]
 }

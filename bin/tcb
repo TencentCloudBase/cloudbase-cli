@@ -1,13 +1,143 @@
 #!/usr/bin/env node
 
+const package = require('../package.json')
 const program = require('commander');
-const { update } = require('./index')
+const fs = require('fs')
+const { NodeDeploy } = require('../')
+const NodeZipBuilder = require('../lib/builder/node-zip').default
+const NodeZipUploader = require('../lib/uploader/node-zip').default
+const NodeController = require('../lib/controller/node').default
+const readline = require('readline')
 
 program
-  .command('deploy <entry>')
-  .description('deploy app')
-  .action(async function (entry) {
-      await update(entry)
+  .version(package.version)
+  .command('deploy [name]')
+  .description('执行完整的发布')
+  .option('--start', '发布后启动')
+  .action(async function (name, options) {
+    const deploys = getDeploys(name)
+    for (let i = 0; i < deploys.length; i++) {
+      const deploy = deploys[i]
+      if (deploy.type === 'node') {
+        if (!deploy.entry) {
+          throw new Error('未指定入口文件')
+        }
+        if (!deploy.config.host) {
+          deploy.config.host = await askForInput('请输入服务器IP：')
+        }
+        if (!deploy.config.password) {
+          deploy.config.password = await askForInput('请输入服务器密码：')
+        }
+        await new NodeDeploy({
+          entry: deploy.entry,
+          ...deploy.config
+        }).deploy(options.start)
+      }
+    }
   })
- 
+
+program
+  .command('build [name]')
+  .description('构建')
+  .action(async function (name) {
+    const deploys = getDeploys(name)
+    for (let i = 0; i < deploys.length; i++) {
+      const deploy = deploys[i]
+      if (deploy.type === 'node') {
+        await new NodeZipBuilder({
+          entry: deploy.entry,
+          ...deploy.config
+        }).build()
+      }
+    }
+  })
+
+program
+  .command('upload [name]')
+  .description('上传')
+  .action(async function (name) {
+    const deploys = getDeploys(name)
+    for (let i = 0; i < deploys.length; i++) {
+      const deploy = deploys[i]
+      if (deploy.type === 'node') {
+        await new NodeZipUploader({
+          entry: deploy.entry,
+          ...deploy.config
+        }).upload()
+      }
+    }
+  })
+
+program
+  .command('reload [name]')
+  .description('热重载')
+  .action(async function (name) {
+    const deploys = getDeploys(name)
+    for (let i = 0; i < deploys.length; i++) {
+      const deploy = deploys[i]
+      if (deploy.type === 'node') {
+        await new NodeController({
+          entry: deploy.entry,
+          ...deploy.config
+        }).reload()
+      }
+    }
+  })
+
+program
+  .command('start [name]')
+  .description('启动')
+  .action(async function (name) {
+    const deploys = getDeploys(name)
+
+    for (let i = 0; i < deploys.length; i++) {
+      const deploy = deploys[i]
+      if (deploy.type === 'node') {
+        await new NodeController({
+          entry: deploy.entry,
+          ...deploy.config
+        }).start()
+      }
+    }
+  })
+
+program
+  .command('show <name>')
+  .description('查看状态')
+  .action(async function (name) {
+    const deploy = getDeploys(name)[0]
+    if (deploy.type === 'node') {
+      await new NodeController({
+        entry: deploy.entry,
+        ...deploy.config
+      }).show()
+    }
+  })
+
 program.parse(process.argv)
+
+function getDeploys(name) {
+  const configPath = process.cwd() + '/tcb.json'
+  if (!fs.existsSync(configPath)) {
+    throw new Error('未找到tcb配置文件')
+  }
+  const tcbConfig = require(configPath)
+  let deploys = tcbConfig.deploys
+  if (name) {
+    deploys = tcbConfig.deploys.filter(d => d.name === name)
+  }
+  return deploys
+}
+
+function askForInput(question) {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+  return new Promise((resolve) => {
+    rl.question(question, (answer) => {
+      resolve(answer)
+      rl.close();
+    });
+  })
+}

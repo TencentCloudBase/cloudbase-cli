@@ -6,6 +6,7 @@ import NodeZipUploader from './uploader/node-zip'
 import NodeController from './controller/node'
 import * as path from 'path'
 import * as del from 'del'
+import * as readline from 'readline'
 export default class Deploy {
     _config: INodeDeployConfig | IFunctionDeployConfig
     builder: Builder
@@ -42,11 +43,15 @@ export class NodeDeploy extends Deploy {
         del.sync([distPath])
     }
 
-    async deploy() {
+    async deploy(start = false) {
         this.clear()
         await this.builder.build()
         await this.uploader.upload()
-        await this.controller.reload()
+        if (start) {
+            await this.controller.start()
+        } else {
+            await this.controller.reload()
+        }
     }
 }
 
@@ -65,12 +70,12 @@ interface IFunctionDeployConfig {
 
 }
 
-new NodeDeploy({
-    host: '10.85.27.207',
-    username: 'root',
-    port: 36000,
-    password: 'tpcloud@123',
-    entry: './test/server.js',
-    distPath: './dist',
-    remotePath: '/root/dist'
-}).deploy()
+// new NodeDeploy({
+//     host: '10.85.27.207',
+//     username: 'root',
+//     port: 36000,
+//     password: 'tpcloud@123',
+//     entry: './test/server.js',
+//     distPath: './dist',
+//     remotePath: '/root/dist'
+// }).deploy()
