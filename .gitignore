@@ -63,3 +63,5 @@ typings/
 dist
 
 example/**/tcb.json
+
+node_modules
