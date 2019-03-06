@@ -1,4 +1,4 @@
-import NodeZipBuilder from '../builder/node-zip'
+import WebsocketBuilder from '../builder/websocket'
 import NodeZipUploader from '../uploader/node-zip'
 import NodeController from '../controller/node'
 import Deploy from './base'
@@ -6,8 +6,8 @@ import * as path from 'path'
 import * as del from 'del'
 
 export default class NodeDeploy extends Deploy {
-    _config: INodeDeployConfig
-    constructor(config: INodeDeployConfig) {
+    _config: IWebsocketDepolyConfig
+    constructor(config: IWebsocketDepolyConfig) {
         config = {
             username: 'root',
             port: 22,
@@ -16,36 +16,36 @@ export default class NodeDeploy extends Deploy {
             ...config
         }
         super(config)
-        this.builder = new NodeZipBuilder(config)
+        this.builder = new WebsocketBuilder(config)
         this.uploader = new NodeZipUploader(config)
         this.controller = new NodeController(config)
-    }
-
-    clear() {
-        const distPath = path.resolve(__dirname, this._config.distPath)
-        del.sync([distPath])
     }
 
     async deploy(start = false) {
         await this.builder.clean()
         await this.builder.build()
         await this.uploader.upload()
-        await this.builder.clean()
+        await this.controller.npmInstall()
         if (start) {
             await this.controller.start()
         } else {
             await this.controller.reload()
         }
+        await this.builder.clean()
     }
 }
 
-export interface INodeDeployConfig {
+export interface IWebsocketDepolyConfig {
     host: string
     username: string
     port: number
     password: string
 
-    entry: string
+    secretId: string
+    secretKey: string
+
+    entry: string,
+
     distPath: string
     remotePath: string
 }

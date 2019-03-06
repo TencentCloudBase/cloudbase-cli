@@ -1,0 +1,23 @@
+{
+    "common": {
+        "secretId": "xxxxxxxxxxxxxxxxxxxxxxxxx",
+        "secretKey": "xxxxxxxxxxxxxxxxxx",
+        "server": {
+            "host": "1.2.3.4",
+            "username": "root",
+            "port": 22,
+            "password": "xxxxxxxxxx"
+        }
+    },
+    "deploys": [
+        {
+            "name": "websocket",
+            "entry": "index.js",
+            "type": "websocket",
+            "config": {
+                "distPath": "./dist",
+                "remotePath": "/root/websocket/dist"
+            }
+        }
+    ]
+}

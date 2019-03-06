@@ -9,6 +9,7 @@ export default class NodeController {
     ssh: any
     _options: INodeDeployConfig
     constructor(options: INodeDeployConfig) {
+        console.log(options)
         this.ssh = new node_ssh()
         this._options = options
     }
@@ -50,6 +51,18 @@ export default class NodeController {
         const entryPath = path.resolve(remotePath, entry)
         logger.log(`stop ${entryPath}`)
         const { stdout, stderr } = await this.ssh.execCommand(`pm2 stop ${entryPath}`)
+        console.log(stdout)
+
+        this.ssh.dispose()
+    }
+
+    async npmInstall() {
+        const { host, username, port, password, remotePath, entry } = this._options
+        await this.ssh.connect({ host, username, port, password })
+
+        logger.log('Installing dependencies...')
+
+        const { stdout, stderr } = await this.ssh.execCommand(`cd ${remotePath} && tnpm i -d`)
         console.log(stdout)
 
         this.ssh.dispose()

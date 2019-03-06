@@ -23,9 +23,12 @@ export default class FunctionDeploy extends Deploy {
         } catch(e) {
             if (e.message) {
                 logger.error(e.message)
+                await this.builder.clean()
+                return
             }
         }
         await this.builder.clean()
+        logger.log(`Depoly serverless function "${this._config.name}" success!`)
     }
 }
 

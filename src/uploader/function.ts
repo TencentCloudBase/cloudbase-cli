@@ -37,6 +37,8 @@ export default class NodeUploader {
             runtime: 'Nodejs8.9',
         }
 
+        logger.log('Uploading serverless function...')
+
         return new Promise((resolve, reject) => {
             this.capi.request(req, { method: 'POST' }, (err, data) => {
                 if (err) {
@@ -44,6 +46,7 @@ export default class NodeUploader {
                 } else if (data.code) {
                     reject(data)
                 } else {
+                    logger.log(`Uploading serverless function`)
                     resolve(data)
                 }
             })

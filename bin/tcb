@@ -3,12 +3,18 @@
 const package = require('../package.json')
 const program = require('commander');
 const fs = require('fs')
+
 const NodeDeploy = require('../lib/deploy/node').default
 const NodeZipBuilder = require('../lib/builder/node-zip').default
 const NodeZipUploader = require('../lib/uploader/node-zip').default
 const NodeController = require('../lib/controller/node').default
+
 const FunctionBuilder = require('../lib/builder/function').default
 const FunctionDeploy = require('../lib/deploy/function').default
+
+const WebsocketDeploy = require('../lib/deploy/websocket').default
+const WebsocketBuilder = require('../lib/builder/websocket').default
+
 const readline = require('readline')
 
 program
@@ -35,13 +41,26 @@ program
           ...deploy.config,
           entry: deploy.entry,
         }).deploy(options.start)
+        continue;
       }
       if (deploy.type === 'function') {
         await new FunctionDeploy({
           ...common,
           ...deploy
         }).deploy()
+        continue;
       }
+      if (deploy.type === 'websocket') {
+        await new WebsocketDeploy({
+          ...common.server,
+          ...deploy,
+          ...deploy.config,
+          secretId: common.secretId,
+          secretKey: common.secretKey
+        }).deploy(options.start)
+        continue
+      }
+      throw new Error(`Unsupported deploy type: "${deploy.type}"`)
     }
   })
 
@@ -49,7 +68,7 @@ program
   .command('build [name]')
   .description('构建')
   .action(async function (name) {
-    const { deploys } = getDeploys(name)
+    const { deploys, common } = getDeploys(name)
     for (let i = 0; i < deploys.length; i++) {
       const deploy = deploys[i]
       if (deploy.type === 'node') {
@@ -57,7 +76,19 @@ program
           entry: deploy.entry,
           ...deploy.config
         }).build()
+        continue;
       }
+      if (deploy.type === 'websocket') {
+        await new WebsocketBuilder({
+          ...common.server,
+          ...deploy,
+          ...deploy.config,
+          secretId: common.secretId,
+          secretKey: common.secretKey
+        }).build()
+        continue;
+      }
+      throw new Error(`Unsupported build type: "${deploy.type}"`)
     }
   })
 
@@ -65,15 +96,18 @@ program
   .command('upload [name]')
   .description('上传')
   .action(async function (name) {
-    const { deploys } = getDeploys(name)
+    const { deploys, common } = getDeploys(name)
     for (let i = 0; i < deploys.length; i++) {
       const deploy = deploys[i]
       if (deploy.type === 'node') {
         await new NodeZipUploader({
+          ...common.server,
+          ...deploy.config,
           entry: deploy.entry,
-          ...deploy.config
         }).upload()
+        continue;
       }
+      throw new Error(`Unsupported upload type: "${deploy.type}"`)
     }
   })
 
@@ -81,13 +115,14 @@ program
   .command('reload [name]')
   .description('热重载')
   .action(async function (name) {
-    const { deploys } = getDeploys(name)
+    const { deploys, common } = getDeploys(name)
     for (let i = 0; i < deploys.length; i++) {
       const deploy = deploys[i]
-      if (deploy.type === 'node') {
+      if (deploy.type === 'node' || deploy.type === 'websocket') {
         await new NodeController({
+          ...common.server,
+          ...deploy.config,
           entry: deploy.entry,
-          ...deploy.config
         }).reload()
       }
     }
@@ -101,7 +136,7 @@ program
 
     for (let i = 0; i < deploys.length; i++) {
       const deploy = deploys[i]
-      if (deploy.type === 'node') {
+      if (deploy.type === 'node' || deploy.type === 'websocket') {
         await new NodeController({
           entry: deploy.entry,
           ...deploy.config
@@ -114,11 +149,12 @@ program
   .command('show <name>')
   .description('查看状态')
   .action(async function (name) {
-    const deploy = getDeploys(name).deploys[0]
-    if (deploy.type === 'node') {
+    const { deploys: [ deploy ], common } = getDeploys(name)
+    if (deploy.type === 'node' || deploy.type === 'websocket') {
       await new NodeController({
+        ...common.server,
+        ...deploy.config,
         entry: deploy.entry,
-        ...deploy.config
       }).show()
     }
   })
@@ -136,7 +172,14 @@ function getDeploys(name) {
     deploys = tcbConfig.deploys.filter(d => d.name === name)
   }
   return {
-    common: tcbConfig.common,
+    common: {
+      ...tcbConfig.common,
+      server: {
+        username: 'root',
+        port: 22,
+        ...tcbConfig.common.server
+      }
+    },
     deploys
   }
 }
