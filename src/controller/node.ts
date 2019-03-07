@@ -62,7 +62,7 @@ export default class NodeController {
 
         logger.log('Installing dependencies...')
 
-        const { stdout, stderr } = await this.ssh.execCommand(`cd ${remotePath} && tnpm i -d`)
+        const { stdout, stderr } = await this.ssh.execCommand(`cd ${remotePath} && npm i -d`)
         console.log(stdout)
 
         this.ssh.dispose()
