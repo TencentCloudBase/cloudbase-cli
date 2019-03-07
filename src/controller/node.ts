@@ -14,44 +14,44 @@ export default class NodeController {
         this._options = options
     }
 
-    async reload() {
+    async reload({ isSingle }) {
         const { host, username, port, password, remotePath, entry } = this._options
         await this.ssh.connect({ host, username, port, password })
 
         logger.log('Reloading application...')
 
-        const entryPath = path.resolve(remotePath, entry)
+        const entryPath = isSingle ? path.resolve(remotePath, path.basename(entry)) : path.resolve(remotePath, entry)
         logger.log(`reload ${entryPath}`)
         const { stdout, stderr } = await this.ssh.execCommand(`pm2 reload ${entryPath}`)
-        console.log(stdout)
+        console.log(stdout || stderr)
 
         this.ssh.dispose()
     }
 
-    async start() {
+    async start({ isSingle }) {
         const { host, username, port, password, remotePath, entry } = this._options
         await this.ssh.connect({ host, username, port, password })
 
         logger.log('Starting application...')
 
-        const entryPath = path.resolve(remotePath, entry)
+        const entryPath = isSingle ? path.resolve(remotePath, path.basename(entry)) : path.resolve(remotePath, entry)
         logger.log(`start ${entryPath}`)
         const { stdout, stderr } = await this.ssh.execCommand(`pm2 start ${entryPath}`)
-        console.log(stdout)
+        console.log(stdout || stderr)
 
         this.ssh.dispose()
     }
 
-    async stop() {
+    async stop({ isSingle }) {
         const { host, username, port, password, remotePath, entry } = this._options
         await this.ssh.connect({ host, username, port, password })
 
         logger.log('Stoping application...')
 
-        const entryPath = path.resolve(remotePath, entry)
+        const entryPath = isSingle ? path.resolve(remotePath, path.basename(entry)) : path.resolve(remotePath, entry)
         logger.log(`stop ${entryPath}`)
         const { stdout, stderr } = await this.ssh.execCommand(`pm2 stop ${entryPath}`)
-        console.log(stdout)
+        console.log(stdout || stderr)
 
         this.ssh.dispose()
     }
@@ -63,7 +63,7 @@ export default class NodeController {
         logger.log('Installing dependencies...')
 
         const { stdout, stderr } = await this.ssh.execCommand(`cd ${remotePath} && npm i -d`)
-        console.log(stdout)
+        console.log(stdout || stderr)
 
         this.ssh.dispose()
     }
@@ -74,7 +74,7 @@ export default class NodeController {
         const { host, username, port, password, remotePath, entry } = this._options
         await this.ssh.connect({ host, username, port, password })
         const { stdout, stderr } = await this.ssh.execCommand(`pm2 list`)
-        console.log(stdout)
+        console.log(stdout || stderr)
         this.ssh.dispose()
     }
 }

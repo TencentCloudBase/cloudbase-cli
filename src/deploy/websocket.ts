@@ -27,9 +27,9 @@ export default class NodeDeploy extends Deploy {
         await this.uploader.upload()
         await this.controller.npmInstall()
         if (start) {
-            await this.controller.start()
+            await this.controller.start({ isSingle: true })
         } else {
-            await this.controller.reload()
+            await this.controller.reload({ isSingle: true })
         }
         await this.builder.clean()
     }
