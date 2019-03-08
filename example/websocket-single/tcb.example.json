@@ -13,11 +13,7 @@
         {
             "name": "websocket",
             "entry": "index.js",
-            "type": "websocket",
-            "config": {
-                "distPath": "./dist",
-                "remotePath": "/root/websocket/dist"
-            }
+            "type": "websocket"
         }
     ]
 }

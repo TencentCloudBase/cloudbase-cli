@@ -13,11 +13,7 @@
         {
             "name": "app",
             "entry": "app.js",
-            "type": "node",
-            "config": {
-                "distPath": "./dist",
-                "remotePath": "/root/dist"
-            }
+            "type": "node"
         }
     ]
 }

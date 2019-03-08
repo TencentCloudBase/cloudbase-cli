@@ -38,8 +38,7 @@ program
         }
         await new NodeDeploy({
           ...common.server,
-          ...deploy.config,
-          entry: deploy.entry,
+          ...deploy
         }).deploy(options.start)
         continue;
       }
@@ -54,7 +53,6 @@ program
         await new WebsocketDeploy({
           ...common.server,
           ...deploy,
-          ...deploy.config,
           secretId: common.secretId,
           secretKey: common.secretKey
         }).deploy(options.start)
