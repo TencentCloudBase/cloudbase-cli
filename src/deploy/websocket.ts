@@ -13,6 +13,7 @@ export default class NodeDeploy extends Deploy {
             port: 22,
             distPath: './.tcb-dist',
             remotePath: `/data/tcb-service/${config.name}`,
+            path: './',
             ...config
         }
         super(config)
@@ -48,6 +49,7 @@ export interface IWebsocketDepolyConfig {
 
     entry: string,
 
+    path: string,
     distPath: string
     remotePath: string
 }

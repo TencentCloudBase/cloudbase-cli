@@ -27,8 +27,8 @@ program
     for (let i = 0; i < deploys.length; i++) {
       const deploy = deploys[i]
       if (deploy.type === 'node') {
-        if (!deploy.entry) {
-          throw new Error('未指定入口文件')
+        if (!deploy.path) {
+          throw new Error('未指定发布目录')
         }
         if (!common.server.host && !deploy.config.host) {
           deploy.config.host = await askForInput('请输入服务器IP：')

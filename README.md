@@ -57,11 +57,7 @@ cli的配置文件
         {
             "name": "websocket",
             "entry": "index.js",
-            "type": "websocket",
-            "config": {
-                "distPath": "./dist",
-                "remotePath": "/root/websocket/dist"
-            }
+            "type": "websocket"
         }
     ]
 }
@@ -138,22 +134,14 @@ cli的配置文件
         {
             "name": "app",
             "type": "node",
-            "entry": "app.js",
-            "config": {
-                "distPath": "./dist",
-                "remotePath": "/root/dist"
-            }
+            "path": "./server"
         },
 
         // Websocket服务示例
         {
             "name": "websocket",
             "type": "websocket",
-            "entry": "index.js",
-            "config": {
-                "distPath": "./dist",
-                "remotePath": "/root/websocket/dist"
-            }
+            "entry": "./index.js"
         }
     ]
 }

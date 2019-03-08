@@ -47,7 +47,7 @@ export interface INodeDeployConfig {
     port: number
     password: string
 
-    entry: string
+    path: string
     distPath: string
     remotePath: string
 }

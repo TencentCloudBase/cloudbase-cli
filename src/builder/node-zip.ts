@@ -19,7 +19,7 @@ export default class NodeZipBuilder {
      *        assets
      */
     async build(): Promise<IBuildResult> {
-        const entry = path.resolve(process.cwd())
+        const entry = path.resolve(process.cwd(), this._options.path)
         const distPath = path.resolve(process.cwd(), this._options.distPath)
         await makeDir(distPath)
 
