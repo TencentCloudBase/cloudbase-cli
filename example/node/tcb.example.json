@@ -1,7 +1,5 @@
 {
     "common": {
-        "secretId": "xxxxxxxxx",
-        "secretKey": "xxxxxxx",
         "server": {
             "host": "1.2.3.4",
             "username": "root",
@@ -12,7 +10,7 @@
     "deploys": [
         {
             "name": "app",
-            "entry": "app.js",
+            "path": "./server",
             "type": "node"
         }
     ]
