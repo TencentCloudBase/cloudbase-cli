@@ -168,8 +168,9 @@ function getDeploys(name) {
   }
   const tcbConfig = require(configPath)
   let deploys = tcbConfig.deploys
+  checkDeploys(deploys)
   if (name) {
-    deploys = tcbConfig.deploys.filter(d => d.name === name)
+    deploys = deploys.filter(d => d.name === name)
   }
   return {
     common: {
@@ -182,6 +183,16 @@ function getDeploys(name) {
     },
     deploys
   }
+}
+
+function checkDeploys(deploys) {
+  const names = {}
+  deploys.forEach(d => {
+    if (names[d.name]) {
+      throw new Error(`Duplicated depoly name: "${d.name}"`)
+    }
+    names[d.name] = true
+  })
 }
 
 function askForInput(question) {
