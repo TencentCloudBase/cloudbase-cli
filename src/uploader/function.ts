@@ -18,9 +18,23 @@ export default class NodeUploader {
         });
     }
 
+    async requestCapi(req) {
+        return new Promise((resolve, reject) => {
+            this.capi.request(req, { method: 'POST' }, (err, data) => {
+                if (err) {
+                    reject(err)
+                } else if (data.code) {
+                    reject(data)
+                } else {
+                    resolve(data)
+                }
+            })
+        })
+    }
+
     async upload() {
 
-        const { distPath, name, envId } = this._options
+        const { distPath, name, envId, override } = this._options
 
         const base64 = fs.readFileSync(distPath + '/dist.zip').toString('base64')
 
@@ -39,17 +53,14 @@ export default class NodeUploader {
 
         logger.log('Uploading serverless function...')
 
-        return new Promise((resolve, reject) => {
-            this.capi.request(req, { method: 'POST' }, (err, data) => {
-                if (err) {
-                    reject(err)
-                } else if (data.code) {
-                    reject(data)
-                } else {
-                    logger.log(`Uploading serverless function`)
-                    resolve(data)
-                }
-            })
-        })
+        try {
+            return await this.requestCapi(req)
+        } catch(e) {
+            if (e.code === 4000 && override) {
+                req.Action = 'UpdateFunction'
+                logger.log('Overriding serverless function...')
+                return await this.requestCapi(req)
+            }
+        }
     }
 }

@@ -39,4 +39,5 @@ export interface IFunctionDeployConfig {
     secretId: string
     secretKey: string
     envId: string
+    override: boolean
 }
