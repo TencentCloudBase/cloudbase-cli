@@ -14,7 +14,8 @@
             "name": "add",
             "path": "./",
             "type": "function",
-            "envId": "test-e48fe1"
+            "envId": "test-e48fe1",
+            "override": false
         }
     ]
 }

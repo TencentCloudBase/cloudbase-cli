@@ -2,31 +2,33 @@ import * as path from 'path'
 import * as fs from 'fs'
 import Logger from '../logger'
 import { IFunctionDeployConfig } from "../deploy/function";
-import * as Capi from 'qcloudapi-sdk'
+import * as tcloud from '../../deps/tencentcloud-sdk-nodejs'
 
 const logger = new Logger('FunctionUploader')
 
 export default class NodeUploader {
-    capi: any
     _options: IFunctionDeployConfig
     constructor(options: IFunctionDeployConfig) {
         this._options = options
-        this.capi = new Capi({
-            SecretId: options.secretId,
-            SecretKey: options.secretKey,
-            serviceType: "scf"
-        });
     }
 
-    async requestCapi(req) {
+    async requestCloudApi(interfaceName, params) {
+        const { secretId, secretKey } = this._options
+        const { Client: ScfClient, Models: models } = tcloud.scf.v20180416
+        const { Credential } = tcloud.common
+
+        const cred = new Credential(secretId, secretKey)
+        const client = new ScfClient(cred, "ap-shanghai")
+        const req = new models[`${interfaceName}Request`]()
+
+        req.deserialize(params)
+
         return new Promise((resolve, reject) => {
-            this.capi.request(req, { method: 'POST' }, (err, data) => {
+            client[interfaceName](req, (err, res) => {
                 if (err) {
                     reject(err)
-                } else if (data.code) {
-                    reject(data)
                 } else {
-                    resolve(data)
+                    resolve(res)
                 }
             })
         })
@@ -40,26 +42,30 @@ export default class NodeUploader {
 
         const req = {
             Action: 'CreateFunction',
-            Region: 'sh',
-            code: '@' + base64,
-            codeType: 'Zipfile',
-            functionName: name,
-            handler: 'index.main',
-            memorySize: 256,
-            namespace: envId,
-            role: 'TCB_QcsRole',
-            runtime: 'Nodejs8.9',
+            Version: '2018-04-16',
+            Region: 'ap-shanghai',
+            FunctionName: name,
+            Code: {
+                ZipFile: '@' + base64
+            },
+            Handler: 'index.main',
+            MemorySize: 256,
+            Namespace: envId,
+            Role: 'TCB_QcsRole',
+            Runtime: 'Nodejs8.9',
+            InstallDependency: true,
+            Stamp: 'MINI_QCBASE'
         }
 
         logger.log('Uploading serverless function...')
 
         try {
-            return await this.requestCapi(req)
+            return await this.requestCloudApi('CreateFunction', req)
         } catch(e) {
-            if (e.code === 4000 && override) {
-                req.Action = 'UpdateFunction'
-                logger.log('Overriding serverless function...')
-                return await this.requestCapi(req)
+            if (e.code === 'ResourceInUse.FunctionName' && override) {
+                return await this.requestCloudApi('UpdateFunctionCode', req)
+            } else {
+                throw e
             }
         }
     }
