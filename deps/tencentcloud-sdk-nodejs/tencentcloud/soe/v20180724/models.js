@@ -1,0 +1,529 @@
+/*
+ * Copyright (c) 2018 THL A29 Limited, a Tencent company. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+const AbstractModel = require("../../common/abstract_model");
+
+/**
+ * 语音过程中断句的中间结果
+ * @class
+ */
+class SentenceInfo extends  AbstractModel {
+    constructor(){
+        super();
+
+        /**
+         * 句子序号，在段落、自由说模式下有效，表示断句序号，最后的综合结果的为-1.
+         * @type {number || null}
+         */
+        this.SentenceId = null;
+
+        /**
+         * 详细发音评估结果
+         * @type {Array.<WordRsp> || null}
+         */
+        this.Words = null;
+
+        /**
+         * 发音精准度，取值范围[-1, 100]，当取-1时指完全不匹配，当为句子模式时，是所有已识别单词准确度的加权平均值。当为流式模式且请求中IsEnd未置1时，取值无意义
+         * @type {number || null}
+         */
+        this.PronAccuracy = null;
+
+        /**
+         * 发音流利度，取值范围[0, 1]，当为词模式时，取值无意义；当为流式模式且请求中IsEnd未置1时，取值无意义
+         * @type {number || null}
+         */
+        this.PronFluency = null;
+
+        /**
+         * 发音完整度，取值范围[0, 1]，当为词模式时，取值无意义；当为流式模式且请求中IsEnd未置1时，取值无意义
+         * @type {number || null}
+         */
+        this.PronCompletion = null;
+
+    }
+
+    /**
+     * @private
+     */
+    deserialize(params) {
+        if (!params) {
+            return;
+        }
+        this.SentenceId = params.SentenceId || null;
+
+        if (params.Words) {
+            this.Words = new Array();
+            for (let z in params.Words) {
+                let obj = new WordRsp();
+                obj.deserialize(params.Words[z]);
+                this.Words.push(obj);
+            }
+        }
+        this.PronAccuracy = params.PronAccuracy || null;
+        this.PronFluency = params.PronFluency || null;
+        this.PronCompletion = params.PronCompletion || null;
+
+    }
+}
+
+/**
+ * InitOralProcess请求参数结构体
+ * @class
+ */
+class InitOralProcessRequest extends  AbstractModel {
+    constructor(){
+        super();
+
+        /**
+         * 语音段唯一标识，一段语音一个SessionId
+         * @type {string || null}
+         */
+        this.SessionId = null;
+
+        /**
+         * 被评估语音对应的文本，句子模式下不超过个 20 单词或者中文文字，段落模式不超过 120 单词或者中文文字，中文评估使用 utf-8 编码，自由说模式该值传空。
+         * @type {string || null}
+         */
+        this.RefText = null;
+
+        /**
+         * 语音输入模式，0：流式分片，1：非流式一次性评估
+         * @type {number || null}
+         */
+        this.WorkMode = null;
+
+        /**
+         * 评估模式，0：词模式，,1：:句子模式，2：段落模式，3：自由说模式，当为词模式评估时，能够提供每个音节的评估信息，当为句子模式时，能够提供完整度和流利度信息。
+         * @type {number || null}
+         */
+        this.EvalMode = null;
+
+        /**
+         * 评价苛刻指数，取值为[1.0 - 4.0]范围内的浮点数，用于平滑不同年龄段的分数，1.0为小年龄段，4.0为最高年龄段
+         * @type {number || null}
+         */
+        this.ScoreCoeff = null;
+
+        /**
+         * 业务应用ID，与账号应用APPID无关，是用来方便客户管理服务的参数，新的 SoeAppId 可以在[控制台](https://console.cloud.tencent.com/soe)【应用管理】下新建。
+         * @type {string || null}
+         */
+        this.SoeAppId = null;
+
+        /**
+         * 长效session标识，当该参数为1时，session的持续时间为300s，但会一定程度上影响第一个数据包的返回速度，且TransmitOralProcess必须同时为1才可生效。
+         * @type {number || null}
+         */
+        this.IsLongLifeSession = null;
+
+        /**
+         * 音频存储模式，0：不存储，1：存储到公共对象存储，输出结果为该会话最后一个分片TransmitOralProcess 返回结果 AudioUrl 字段。
+         * @type {number || null}
+         */
+        this.StorageMode = null;
+
+        /**
+         * 输出断句中间结果标识，0：不输出，1：输出，通过设置该参数，可以在评估过程中的分片传输请求中，返回已经评估断句的中间结果，中间结果可用于客户端 UI 更新，输出结果为TransmitOralProcess请求返回结果 SentenceInfoSet 字段。
+         * @type {number || null}
+         */
+        this.SentenceInfoEnabled = null;
+
+        /**
+         * 评估语言，0：英文，1：中文。
+         * @type {number || null}
+         */
+        this.ServerType = null;
+
+    }
+
+    /**
+     * @private
+     */
+    deserialize(params) {
+        if (!params) {
+            return;
+        }
+        this.SessionId = params.SessionId || null;
+        this.RefText = params.RefText || null;
+        this.WorkMode = params.WorkMode || null;
+        this.EvalMode = params.EvalMode || null;
+        this.ScoreCoeff = params.ScoreCoeff || null;
+        this.SoeAppId = params.SoeAppId || null;
+        this.IsLongLifeSession = params.IsLongLifeSession || null;
+        this.StorageMode = params.StorageMode || null;
+        this.SentenceInfoEnabled = params.SentenceInfoEnabled || null;
+        this.ServerType = params.ServerType || null;
+
+    }
+}
+
+/**
+ * TransmitOralProcess请求参数结构体
+ * @class
+ */
+class TransmitOralProcessRequest extends  AbstractModel {
+    constructor(){
+        super();
+
+        /**
+         * 流式数据包的序号，从1开始，当IsEnd字段为1后后续序号无意义，当IsLongLifeSession不为1且为非流式模式时无意义。
+         * @type {number || null}
+         */
+        this.SeqId = null;
+
+        /**
+         * 是否传输完毕标志，若为0表示未完毕，若为1则传输完毕开始评估，非流式模式下无意义。
+         * @type {number || null}
+         */
+        this.IsEnd = null;
+
+        /**
+         * 语音文件类型 	1:raw, 2:wav, 3:mp3(三种格式目前仅支持16k采样率16bit编码单声道，如有不一致可能导致评估不准确或失败)。
+         * @type {number || null}
+         */
+        this.VoiceFileType = null;
+
+        /**
+         * 语音编码类型	1:pcm。
+         * @type {number || null}
+         */
+        this.VoiceEncodeType = null;
+
+        /**
+         * 当前数据包数据, 流式模式下数据包大小可以按需设置，数据包大小必须 >= 4K，且必须保证分片帧完整（16bit的数据必须保证音频长度为偶数），编码格式要求为BASE64。
+         * @type {string || null}
+         */
+        this.UserVoiceData = null;
+
+        /**
+         * 语音段唯一标识，一个完整语音一个SessionId。
+         * @type {string || null}
+         */
+        this.SessionId = null;
+
+        /**
+         * 业务应用ID，与账号应用APPID无关，是用来方便客户管理服务的参数，新的 SoeAppId 可以在[控制台](https://console.cloud.tencent.com/soe)【应用管理】下新建。
+         * @type {string || null}
+         */
+        this.SoeAppId = null;
+
+        /**
+         * 长效session标识，当该参数为1时，session的持续时间为300s，但会一定程度上影响第一个数据包的返回速度。当InitOralProcess接口调用时此项为1时，此项必填1才可生效。
+         * @type {number || null}
+         */
+        this.IsLongLifeSession = null;
+
+    }
+
+    /**
+     * @private
+     */
+    deserialize(params) {
+        if (!params) {
+            return;
+        }
+        this.SeqId = params.SeqId || null;
+        this.IsEnd = params.IsEnd || null;
+        this.VoiceFileType = params.VoiceFileType || null;
+        this.VoiceEncodeType = params.VoiceEncodeType || null;
+        this.UserVoiceData = params.UserVoiceData || null;
+        this.SessionId = params.SessionId || null;
+        this.SoeAppId = params.SoeAppId || null;
+        this.IsLongLifeSession = params.IsLongLifeSession || null;
+
+    }
+}
+
+/**
+ * TransmitOralProcess返回参数结构体
+ * @class
+ */
+class TransmitOralProcessResponse extends  AbstractModel {
+    constructor(){
+        super();
+
+        /**
+         * 发音精准度，取值范围[-1, 100]，当取-1时指完全不匹配，当为句子模式时，是所有已识别单词准确度的加权平均值。当为流式模式且请求中IsEnd未置1时，取值无意义
+         * @type {number || null}
+         */
+        this.PronAccuracy = null;
+
+        /**
+         * 发音流利度，取值范围[0, 1]，当为词模式时，取值无意义；当为流式模式且请求中IsEnd未置1时，取值无意义
+         * @type {number || null}
+         */
+        this.PronFluency = null;
+
+        /**
+         * 发音完整度，取值范围[0, 1]，当为词模式时，取值无意义；当为流式模式且请求中IsEnd未置1时，取值无意义
+         * @type {number || null}
+         */
+        this.PronCompletion = null;
+
+        /**
+         * 详细发音评估结果
+         * @type {Array.<WordRsp> || null}
+         */
+        this.Words = null;
+
+        /**
+         * 语音段唯一标识，一段语音一个SessionId
+         * @type {string || null}
+         */
+        this.SessionId = null;
+
+        /**
+         * 保存语音音频文件下载地址
+         * @type {string || null}
+         */
+        this.AudioUrl = null;
+
+        /**
+         * 断句中间结果，中间结果是局部最优而非全局最优的结果，所以中间结果有可能和最终整体结果对应部分不一致；中间结果的输出便于客户端UI更新；待用户发音完全结束后，系统会给出一个综合所有句子的整体结果。
+         * @type {Array.<SentenceInfo> || null}
+         */
+        this.SentenceInfoSet = null;
+
+        /**
+         * 唯一请求 ID，每次请求都会返回。定位问题时需要提供该次请求的 RequestId。
+         * @type {string || null}
+         */
+        this.RequestId = null;
+
+    }
+
+    /**
+     * @private
+     */
+    deserialize(params) {
+        if (!params) {
+            return;
+        }
+        this.PronAccuracy = params.PronAccuracy || null;
+        this.PronFluency = params.PronFluency || null;
+        this.PronCompletion = params.PronCompletion || null;
+
+        if (params.Words) {
+            this.Words = new Array();
+            for (let z in params.Words) {
+                let obj = new WordRsp();
+                obj.deserialize(params.Words[z]);
+                this.Words.push(obj);
+            }
+        }
+        this.SessionId = params.SessionId || null;
+        this.AudioUrl = params.AudioUrl || null;
+
+        if (params.SentenceInfoSet) {
+            this.SentenceInfoSet = new Array();
+            for (let z in params.SentenceInfoSet) {
+                let obj = new SentenceInfo();
+                obj.deserialize(params.SentenceInfoSet[z]);
+                this.SentenceInfoSet.push(obj);
+            }
+        }
+        this.RequestId = params.RequestId || null;
+
+    }
+}
+
+/**
+ * InitOralProcess返回参数结构体
+ * @class
+ */
+class InitOralProcessResponse extends  AbstractModel {
+    constructor(){
+        super();
+
+        /**
+         * 语音段唯一标识，一个完整语音一个SessionId
+         * @type {string || null}
+         */
+        this.SessionId = null;
+
+        /**
+         * 唯一请求 ID，每次请求都会返回。定位问题时需要提供该次请求的 RequestId。
+         * @type {string || null}
+         */
+        this.RequestId = null;
+
+    }
+
+    /**
+     * @private
+     */
+    deserialize(params) {
+        if (!params) {
+            return;
+        }
+        this.SessionId = params.SessionId || null;
+        this.RequestId = params.RequestId || null;
+
+    }
+}
+
+/**
+ * 单词评分细则
+ * @class
+ */
+class WordRsp extends  AbstractModel {
+    constructor(){
+        super();
+
+        /**
+         * 当前单词语音起始时间点，单位为ms
+         * @type {number || null}
+         */
+        this.MemBeginTime = null;
+
+        /**
+         * 当前单词语音终止时间点，单位为ms
+         * @type {number || null}
+         */
+        this.MemEndTime = null;
+
+        /**
+         * 单词发音准确度，取值范围[-1, 100]，当取-1时指完全不匹配
+         * @type {number || null}
+         */
+        this.PronAccuracy = null;
+
+        /**
+         * 单词发音流利度，取值范围[0, 1]
+         * @type {number || null}
+         */
+        this.PronFluency = null;
+
+        /**
+         * 当前词
+         * @type {string || null}
+         */
+        this.Word = null;
+
+        /**
+         * 当前词与输入语句的匹配情况，0:匹配单词、1：新增单词、2：缺少单词
+         * @type {number || null}
+         */
+        this.MatchTag = null;
+
+        /**
+         * 音节评估详情
+         * @type {Array.<PhoneInfo> || null}
+         */
+        this.PhoneInfos = null;
+
+    }
+
+    /**
+     * @private
+     */
+    deserialize(params) {
+        if (!params) {
+            return;
+        }
+        this.MemBeginTime = params.MemBeginTime || null;
+        this.MemEndTime = params.MemEndTime || null;
+        this.PronAccuracy = params.PronAccuracy || null;
+        this.PronFluency = params.PronFluency || null;
+        this.Word = params.Word || null;
+        this.MatchTag = params.MatchTag || null;
+
+        if (params.PhoneInfos) {
+            this.PhoneInfos = new Array();
+            for (let z in params.PhoneInfos) {
+                let obj = new PhoneInfo();
+                obj.deserialize(params.PhoneInfos[z]);
+                this.PhoneInfos.push(obj);
+            }
+        }
+
+    }
+}
+
+/**
+ * 单音节评价结果
+ * @class
+ */
+class PhoneInfo extends  AbstractModel {
+    constructor(){
+        super();
+
+        /**
+         * 当前音节语音起始时间点，单位为ms
+         * @type {number || null}
+         */
+        this.MemBeginTime = null;
+
+        /**
+         * 当前音节语音终止时间点，单位为ms
+         * @type {number || null}
+         */
+        this.MemEndTime = null;
+
+        /**
+         * 音节发音准确度，取值范围[-1, 100]，当取-1时指完全不匹配
+         * @type {number || null}
+         */
+        this.PronAccuracy = null;
+
+        /**
+         * 当前音节是否检测为重音
+         * @type {boolean || null}
+         */
+        this.DetectedStress = null;
+
+        /**
+         * 当前音节
+         * @type {string || null}
+         */
+        this.Phone = null;
+
+        /**
+         * 当前音节是否应为重音
+         * @type {boolean || null}
+         */
+        this.Stress = null;
+
+    }
+
+    /**
+     * @private
+     */
+    deserialize(params) {
+        if (!params) {
+            return;
+        }
+        this.MemBeginTime = params.MemBeginTime || null;
+        this.MemEndTime = params.MemEndTime || null;
+        this.PronAccuracy = params.PronAccuracy || null;
+        this.DetectedStress = params.DetectedStress || null;
+        this.Phone = params.Phone || null;
+        this.Stress = params.Stress || null;
+
+    }
+}
+
+module.exports = {
+    SentenceInfo: SentenceInfo,
+    InitOralProcessRequest: InitOralProcessRequest,
+    TransmitOralProcessRequest: TransmitOralProcessRequest,
+    TransmitOralProcessResponse: TransmitOralProcessResponse,
+    InitOralProcessResponse: InitOralProcessResponse,
+    WordRsp: WordRsp,
+    PhoneInfo: PhoneInfo,
+
+}
