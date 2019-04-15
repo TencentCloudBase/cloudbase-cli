@@ -3,6 +3,7 @@
 const package = require('../package.json')
 const program = require('commander');
 const fs = require('fs')
+const path = require('path')
 
 const NodeDeploy = require('../lib/deploy/node').default
 const NodeZipBuilder = require('../lib/builder/node-zip').default
@@ -16,6 +17,10 @@ const WebsocketDeploy = require('../lib/deploy/websocket').default
 const WebsocketBuilder = require('../lib/builder/websocket').default
 
 const readline = require('readline')
+const tencentcloud = require('tencentcloud-sdk-nodejs')
+const ini = require('ini')
+
+const TCBRC = path.resolve(require('os').homedir(), '.tcbrc.json')
 
 program
   .version(package.version)
@@ -43,24 +48,38 @@ program
         continue;
       }
       if (deploy.type === 'function') {
+        const { secretId, secretKey } = await getSecret()
         await new FunctionDeploy({
           ...common,
-          ...deploy
+          ...deploy,
+          secretId,
+          secretKey
         }).deploy()
         continue;
       }
       if (deploy.type === 'websocket') {
+        const { secretId, secretKey } = await getSecret()
         await new WebsocketDeploy({
           ...common.server,
           ...deploy,
-          secretId: common.secretId,
-          secretKey: common.secretKey
+          secretId,
+          secretKey
         }).deploy(options.start)
         continue
       }
       throw new Error(`Unsupported deploy type: "${deploy.type}"`)
     }
   })
+
+program
+  .command('login')
+  .description('登录腾讯云账号')
+  .action(login)
+
+program
+  .command('logout')
+  .description('登出腾讯云账号')
+  .action(logout)
 
 program
   .command('build [name]')
@@ -77,12 +96,13 @@ program
         continue;
       }
       if (deploy.type === 'websocket') {
+        const { secretId, secretKey } = await getSecret()
         await new WebsocketBuilder({
           ...common.server,
           ...deploy,
           ...deploy.config,
-          secretId: common.secretId,
-          secretKey: common.secretKey
+          secretId,
+          secretKey
         }).build()
         continue;
       }
@@ -147,7 +167,7 @@ program
   .command('show <name>')
   .description('查看状态')
   .action(async function (name) {
-    const { deploys: [ deploy ], common } = getDeploys(name)
+    const { deploys: [deploy], common } = getDeploys(name)
     if (deploy.type === 'node' || deploy.type === 'websocket') {
       await new NodeController({
         ...common.server,
@@ -202,6 +222,59 @@ function askForInput(question) {
     rl.question(question, (answer) => {
       resolve(answer)
       rl.close();
+    });
+  })
+}
+
+
+async function login() {
+  const secretId = await askForInput('请输入腾讯云SecretID：')
+  const secretKey = await askForInput('请输入腾讯云SecretKey：')
+  try {
+    await callCloudApi(secretId, secretKey)
+  } catch (e) {
+    if (e.code.indexOf('AuthFailure') !== -1) {
+      throw new Error('登录失败，请检查密钥是否正确')
+    }
+    throw new Error(`登录失败：${e.code}`)
+  }
+  fs.writeFileSync(TCBRC, ini.stringify({ secretId, secretKey }))
+  return { secretId, secretKey }
+}
+
+async function logout() {
+  await fs.unlinkSync(TCBRC)
+}
+
+async function getSecret() {
+  if (fs.existsSync(TCBRC)) {
+    const tcbrc = ini.parse(fs.readFileSync(TCBRC, 'utf-8'))
+    if (!tcbrc.secretId || !tcbrc.secretKey) {
+      // 缺少信息，重新登录
+      return await login()
+    }
+    return { secretId: tcbrc.secretId, secretKey: tcbrc.secretKey }
+  } else {
+    // 没有登录过
+    return await login()
+  }
+}
+
+function callCloudApi(secretId, secretKey) {
+  const CvmClient = tencentcloud.cvm.v20170312.Client;
+  const models = tencentcloud.cvm.v20170312.Models;
+  const Credential = tencentcloud.common.Credential;
+  let cred = new Credential(secretId, secretKey);
+  let client = new CvmClient(cred, "ap-shanghai");
+  let req = new models.DescribeZonesRequest();
+
+  return new Promise((resolve, reject) => {
+    client.DescribeZones(req, function (err, response) {
+      if (err) {
+        reject(err)
+        return;
+      }
+      resolve(response)
     });
   })
 }

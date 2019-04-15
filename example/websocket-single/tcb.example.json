@@ -1,7 +1,5 @@
 {
     "common": {
-        "secretId": "xxxxxxxxxxxxxxxxxxxxxxxxx",
-        "secretKey": "xxxxxxxxxxxxxxxxxx",
         "server": {
             "host": "1.2.3.4",
             "username": "root",
