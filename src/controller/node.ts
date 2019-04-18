@@ -23,15 +23,15 @@ export default class NodeController {
 
         logger.log('Reloading application...')
 
-        await this.injectSecret()
+        const secret = await this.injectSecret()
         if (vemo) {
             logger.log(`reload vemo`)
-            const { stdout, stderr } = await this.ssh.execCommand(`pm2 reload $(${GET_VEMO_ENTRY})`, { cwd: remotePath })
+            const { stdout, stderr } = await this.ssh.execCommand(secret + `pm2 reload $(${GET_VEMO_ENTRY})`, { cwd: remotePath })
             console.log(stdout || stderr)
         } else {
             const entryPath = path.resolve(remotePath, 'index.js')
             logger.log(`reload ${entryPath}`)
-            const { stdout, stderr } = await this.ssh.execCommand(`pm2 reload ${entryPath}`)
+            const { stdout, stderr } = await this.ssh.execCommand(secret + `pm2 reload ${entryPath}`)
             console.log(stdout || stderr)
         }
 
@@ -44,15 +44,17 @@ export default class NodeController {
 
         logger.log('Starting application...')
 
-        await this.injectSecret()
+        const secret = await this.injectSecret()
         if (vemo) {
             logger.log(`start vemo`)
-            const { stdout, stderr } = await this.ssh.execCommand(`pm2 start $(${GET_VEMO_ENTRY})`, { cwd: remotePath })
+            const { stdout, stderr } = await this.ssh.execCommand(secret + `pm2 start $(${GET_VEMO_ENTRY})`, {
+                cwd: remotePath
+            })
             console.log(stdout || stderr)
         } else {
             const entryPath = path.resolve(remotePath, 'index.js')
             logger.log(`start ${entryPath}`)
-            const { stdout, stderr } = await this.ssh.execCommand(`pm2 start ${entryPath}`)
+            const { stdout, stderr } = await this.ssh.execCommand(secret + `pm2 start ${entryPath}`)
             console.log(stdout || stderr)
         }
 
@@ -61,8 +63,7 @@ export default class NodeController {
 
     async injectSecret() {
         const { secretId, secretKey } = await getSecret()
-        await this.ssh.execCommand(`export TENCENTCLOUD_SECRETID=${secretId}`)
-        await this.ssh.execCommand(`export TENCENTCLOUD_SECRETKEY=${secretKey}`)
+        return `TENCENTCLOUD_SECRETID=${secretId} TENCENTCLOUD_SECRETKEY=${secretKey} `
     }
 
     async stop({ vemo }) {
