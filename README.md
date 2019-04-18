@@ -9,19 +9,23 @@ npm install -g @cloudbase/cli
 ## 使用方法
 ```bash
 tcb -h
-# Usage: tcb [options] [command]
-# 
-# Options:
-#   -V, --version            output the version number
-#   -h, --help               output usage information
-# 
-# Commands:
-#   deploy [options] [name]  执行完整的发布
-#   build [name]             构建
-#   upload [name]            上传
-#   reload [name]            热重载
-#   start [name]             启动
-#   show <name>              查看状态
+```
+```
+Usage: tcb [options] [command]
+
+Options:
+  -V, --version            output the version number
+  -h, --help               output usage information
+
+Commands:
+  deploy [options] [name]  执行完整的发布
+  login                    登录腾讯云账号
+  logout                   登出腾讯云账号
+  build [name]             构建
+  upload [name]            上传
+  reload [name]            热重载
+  start [name]             启动
+  show <name>              查看状态
 ```
 
 ### 构建
@@ -44,8 +48,6 @@ cli的配置文件
 ```json
 {
     "common": {
-        "secretId": "xxxxxxxxxxxxxxxxxxxxxxxxx",
-        "secretKey": "xxxxxxxxxxxxxxxxxx",
         "server": {
             "host": "1.2.3.4",
             "username": "root",
@@ -55,9 +57,9 @@ cli的配置文件
     },
     "deploys": [
         {
-            "name": "websocket",
-            "entry": "index.js",
-            "type": "websocket"
+            "name": "app",
+            "type": "node",
+            "path": "./server"
         }
     ]
 }
@@ -65,13 +67,11 @@ cli的配置文件
 
 ### common
 
-包含账号、服务器等通用信息
+包含服务器等通用信息
 
 ```js
 {
     "common": {
-        "secretId": "xxxxxxxxxxxxxxxxxxxxxxxxx",
-        "secretKey": "xxxxxxxxxxxxxxxxxx",
         "server": {
             "host": "1.2.3.4",
             "username": "root",
@@ -82,14 +82,6 @@ cli的配置文件
     // ...
 }
 ```
-
-#### common.secretId
-
-用户的腾讯云secretId
-
-#### common.secretKey
-
-用户的腾讯云secretKey
 
 #### common.server
 
@@ -137,11 +129,11 @@ cli的配置文件
             "path": "./server"
         },
 
-        // Websocket服务示例
+        // Vemo项目示例
         {
-            "name": "websocket",
-            "type": "websocket",
-            "entry": "./index.js"
+            name: 'my-vemo',
+            type: 'node',
+            path: './vemo-server'
         }
     ]
 }
