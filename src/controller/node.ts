@@ -25,9 +25,8 @@ export default class NodeController {
 
         await this.injectSecret()
         if (vemo) {
-            await this.ssh.execCommand(`cd ${remotePath}`)
             logger.log(`reload vemo`)
-            const { stdout, stderr } = await this.ssh.execCommand(`pm2 start $(${GET_VEMO_ENTRY})`)
+            const { stdout, stderr } = await this.ssh.execCommand(`pm2 reload $(${GET_VEMO_ENTRY})`, { cwd: remotePath })
             console.log(stdout || stderr)
         } else {
             const entryPath = path.resolve(remotePath, 'index.js')
@@ -47,9 +46,8 @@ export default class NodeController {
 
         await this.injectSecret()
         if (vemo) {
-            await this.ssh.execCommand(`cd ${remotePath}`)
             logger.log(`start vemo`)
-            const { stdout, stderr } = await this.ssh.execCommand(`pm2 start $(${GET_VEMO_ENTRY})`)
+            const { stdout, stderr } = await this.ssh.execCommand(`pm2 start $(${GET_VEMO_ENTRY})`, { cwd: remotePath })
             console.log(stdout || stderr)
         } else {
             const entryPath = path.resolve(remotePath, 'index.js')
@@ -73,11 +71,10 @@ export default class NodeController {
 
         logger.log('Stoping application...')
 
-        await this.injectSecret()
         if (vemo) {
             await this.ssh.execCommand(`cd ${remotePath}`)
             logger.log(`stop vemo`)
-            const { stdout, stderr } = await this.ssh.execCommand(`pm2 start $(${GET_VEMO_ENTRY})`)
+            const { stdout, stderr } = await this.ssh.execCommand(`pm2 stop $(${GET_VEMO_ENTRY})`, { cwd: remotePath })
             console.log(stdout || stderr)
         } else {
             const entryPath = path.resolve(remotePath, 'index.js')
