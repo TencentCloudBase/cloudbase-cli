@@ -1,5 +1,11 @@
 import * as archiver from 'archiver'
 import * as fs from 'fs'
+import * as readline from 'readline'
+import * as tencentcloud from 'tencentcloud-sdk-nodejs'
+import * as ini from 'ini'
+import * as path from 'path'
+import * as os from 'os'
+
 export async function zipDir(dirPath, outputPath) {
     console.log(dirPath, outputPath)
     return new Promise((resolve, reject) => {
@@ -22,5 +28,72 @@ export async function zipDir(dirPath, outputPath) {
         archive.pipe(output);
         archive.directory(dirPath, '');
         archive.finalize();
+    })
+}
+
+
+const TCBRC = path.resolve(os.homedir(), '.tcbrc.json')
+export async function login() {
+    const secretId = await askForInput('请输入腾讯云SecretID：')
+    const secretKey = await askForInput('请输入腾讯云SecretKey：')
+    try {
+        await callCloudApi(secretId, secretKey)
+    } catch (e) {
+        if (e.code.indexOf('AuthFailure') !== -1) {
+            throw new Error('登录失败，请检查密钥是否正确')
+        }
+        throw new Error(`登录失败：${e.code}`)
+    }
+    fs.writeFileSync(TCBRC, ini.stringify({ secretId, secretKey }))
+    return { secretId, secretKey }
+}
+
+export async function logout() {
+    await fs.unlinkSync(TCBRC)
+}
+
+export async function getSecret() {
+    if (fs.existsSync(TCBRC)) {
+        const tcbrc = ini.parse(fs.readFileSync(TCBRC, 'utf-8'))
+        if (!tcbrc.secretId || !tcbrc.secretKey) {
+            // 缺少信息，重新登录
+            return await login()
+        }
+        return { secretId: tcbrc.secretId, secretKey: tcbrc.secretKey }
+    } else {
+        // 没有登录过
+        return await login()
+    }
+}
+
+export function askForInput(question) {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+    return new Promise((resolve) => {
+        rl.question(question, (answer) => {
+            resolve(answer)
+            rl.close();
+        });
+    })
+}
+
+export function callCloudApi(secretId, secretKey) {
+    const CvmClient = tencentcloud.cvm.v20170312.Client;
+    const models = tencentcloud.cvm.v20170312.Models;
+    const Credential = tencentcloud.common.Credential;
+    let cred = new Credential(secretId, secretKey);
+    let client = new CvmClient(cred, "ap-shanghai");
+    let req = new models.DescribeZonesRequest();
+
+    return new Promise((resolve, reject) => {
+        client.DescribeZones(req, function (err, response) {
+            if (err) {
+                reject(err)
+                return;
+            }
+            resolve(response)
+        });
     })
 }

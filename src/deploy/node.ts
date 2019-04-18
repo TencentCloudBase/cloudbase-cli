@@ -28,13 +28,13 @@ export default class NodeDeploy extends Deploy {
 
     async deploy(start = false) {
         await this.builder.clean()
-        await this.builder.build()
+        const buildResult = await this.builder.build()
         await this.uploader.upload()
         await this.builder.clean()
         if (start) {
-            await this.controller.start()
+            await this.controller.start({ vemo: buildResult.vemo })
         } else {
-            await this.controller.reload()
+            await this.controller.reload({ vemo: buildResult.vemo })
         }
     }
 }

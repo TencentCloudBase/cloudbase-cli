@@ -1,4 +1,5 @@
 export interface IBuildResult {
     success: boolean
-    assets: string[]
+    assets: string[],
+    vemo?: boolean
 }

@@ -5,6 +5,7 @@ import Logger from '../logger'
 import { zipDir } from '../utils'
 import { INodeDeployConfig } from '../deploy/node'
 import * as del from 'del';
+import * as fs from 'fs'
 
 const logger = new Logger('NodeZipBuilder')
 
@@ -32,7 +33,8 @@ export default class NodeZipBuilder {
 
         return {
             success: true,
-            assets: [zipPath]
+            assets: [zipPath],
+            vemo: fs.existsSync(path.resolve(entry, 'vemofile.js'))
         }
     }
 

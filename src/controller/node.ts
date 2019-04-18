@@ -2,8 +2,11 @@ import * as node_ssh from 'node-ssh'
 import * as path from 'path'
 import Logger from '../logger';
 import { INodeDeployConfig } from '../deploy/node'
+import { getSecret } from '../utils'
 
 const logger = new Logger('NodeController')
+
+const GET_VEMO_ENTRY = 'npm run vemo -- main | tail -n 1'
 
 export default class NodeController {
     ssh: any
@@ -14,44 +17,74 @@ export default class NodeController {
         this._options = options
     }
 
-    async reload() {
+    async reload({ vemo }) {
         const { host, username, port, password, remotePath } = this._options
         await this.ssh.connect({ host, username, port, password })
 
         logger.log('Reloading application...')
 
-        const entryPath = path.resolve(remotePath, 'index.js')
-        logger.log(`reload ${entryPath}`)
-        const { stdout, stderr } = await this.ssh.execCommand(`pm2 reload ${entryPath}`)
-        console.log(stdout || stderr)
+        await this.injectSecret()
+        if (vemo) {
+            await this.ssh.execCommand(`cd ${remotePath}`)
+            logger.log(`reload vemo`)
+            const { stdout, stderr } = await this.ssh.execCommand(`pm2 start $(${GET_VEMO_ENTRY})`)
+            console.log(stdout || stderr)
+        } else {
+            const entryPath = path.resolve(remotePath, 'index.js')
+            logger.log(`reload ${entryPath}`)
+            const { stdout, stderr } = await this.ssh.execCommand(`pm2 reload ${entryPath}`)
+            console.log(stdout || stderr)
+        }
 
         this.ssh.dispose()
     }
 
-    async start() {
+    async start({ vemo }) {
         const { host, username, port, password, remotePath } = this._options
         await this.ssh.connect({ host, username, port, password })
 
         logger.log('Starting application...')
 
-        const entryPath = path.resolve(remotePath, 'index.js')
-        logger.log(`start ${entryPath}`)
-        const { stdout, stderr } = await this.ssh.execCommand(`pm2 start ${entryPath}`)
-        console.log(stdout || stderr)
+        await this.injectSecret()
+        if (vemo) {
+            await this.ssh.execCommand(`cd ${remotePath}`)
+            logger.log(`start vemo`)
+            const { stdout, stderr } = await this.ssh.execCommand(`pm2 start $(${GET_VEMO_ENTRY})`)
+            console.log(stdout || stderr)
+        } else {
+            const entryPath = path.resolve(remotePath, 'index.js')
+            logger.log(`start ${entryPath}`)
+            const { stdout, stderr } = await this.ssh.execCommand(`pm2 start ${entryPath}`)
+            console.log(stdout || stderr)
+        }
 
         this.ssh.dispose()
     }
 
-    async stop() {
+    async injectSecret() {
+        const { secretId, secretKey } = await getSecret()
+        await this.ssh.execCommand(`export TENCENTCLOUD_SECRETID=${secretId}`)
+        await this.ssh.execCommand(`export TENCENTCLOUD_SECRETKEY=${secretKey}`)
+    }
+
+    async stop({ vemo }) {
         const { host, username, port, password, remotePath } = this._options
         await this.ssh.connect({ host, username, port, password })
 
         logger.log('Stoping application...')
 
-        const entryPath = path.resolve(remotePath, 'index.js')
-        logger.log(`stop ${entryPath}`)
-        const { stdout, stderr } = await this.ssh.execCommand(`pm2 stop ${entryPath}`)
-        console.log(stdout || stderr)
+        await this.injectSecret()
+        if (vemo) {
+            await this.ssh.execCommand(`cd ${remotePath}`)
+            logger.log(`stop vemo`)
+            const { stdout, stderr } = await this.ssh.execCommand(`pm2 start $(${GET_VEMO_ENTRY})`)
+            console.log(stdout || stderr)
+        } else {
+            const entryPath = path.resolve(remotePath, 'index.js')
+            logger.log(`stop ${entryPath}`)
+            const { stdout, stderr } = await this.ssh.execCommand(`pm2 stop ${entryPath}`)
+            console.log(stdout || stderr)
+        }
 
         this.ssh.dispose()
     }
