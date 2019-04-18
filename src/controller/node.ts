@@ -63,7 +63,7 @@ export default class NodeController {
 
     async injectSecret() {
         const { secretId, secretKey } = await getSecret()
-        return `TENCENTCLOUD_SECRETID=${secretId} TENCENTCLOUD_SECRETKEY=${secretKey} `
+        return `export TENCENTCLOUD_SECRETID=${secretId} && export TENCENTCLOUD_SECRETKEY=${secretKey} && `
     }
 
     async stop({ vemo }) {
