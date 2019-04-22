@@ -3,6 +3,7 @@ import * as path from 'path'
 import Logger from '../logger';
 import { INodeDeployConfig } from '../deploy/node'
 import { getSecret } from '../utils'
+import chalk from 'chalk'
 
 const logger = new Logger('NodeController')
 
@@ -109,8 +110,14 @@ export default class NodeController {
     async logs({ lines }) {
         const { host, username, port, password, remotePath } = this._options
         await this.ssh.connect({ host, username, port, password })
-        const { stdout, stderr } = await this.ssh.execCommand(`tail -n ${lines} out.log`, { cwd: remotePath })
-        console.log(stdout || stderr)
+        const { stdout: logContent, stderr: logFail } = await this.ssh.execCommand(`tail -n ${lines} out.log`, { cwd: remotePath })
+        const { stdout: errContent, stderr: errFail } = await this.ssh.execCommand(`tail -n ${lines} err.log`, { cwd: remotePath })
+
+        console.log(chalk.gray(`${remotePath}/out.log last ${lines} lines:`))
+        console.log(logContent || logFail)
+        console.log('\n')
+        console.log(chalk.gray(`${remotePath}/err.log last ${lines} lines:`))
+        console.log(errContent || errFail)
         this.ssh.dispose()
     }
 
