@@ -8,7 +8,7 @@ import chalk from 'chalk'
 const logger = new Logger('NodeController')
 
 const GET_VEMO_ENTRY = 'npm run vemo -- main | tail -n 1'
-
+const PM2_OPTIONS = '-o out.log -e err.log'
 export default class NodeController {
     ssh: any
     _options: INodeDeployConfig
@@ -24,49 +24,56 @@ export default class NodeController {
     }
 
     async reload({ vemo }) {
-        const { host, username, port, password, remotePath } = this._options
+        const { host, username, port, password, remotePath, name } = this._options
         await this.ssh.connect({ host, username, port, password })
+
+        await this.installDependencies()
 
         logger.log('Reloading application...')
 
         const secret = await this.injectSecret()
-        if (vemo) {
-            logger.log(`reload vemo`)
-            const { stdout, stderr } = await this.ssh.execCommand(secret + `pm2 reload $(${GET_VEMO_ENTRY})`, { cwd: remotePath })
-            console.log(stdout || stderr)
-        } else {
-            const entryPath = path.resolve(remotePath, 'index.js')
-            logger.log(`reload ${entryPath}`)
-            const { stdout, stderr } = await this.ssh.execCommand(secret + `pm2 reload ${entryPath}`)
-            console.log(stdout || stderr)
-        }
+        logger.log(`reload ${name}`)
+        const { stdout, stderr } = await this.ssh.execCommand(secret + `pm2 reload ${name}`)
+        console.log(stdout || stderr)
 
         this.ssh.dispose()
     }
 
     async start({ vemo }) {
-        const { host, username, port, password, remotePath } = this._options
+        const { host, username, port, password, remotePath, name } = this._options
         await this.ssh.connect({ host, username, port, password })
+
+        await this.installDependencies()
 
         logger.log('Starting application...')
 
         const secret = await this.injectSecret()
+
         if (vemo) {
             logger.log(`start vemo`)
-            const { stdout, stderr } = await this.ssh.execCommand(secret + `pm2 start $(${GET_VEMO_ENTRY}) -o out.log -e err.log`, {
+            const { stdout, stderr } = await this.ssh.execCommand(secret + `pm2 start $(${GET_VEMO_ENTRY}) ${PM2_OPTIONS} --name ${name}`, {
                 cwd: remotePath
             })
             console.log(stdout || stderr)
         } else {
             const entryPath = path.resolve(remotePath, 'index.js')
             logger.log(`start ${entryPath}`)
-            const { stdout, stderr } = await this.ssh.execCommand(secret + `pm2 start ${entryPath} -o out.log -e err.log`, {
+            const { stdout, stderr } = await this.ssh.execCommand(secret + `pm2 start ${entryPath} ${PM2_OPTIONS} --name ${name}`, {
                 cwd: remotePath
             })
             console.log(stdout || stderr)
         }
 
         this.ssh.dispose()
+    }
+
+    async installDependencies() {
+        const { remotePath } = this._options
+        logger.log('Installing dependencies...')
+        const installResult = await this.ssh.execCommand('npm install --production', {
+            cwd: remotePath
+        })
+        console.log(installResult.stdout || installResult.stderr)
     }
 
     async injectSecret() {
@@ -75,33 +82,14 @@ export default class NodeController {
     }
 
     async stop({ vemo }) {
-        const { host, username, port, password, remotePath } = this._options
+        const { host, username, port, password, remotePath, name } = this._options
         await this.ssh.connect({ host, username, port, password })
 
         logger.log('Stoping application...')
 
-        if (vemo) {
-            await this.ssh.execCommand(`cd ${remotePath}`)
-            logger.log(`stop vemo`)
-            const { stdout, stderr } = await this.ssh.execCommand(`pm2 stop $(${GET_VEMO_ENTRY})`, { cwd: remotePath })
-            console.log(stdout || stderr)
-        } else {
-            const entryPath = path.resolve(remotePath, 'index.js')
-            logger.log(`stop ${entryPath}`)
-            const { stdout, stderr } = await this.ssh.execCommand(`pm2 stop ${entryPath}`)
-            console.log(stdout || stderr)
-        }
 
-        this.ssh.dispose()
-    }
-
-    async npmInstall() {
-        const { host, username, port, password, remotePath } = this._options
-        await this.ssh.connect({ host, username, port, password })
-
-        logger.log('Installing dependencies...')
-
-        const { stdout, stderr } = await this.ssh.execCommand(`cd ${remotePath} && npm i -d`)
+        logger.log(`stop ${name}`)
+        const { stdout, stderr } = await this.ssh.execCommand(`pm2 stop ${name}`)
         console.log(stdout || stderr)
 
         this.ssh.dispose()
