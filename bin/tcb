@@ -105,7 +105,7 @@ program.
       await new NodeController({
         ...common.server,
         ...deploy
-      }).show({
+      }).logs({
         lines: options.n
       })
     }
