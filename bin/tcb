@@ -64,42 +64,20 @@ program
   .action(logout)
 
 program
-  .command('build [name]')
-  .description('构建')
-  .action(async function (name) {
-    const { deploys, common } = getDeploys(name)
-    for (let i = 0; i < deploys.length; i++) {
-      const deploy = deploys[i]
-      if (deploy.type === 'node') {
-        await new NodeZipBuilder({
-          entry: deploy.entry,
-          ...deploy
-        }).build()
-        continue;
-      }
-      throw new Error(`Unsupported build type: "${deploy.type}"`)
-    }
-  })
-
-program
-  .command('show <name>')
+  .command('show')
   .description('查看状态')
-  .action(async function (name) {
-    const { deploys: [deploy], common } = getDeploys(name)
-    if (deploy.type === 'node') {
-      await new NodeController({
-        ...common.server,
-        ...deploy.config,
-        entry: deploy.entry,
-      }).show()
-    }
+  .action(async function () {
+    const { common } = getDeploys()
+    await new NodeController({
+      ...common.server,
+    }).show()
   })
 
 program.
   command('logs <name>')
   .description('查看日志')
   .option('-n <n>', '输出日志的行数')
-  .action(async function(name, options) {
+  .action(async function (name, options) {
     const { deploys: [deploy], common } = getDeploys(name)
     if (deploy.type === 'node') {
       await new NodeController({

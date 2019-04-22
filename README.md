@@ -21,23 +21,30 @@ Commands:
   deploy [options] [name]  执行完整的发布
   login                    登录腾讯云账号
   logout                   登出腾讯云账号
-  build [name]             构建
-  upload [name]            上传
-  reload [name]            热重载
-  start [name]             启动
-  show <name>              查看状态
-```
-
-### 构建
-
-```
-tcb build
+  show                     查看状态
+  logs [options] <name>    查看日志
 ```
 
 ### 发布
+
+执行完整的发布
+
 ```
-tcb deploy
+tcb deploy [--start]
 ```
+参数：
+
+* `--start`：是否需要启动
+
+### 查看日志
+
+```
+tcb show [-n 20] <name>
+```
+
+参数：
+* `-n`：日志的行数
+
 
 ## tcb.json
 
