@@ -11,10 +11,15 @@ const GET_VEMO_ENTRY = 'npm run vemo -- main | tail -n 1'
 export default class NodeController {
     ssh: any
     _options: INodeDeployConfig
-    constructor(options: INodeDeployConfig) {
-        console.log(options)
+    constructor(config: INodeDeployConfig) {
+        config = {
+            username: 'root',
+            port: 22,
+            remotePath: `/data/tcb-service/${config.name}`,
+            ...config
+        }
         this.ssh = new node_ssh()
-        this._options = options
+        this._options = config
     }
 
     async reload({ vemo }) {
@@ -47,14 +52,16 @@ export default class NodeController {
         const secret = await this.injectSecret()
         if (vemo) {
             logger.log(`start vemo`)
-            const { stdout, stderr } = await this.ssh.execCommand(secret + `pm2 start $(${GET_VEMO_ENTRY})`, {
+            const { stdout, stderr } = await this.ssh.execCommand(secret + `pm2 start $(${GET_VEMO_ENTRY}) -o out.log -e err.log`, {
                 cwd: remotePath
             })
             console.log(stdout || stderr)
         } else {
             const entryPath = path.resolve(remotePath, 'index.js')
             logger.log(`start ${entryPath}`)
-            const { stdout, stderr } = await this.ssh.execCommand(secret + `pm2 start ${entryPath}`)
+            const { stdout, stderr } = await this.ssh.execCommand(secret + `pm2 start ${entryPath} -o out.log -e err.log`, {
+                cwd: remotePath
+            })
             console.log(stdout || stderr)
         }
 
@@ -99,7 +106,12 @@ export default class NodeController {
         this.ssh.dispose()
     }
 
-    logs() { }
+    async logs({ lines }) {
+        const { host, username, port, password, remotePath } = this._options
+        await this.ssh.connect({ host, username, port, password })
+        const { stdout, stderr } = await this.ssh.execCommand(`tail -n ${lines} out.log`, { cwd: remotePath })
+        console.log(stdout || stderr)
+    }
 
     async show() {
         const { host, username, port, password } = this._options
