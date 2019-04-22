@@ -98,7 +98,7 @@ program
 program.
   command('logs <name>')
   .description('查看日志')
-  .option('-n', '输出日志的行数')
+  .option('-n <n>', '输出日志的行数')
   .action(async function(name, options) {
     const { deploys: [deploy], common } = getDeploys(name)
     if (deploy.type === 'node') {
@@ -106,7 +106,7 @@ program.
         ...common.server,
         ...deploy
       }).logs({
-        lines: options.n
+        lines: options.n || 20
       })
     }
   })

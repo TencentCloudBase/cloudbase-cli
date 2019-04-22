@@ -111,6 +111,7 @@ export default class NodeController {
         await this.ssh.connect({ host, username, port, password })
         const { stdout, stderr } = await this.ssh.execCommand(`tail -n ${lines} out.log`, { cwd: remotePath })
         console.log(stdout || stderr)
+        this.ssh.dispose()
     }
 
     async show() {
