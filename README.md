@@ -119,7 +119,8 @@ cli的配置文件
             "name": "add",
             "type": "function",
             "path": "./",
-            "envId": "test-e48fe1"
+            "envId": "test-e48fe1",
+            "override": true
         },
 
         // Node服务示例
