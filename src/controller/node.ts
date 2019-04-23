@@ -109,6 +109,14 @@ export default class NodeController {
         this.ssh.dispose()
     }
 
+    async delete() {
+        const { host, username, port, password, remotePath, name } = this._options
+        await this.ssh.connect({ host, username, port, password })
+        const { stdout, stderr } = await this.ssh.execCommand(`pm2 delete ${name}`, { cwd: remotePath })
+        console.log(stdout || stderr)
+        this.ssh.dispose()
+    }
+
     async show() {
         const { host, username, port, password } = this._options
         await this.ssh.connect({ host, username, port, password })

@@ -89,6 +89,19 @@ program.
     }
   })
 
+program.
+  command('stop <name>')
+  .description('停止应用')
+  .action(async function (name) {
+    const { deploys: [deploy], common } = getDeploys(name)
+    if (deploy.type === 'node') {
+      await new NodeController({
+        ...common.server,
+        ...deploy
+      }).delete()
+    }
+  })
+
 program.parse(process.argv)
 
 function getDeploys(name) {
