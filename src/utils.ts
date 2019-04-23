@@ -5,6 +5,7 @@ import * as tencentcloud from 'tencentcloud-sdk-nodejs'
 import * as ini from 'ini'
 import * as path from 'path'
 import * as os from 'os'
+import * as node_ssh from 'node-ssh'
 
 export async function zipDir(dirPath, outputPath) {
     console.log(dirPath, outputPath)
@@ -44,8 +45,16 @@ export async function login() {
         }
         throw new Error(`登录失败：${e.code}`)
     }
-    fs.writeFileSync(TCBRC, ini.stringify({ secretId, secretKey }))
-    return { secretId, secretKey }
+
+    const host = await askForInput('请输入主机IP：')
+    const password = await askForInput('请输入主机密码：')
+    const ssh = new node_ssh()
+    await ssh.connect({ host, username: 'root', port: 22, password })
+    await ssh.dispose()
+
+
+    fs.writeFileSync(TCBRC, ini.stringify({ secretId, secretKey, host, password }))
+    return { secretId, secretKey, host, password }
 }
 
 export async function logout() {
