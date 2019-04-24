@@ -17,7 +17,6 @@ program
   .version(package.version)
   .command('deploy [name]')
   .description('执行完整的发布')
-  .option('--start', '发布后启动')
   .action(async function (name, options) {
     const { deploys } = getDeploys(name)
     for (let i = 0; i < deploys.length; i++) {
@@ -30,7 +29,7 @@ program
         await new NodeDeploy({
           ...metadata,
           ...deploy
-        }).deploy(options.start)
+        }).deploy()
         continue;
       }
       if (deploy.type === 'function') {

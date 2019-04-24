@@ -49,8 +49,8 @@ export async function login() {
     const sshInfo = {
         host: await askForInput('请输入主机IP：'),
         password: await askForInput('请输入主机密码：'),
-        username: await askForInput('请输入用户名（默认root）：') || 'root',
-        port: await askForInput('请输入ssh端口号（默认22）：') || 22
+        username: await askForInput('请输入用户名：(root)') || 'root',
+        port: await askForInput('请输入ssh端口号：(22)') || 22
     }
     const ssh = new node_ssh()
     await ssh.connect(sshInfo)

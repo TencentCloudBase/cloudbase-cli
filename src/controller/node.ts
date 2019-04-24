@@ -28,21 +28,6 @@ export default class NodeController {
         await this.ssh.connect({ host, username, port, password })
     }
 
-    async reload({ vemo }) {
-        await this.connect()
-
-        await this.installDependencies()
-
-        logger.log('Reloading application...')
-
-        const secret = this.injectSecret()
-        logger.log(`reload ${name}`)
-        const { stdout, stderr } = await this.ssh.execCommand(secret + `pm2 reload ${name}`)
-        console.log(stdout || stderr)
-
-        this.ssh.dispose()
-    }
-
     async start({ vemo }) {
         await this.connect()
         await this.installDependencies()
@@ -50,6 +35,9 @@ export default class NodeController {
 
         const secret = this.injectSecret()
         const { remotePath, name } = this._options
+
+        // 清理pm2进程
+        await this.ssh.execCommand('pm2 delete all')
 
         if (vemo) {
             logger.log(`start vemo`)
@@ -81,18 +69,6 @@ export default class NodeController {
     injectSecret() {
         const { secretId, secretKey } = this._options
         return `export TENCENTCLOUD_SECRETID=${secretId} && export TENCENTCLOUD_SECRETKEY=${secretKey} && `
-    }
-
-    async stop({ vemo }) {
-        await this.connect()
-
-        const { name } = this._options
-        logger.log(`Stoping ${name}`)
-
-        const { stdout, stderr } = await this.ssh.execCommand(`pm2 stop ${name}`)
-        console.log(stdout || stderr)
-
-        this.ssh.dispose()
     }
 
     async logs({ lines }) {
