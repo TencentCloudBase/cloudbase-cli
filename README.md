@@ -54,14 +54,6 @@ cli的配置文件
 
 ```json
 {
-    "common": {
-        "server": {
-            "host": "1.2.3.4",
-            "username": "root",
-            "port": 22,
-            "password": "xxxxxxxxxx"
-        }
-    },
     "deploys": [
         {
             "name": "app",
@@ -71,46 +63,6 @@ cli的配置文件
     ]
 }
 ```
-
-### common
-
-包含服务器等通用信息
-
-```js
-{
-    "common": {
-        "server": {
-            "host": "1.2.3.4",
-            "username": "root",
-            "port": 22,
-            "password": "xxxxxxxxxx"
-        }
-    }
-    // ...
-}
-```
-
-#### common.server
-
-云主机信息
-
-##### common.server.host
-
-云主机 host
-
-##### common.server.username
-
-云主机用户名，默认为 `root`
-
-##### common.server.port
-
-云主机ssh端口号，默认为 `22`
-
-##### common.server.password
-
-云主机密码
-
-------
 
 ### deploys
 
