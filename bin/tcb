@@ -4,10 +4,9 @@ const package = require('../package.json')
 const program = require('commander');
 const fs = require('fs')
 const path = require('path')
+const fse = require('fs-extra')
 
 const NodeDeploy = require('../lib/deploy/node').default
-const NodeZipBuilder = require('../lib/builder/node-zip').default
-const NodeZipUploader = require('../lib/uploader/node-zip').default
 const NodeController = require('../lib/controller/node').default
 
 const FunctionDeploy = require('../lib/deploy/function').default
@@ -69,10 +68,11 @@ program.
   .description('查看日志')
   .option('-n <n>', '输出日志的行数')
   .action(async function (name, options) {
-    const { deploys: [deploy], common } = getDeploys(name)
+    const { deploys: [deploy] } = getDeploys(name)
+    const metadata = await getMetadata()
     if (deploy.type === 'node') {
       await new NodeController({
-        ...common.server,
+        ...metadata,
         ...deploy
       }).logs({
         lines: options.n || 20
@@ -84,13 +84,24 @@ program.
   command('stop <name>')
   .description('停止应用')
   .action(async function (name) {
-    const { deploys: [deploy], common } = getDeploys(name)
+    const { deploys: [deploy] } = getDeploys(name)
+    const metadata = await getMetadata()
     if (deploy.type === 'node') {
       await new NodeController({
-        ...common.server,
+        ...metadata,
         ...deploy
       }).delete()
     }
+  })
+
+program
+  .command('create <name>')
+  .description('创建项目')
+  .action(async function(name) {
+    fse.copySync(
+      path.resolve(__dirname, '../assets/helloworld'),
+      path.resolve(process.cwd(), name)
+    )
   })
 
 program.parse(process.argv)
