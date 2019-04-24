@@ -33,11 +33,14 @@ export default class FunctionDeploy extends Deploy {
 }
 
 export interface IFunctionDeployConfig {
-    name: string
-    path: string
-    distPath?: string
+    //metadata
     secretId: string
     secretKey: string
+
+    // config
+    name: string
+    path: string
     envId: string
-    override: boolean
+    distPath?: string
+    override?: boolean
 }

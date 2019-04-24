@@ -46,29 +46,33 @@ export async function login() {
         throw new Error(`登录失败：${e.code}`)
     }
 
-    const host = await askForInput('请输入主机IP：')
-    const password = await askForInput('请输入主机密码：')
+    const sshInfo = {
+        host: await askForInput('请输入主机IP：'),
+        password: await askForInput('请输入主机密码：'),
+        username: await askForInput('请输入用户名（默认root）：') || 'root',
+        port: await askForInput('请输入ssh端口号（默认22）：') || 22
+    }
     const ssh = new node_ssh()
-    await ssh.connect({ host, username: 'root', port: 22, password })
+    await ssh.connect(sshInfo)
     await ssh.dispose()
 
 
-    fs.writeFileSync(TCBRC, ini.stringify({ secretId, secretKey, host, password }))
-    return { secretId, secretKey, host, password }
+    fs.writeFileSync(TCBRC, ini.stringify({ secretId, secretKey, ...sshInfo }))
+    return { secretId, secretKey, ...sshInfo }
 }
 
 export async function logout() {
     await fs.unlinkSync(TCBRC)
 }
 
-export async function getSecret() {
+export async function getMetadata() {
     if (fs.existsSync(TCBRC)) {
         const tcbrc = ini.parse(fs.readFileSync(TCBRC, 'utf-8'))
-        if (!tcbrc.secretId || !tcbrc.secretKey) {
+        if (!tcbrc.secretId || !tcbrc.secretKey || !tcbrc.host || !tcbrc.password || !tcbrc.username || !tcbrc.port) {
             // 缺少信息，重新登录
             return await login()
         }
-        return { secretId: tcbrc.secretId, secretKey: tcbrc.secretKey }
+        return tcbrc
     } else {
         // 没有登录过
         return await login()

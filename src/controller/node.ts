@@ -2,7 +2,7 @@ import * as node_ssh from 'node-ssh'
 import * as path from 'path'
 import Logger from '../logger';
 import { INodeDeployConfig } from '../deploy/node'
-import { getSecret } from '../utils'
+import { getMetadata } from '../utils'
 import chalk from 'chalk'
 
 const logger = new Logger('NodeController')
@@ -23,15 +23,19 @@ export default class NodeController {
         this._options = config
     }
 
-    async reload({ vemo }) {
-        const { host, username, port, password, remotePath, name } = this._options
+    async connect() {
+        const { host, username, port, password } = this._options
         await this.ssh.connect({ host, username, port, password })
+    }
+
+    async reload({ vemo }) {
+        await this.connect()
 
         await this.installDependencies()
 
         logger.log('Reloading application...')
 
-        const secret = await this.injectSecret()
+        const secret = this.injectSecret()
         logger.log(`reload ${name}`)
         const { stdout, stderr } = await this.ssh.execCommand(secret + `pm2 reload ${name}`)
         console.log(stdout || stderr)
@@ -40,14 +44,12 @@ export default class NodeController {
     }
 
     async start({ vemo }) {
-        const { host, username, port, password, remotePath, name } = this._options
-        await this.ssh.connect({ host, username, port, password })
-
+        await this.connect()
         await this.installDependencies()
-
         logger.log('Starting application...')
 
-        const secret = await this.injectSecret()
+        const secret = this.injectSecret()
+        const { remotePath, name } = this._options
 
         if (vemo) {
             logger.log(`start vemo`)
@@ -76,19 +78,17 @@ export default class NodeController {
         console.log(installResult.stdout || installResult.stderr)
     }
 
-    async injectSecret() {
-        const { secretId, secretKey } = await getSecret()
+    injectSecret() {
+        const { secretId, secretKey } = this._options
         return `export TENCENTCLOUD_SECRETID=${secretId} && export TENCENTCLOUD_SECRETKEY=${secretKey} && `
     }
 
     async stop({ vemo }) {
-        const { host, username, port, password, remotePath, name } = this._options
-        await this.ssh.connect({ host, username, port, password })
+        await this.connect()
 
-        logger.log('Stoping application...')
+        const { name } = this._options
+        logger.log(`Stoping ${name}`)
 
-
-        logger.log(`stop ${name}`)
         const { stdout, stderr } = await this.ssh.execCommand(`pm2 stop ${name}`)
         console.log(stdout || stderr)
 
@@ -96,8 +96,9 @@ export default class NodeController {
     }
 
     async logs({ lines }) {
-        const { host, username, port, password, remotePath } = this._options
-        await this.ssh.connect({ host, username, port, password })
+        await this.connect()
+
+        const { remotePath } = this._options
         const { stdout: logContent, stderr: logFail } = await this.ssh.execCommand(`tail -n ${lines} out.log`, { cwd: remotePath })
         const { stdout: errContent, stderr: errFail } = await this.ssh.execCommand(`tail -n ${lines} err.log`, { cwd: remotePath })
 
@@ -110,16 +111,15 @@ export default class NodeController {
     }
 
     async delete() {
-        const { host, username, port, password, remotePath, name } = this._options
-        await this.ssh.connect({ host, username, port, password })
+        await this.connect()
+        const { remotePath, name } = this._options
         const { stdout, stderr } = await this.ssh.execCommand(`pm2 delete ${name}`, { cwd: remotePath })
         console.log(stdout || stderr)
         this.ssh.dispose()
     }
 
     async show() {
-        const { host, username, port, password } = this._options
-        await this.ssh.connect({ host, username, port, password })
+        await this.connect()
         const { stdout, stderr } = await this.ssh.execCommand(`pm2 list`)
         console.log(stdout || stderr)
         this.ssh.dispose()

@@ -40,13 +40,16 @@ export default class NodeDeploy extends Deploy {
 }
 
 export interface INodeDeployConfig {
-    name: string
-
+    // metadata
     host: string
     username: string
     port: number
     password: string
+    secretId: string
+    secretKey: string
 
+    // config
+    name: string
     path: string
     distPath: string
     remotePath: string

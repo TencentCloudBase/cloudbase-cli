@@ -12,7 +12,7 @@ const NodeController = require('../lib/controller/node').default
 
 const FunctionDeploy = require('../lib/deploy/function').default
 
-const { login, logout, getSecret, askForInput } = require('../lib/utils')
+const { login, logout, getMetadata, askForInput } = require('../lib/utils')
 
 program
   .version(package.version)
@@ -20,32 +20,25 @@ program
   .description('执行完整的发布')
   .option('--start', '发布后启动')
   .action(async function (name, options) {
-    const { deploys, common } = getDeploys(name)
+    const { deploys } = getDeploys(name)
     for (let i = 0; i < deploys.length; i++) {
       const deploy = deploys[i]
       if (deploy.type === 'node') {
         if (!deploy.path) {
           throw new Error('未指定发布目录')
         }
-        if (!common.server.host && !deploy.config.host) {
-          deploy.config.host = await askForInput('请输入服务器IP：')
-        }
-        if (!common.server.password && !deploy.config.password) {
-          deploy.config.password = await askForInput('请输入服务器密码：')
-        }
+        const metadata = await getMetadata()
         await new NodeDeploy({
-          ...common.server,
+          ...metadata,
           ...deploy
         }).deploy(options.start)
         continue;
       }
       if (deploy.type === 'function') {
-        const { secretId, secretKey } = await getSecret()
+        const metadata = await getMetadata()
         await new FunctionDeploy({
-          ...common,
+          ...metadata,
           ...deploy,
-          secretId,
-          secretKey
         }).deploy()
         continue;
       }
@@ -67,10 +60,8 @@ program
   .command('show')
   .description('查看状态')
   .action(async function () {
-    const { common } = getDeploys()
-    await new NodeController({
-      ...common.server,
-    }).show()
+    const metadata = await getMetadata()
+    await new NodeController(metadata).show()
   })
 
 program.
@@ -116,14 +107,6 @@ function getDeploys(name) {
     deploys = deploys.filter(d => d.name === name)
   }
   return {
-    common: {
-      ...tcbConfig.common,
-      server: {
-        username: 'root',
-        port: 22,
-        ...tcbConfig.common.server
-      }
-    },
     deploys
   }
 }
