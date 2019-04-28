@@ -6,7 +6,8 @@
     "moduleResolution": "node",
     "outDir": "lib",
     "types": [
-      "node"
+      "node",
+      "jest"
     ]
   },
   "include": [
