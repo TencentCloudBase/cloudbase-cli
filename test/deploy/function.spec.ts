@@ -1,5 +1,5 @@
 import FunctionDeploy from '../../src/deploy/function'
-import { iFunctionDeployConfig } from '../config'
+import { iFunctionDeployConfig } from './../utils'
 
 describe('class FunctionDeploy', () => {
     

@@ -1,5 +1,5 @@
 import NodeDeploy from '../../src/deploy/node'
-import { iNodeDeployConfig } from '../config'
+import { iNodeDeployConfig } from '../utils'
 
 describe('class NodeDeploy', () => {
     let deployer: NodeDeploy | null = null

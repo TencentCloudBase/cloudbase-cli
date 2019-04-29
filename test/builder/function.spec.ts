@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import FunctionBuilder from './../../src/builder/function'
-import { iFunctionDeployConfig as config} from './../config'
+import { iFunctionDeployConfig as config} from './../utils'
 
 describe('class FunctionBuilder', () => {
     let builder: FunctionBuilder | null = null

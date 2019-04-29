@@ -1,7 +1,7 @@
 import {
     iFunctionDeployConfig,
     iNodeDeployConfig
-} from './../config'
+} from './../utils'
 import NodeUploader from './../../src/uploader/function'
 import FunctionBuilder from './../../src/builder/function'
 

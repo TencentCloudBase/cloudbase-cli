@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import NodeZipBuilder from './../../src/builder/node-zip'
-import { iNodeDeployConfig as config} from './../config'
+import { iNodeDeployConfig as config} from './../utils'
 
 describe('class NodeZipBuilder', () => {
     let builder: NodeZipBuilder | null = null

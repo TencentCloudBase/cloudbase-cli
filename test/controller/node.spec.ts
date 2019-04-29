@@ -1,5 +1,5 @@
 import NodeController from '../../src/controller/node'
-import { iNodeDeployConfig } from '../config'
+import { iNodeDeployConfig } from '../utils'
 
 describe('class NodeController', () => {
     let controller: NodeController | null = null
