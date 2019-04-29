@@ -6,5 +6,8 @@ module.exports = {
     '^.+\\.tsx?$': 'ts-jest'
   },
   collectCoverage: true,
-  testEnvironment: 'node'
+  testEnvironment: 'node',
+  setupFilesAfterEnv: [
+    '<rootDir>/jest.setup.js'
+  ]
 };
