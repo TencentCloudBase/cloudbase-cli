@@ -1,9 +1,22 @@
 import { INodeDeployConfig } from './../src/deploy/node'
 import { IFunctionDeployConfig } from './../src/deploy/function'
 
-const secretId: string = 'secretId'
-const secretKey: string = 'secretKey'
+const host: string = 'your host'
+const username: string = 'your username'
+const password: string = 'your password'
+const port: number = 22
+const secretId: string = 'your secretId'
+const secretKey: string = 'your secretKey'
 const characters: string[] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+
+interface INodeUploaderOptions {
+    host: string
+    username: string
+    port: number
+    password: string
+    distPath: string
+    remotePath: string
+}
 
 function randomStr(bits: number = 32): string {
     const length: number = characters.length
@@ -17,16 +30,16 @@ function randomStr(bits: number = 32): string {
 }
 
 export const iNodeDeployConfig: INodeDeployConfig = {
-    host: 'host',
-    username: 'username',
-    port: 3000,
-    password: 'password',
+    host,
+    username,
+    port,
+    password,
     secretId,
     secretKey,
     name: 'name',
     path: 'test',
     distPath: `${randomStr()}jest-dist`,
-    remotePath: 'string'
+    remotePath: `/tmp/${randomStr()}jest-dist`
 }
 
 export const iFunctionDeployConfig: IFunctionDeployConfig = {
@@ -37,4 +50,13 @@ export const iFunctionDeployConfig: IFunctionDeployConfig = {
     envId: 'envId',
     distPath: `${randomStr()}jest-dist`,
     override: true
+}
+
+export const iNodeUploaderOptions: INodeUploaderOptions = {
+    host,
+    username,
+    password,
+    port,
+    distPath: `${randomStr()}jest-dist`,
+    remotePath: `/tmp/${randomStr()}jest-dist`
 }
