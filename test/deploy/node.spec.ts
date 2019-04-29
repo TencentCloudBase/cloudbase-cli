@@ -1,3 +1,5 @@
+import * as fs from 'fs'
+import * as path from 'path'
 import NodeDeploy from '../../src/deploy/node'
 import { iNodeDeployConfig } from '../utils'
 
@@ -25,8 +27,9 @@ describe('class NodeDeploy', () => {
     })
 
     test('#clear', () => {
-        const result = deployer.clear()
-        expect(result).toBeUndefined()
+        const distPath = path.resolve(process.cwd(), iNodeDeployConfig.distPath)
+        deployer.clear()
+        expect(fs.existsSync(distPath)).toBeFalsy()
     })
 
 })
