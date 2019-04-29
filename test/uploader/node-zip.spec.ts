@@ -4,13 +4,13 @@ import * as node_ssh from 'node-ssh'
 import * as makeDir from 'make-dir'
 import { zipDir } from './../../src/utils'
 import NodeUploader from './../../src/uploader/node-zip'
-import { iNodeDeployConfig as config } from './../config'
+import { iNodeDeployConfig as config } from './../utils'
 
 describe('class NodeZipUploader', () => {
     beforeAll(async () => {
         const entry = path.resolve(process.cwd(), 'test')
         const distPath = path.resolve(process.cwd(), config.distPath)
-        const zipPath = path.resolve(distPath, '/dist.zip')
+        const zipPath = path.resolve(distPath, 'dist.zip')
         await makeDir(distPath)
         await zipDir(entry, zipPath)
     })
