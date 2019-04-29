@@ -22,7 +22,7 @@ export default class NodeDeploy extends Deploy {
     }
 
     clear() {
-        const distPath = path.resolve(__dirname, this._config.distPath)
+        const distPath = path.resolve(process.cwd(), this._config.distPath)
         del.sync([distPath])
     }
 
