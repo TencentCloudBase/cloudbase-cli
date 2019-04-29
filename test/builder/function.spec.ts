@@ -1,20 +1,10 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import FunctionBuilder from './../../src/builder/function'
-import { IFunctionDeployConfig } from './../../src/deploy/function'
-import { randomStr } from './../../src/utils'
+import { iFunctionDeployConfig as config} from './../config'
 
 describe('class FunctionBuilder', () => {
     let builder: FunctionBuilder | null = null
-    const config: IFunctionDeployConfig = {
-        secretId: 'secretId',
-        secretKey: 'secretKey',
-        name: 'test',
-        path: './test',
-        envId: 'envId',
-        distPath: `${randomStr()}jest-dist`,
-        override: true
-    }
 
     beforeAll(() => new Promise(resolve => {
         builder = new FunctionBuilder(config)

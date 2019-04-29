@@ -1,26 +1,13 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import NodeZipBuilder from './../../src/builder/node-zip'
-import { INodeDeployConfig } from './../../src/deploy/node'
-import { randomStr } from './../../src/utils'
+import { iNodeDeployConfig as config} from './../config'
 
 describe('class NodeZipBuilder', () => {
     let builder: NodeZipBuilder | null = null
-    const options: INodeDeployConfig = {
-        host: 'host',
-        username: 'username',
-        port: 3000,
-        password: 'password',
-        secretId: 'secretId',
-        secretKey: 'secretKey',
-        name: 'name',
-        path: 'test',
-        distPath: `${randomStr()}jest-dist`,
-        remotePath: 'string'
-    }
 
     beforeAll(() => new Promise(resolve => {
-        builder = new NodeZipBuilder(options)
+        builder = new NodeZipBuilder(config)
         resolve()
     }))
 
@@ -37,7 +24,7 @@ describe('class NodeZipBuilder', () => {
         expect.assertions(1)
 
         await builder.clean()
-        const zipPath = path.resolve(process.cwd(), options.distPath, 'dist.zip')
+        const zipPath = path.resolve(process.cwd(), config.distPath, 'dist.zip')
         expect(fs.existsSync(zipPath)).toBeFalsy()
     })
 
