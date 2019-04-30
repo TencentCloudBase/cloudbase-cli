@@ -43,7 +43,7 @@ export async function login() {
         await callCloudApi(secretId, secretKey)
         cloudSpinner.succeed('腾讯云密钥验证成功')
     } catch (e) {
-        cloudSpinner.fail('腾讯云密钥验证失败')
+        cloudSpinner.fail('腾讯云密钥验证失败，请检查密钥是否正确或本机网络代理有问题')
         return
     }
 
@@ -60,7 +60,7 @@ export async function login() {
         await ssh.dispose()
         sshSpinner.succeed('腾讯云主机登录验证成功')
     } catch (error) {
-        sshSpinner.fail('腾讯云主机登录验证失败')
+        sshSpinner.fail('腾讯云主机登录验证失败，请检查密钥是否正确或本机网络代理有问题')
         return
     }
 
