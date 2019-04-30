@@ -6,6 +6,7 @@ import * as ini from 'ini'
 import * as path from 'path'
 import * as os from 'os'
 import * as node_ssh from 'node-ssh'
+import * as ora from 'ora'
 
 export async function zipDir(dirPath, outputPath) {
     console.log(dirPath, outputPath)
@@ -37,13 +38,13 @@ const TCBRC = path.resolve(os.homedir(), '.tcbrc.json')
 export async function login() {
     const secretId = await askForInput('请输入腾讯云SecretID：')
     const secretKey = await askForInput('请输入腾讯云SecretKey：')
+    const cloudSpinner = ora('正在验证腾讯云密钥...').start()
     try {
         await callCloudApi(secretId, secretKey)
+        cloudSpinner.succeed('腾讯云密钥验证成功')
     } catch (e) {
-        if (e.code.indexOf('AuthFailure') !== -1) {
-            throw new Error('登录失败，请检查密钥是否正确')
-        }
-        throw new Error(`登录失败：${e.code}`)
+        cloudSpinner.fail('腾讯云密钥验证失败')
+        return
     }
 
     const sshInfo = {
@@ -52,10 +53,16 @@ export async function login() {
         username: await askForInput('请输入用户名：(root)') || 'root',
         port: await askForInput('请输入ssh端口号：(22)') || 22
     }
-    const ssh = new node_ssh()
-    await ssh.connect(sshInfo)
-    await ssh.dispose()
-
+    const sshSpinner = ora('正在进行腾讯云主机登录验证...').start()
+    try {
+        const ssh = new node_ssh()
+        await ssh.connect(sshInfo)
+        await ssh.dispose()
+        sshSpinner.succeed('腾讯云主机登录验证成功')
+    } catch (error) {
+        sshSpinner.fail('腾讯云主机登录验证失败')
+        return
+    }
 
     fs.writeFileSync(TCBRC, ini.stringify({ secretId, secretKey, ...sshInfo }))
     return { secretId, secretKey, ...sshInfo }
