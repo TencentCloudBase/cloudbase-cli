@@ -4,7 +4,8 @@
   "description": "",
   "main": "lib/index.js",
   "scripts": {
-    "test": "jest --passWithNoTests --detectOpenHandles --coverageReporters=text-lcov | coveralls"
+    "test": "jest --passWithNoTests --detectOpenHandles",
+    "test:coveralls": "jest --passWithNoTests --detectOpenHandles --coverageReporters=text-lcov | coveralls"
   },
   "bin": {
     "tcb": "./bin/tcb"
