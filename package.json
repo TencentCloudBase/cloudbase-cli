@@ -4,7 +4,7 @@
   "description": "",
   "main": "lib/index.js",
   "scripts": {
-    "test": "jest --passWithNoTests --detectOpenHandles"
+    "test": "jest --passWithNoTests --detectOpenHandles --coverageReporters=text-lcov | coveralls"
   },
   "bin": {
     "tcb": "./bin/tcb"
@@ -26,6 +26,7 @@
   "devDependencies": {
     "@types/jest": "^24.0.11",
     "@types/node": "^10.14.1",
+    "coveralls": "^3.0.3",
     "jest": "^24.7.1",
     "ts-jest": "^24.0.2",
     "typescript": "^3.4.5"
