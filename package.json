@@ -25,6 +25,7 @@
     "tencentcloud-sdk-nodejs": "^3.0.54"
   },
   "devDependencies": {
-    "@types/node": "^10.14.1"
+    "@types/node": "^10.14.1",
+    "inquirer": "^6.3.1"
   }
 }
