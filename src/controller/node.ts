@@ -46,7 +46,7 @@ export default class NodeController {
             })
             console.log(stdout || stderr)
         } else {
-            const entryPath = path.resolve(remotePath, 'index.js')
+            const entryPath = path.posix.resolve(remotePath, 'index.js')
             logger.log(`start ${entryPath}`)
             const { stdout, stderr } = await this.ssh.execCommand(secret + `pm2 start ${entryPath} ${PM2_OPTIONS} --name ${name}`, {
                 cwd: remotePath
