@@ -46,7 +46,7 @@ export default class NodeUploader {
             Region: 'ap-shanghai',
             FunctionName: name,
             Code: {
-                ZipFile: '@' + base64
+                ZipFile: base64
             },
             Handler: 'index.main',
             MemorySize: 256,
