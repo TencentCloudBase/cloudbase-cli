@@ -3423,8 +3423,6 @@ class CreateFunctionRequest extends AbstractModel {
     this.UseGpu = "UseGpu" in params ? params.UseGpu : null;
     this.Stamp = "Stamp" in params ? params.Stamp : null;
     this.Role = "Role" in params ? params.Role : null;
-
-    console.log(this.Runtime);
     // 因为node sdk 默认是支持填intallDependency字段，php传该字段会报错， 这里加判断
     if (this.Runtime === "Nodejs8.9") {
       this.InstallDependency =

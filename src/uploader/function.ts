@@ -18,7 +18,10 @@ export default class NodeUploader {
     const { Credential, HttpProfile } = tcloud.common;
 
     const cred = new Credential(secretId, secretKey);
-    const client = new ScfClient(cred, "ap-shanghai", new HttpProfile());
+    const client = new ScfClient(cred, "ap-shanghai", {
+      signMethod: "TC3-HMAC-SHA256",
+      httpProfile: new HttpProfile()
+    });
     const req = new models[`${interfaceName}Request`]();
 
     req.deserialize(params);
@@ -35,7 +38,19 @@ export default class NodeUploader {
   }
 
   async upload() {
-    const { distPath, name, envId, override } = this._options;
+    const { distPath, name, envId, override, runTime } = this._options;
+    const runTimeList = ["Nodejs8.9", "Php7"];
+    if (runTimeList.indexOf(runTime) < 0) {
+      throw Error("runtime is invalid, please use Nodejs8.9 or Php7");
+    }
+
+    let Handler;
+    if (runTime === "Nodejs8.9") {
+      Handler = "index.main";
+    }
+    if (runTime === "Php7") {
+      Handler = "index.main_handler";
+    }
 
     const base64 = fs.readFileSync(distPath + "/dist.zip").toString("base64");
 
@@ -47,12 +62,12 @@ export default class NodeUploader {
       Code: {
         ZipFile: base64
       },
-      Handler: "index.main",
+      Handler,
       MemorySize: 256,
       Namespace: envId,
       Role: "TCB_QcsRole",
-      Runtime: "Nodejs8.9",
-      InstallDependency: true,
+      Runtime: runTime,
+      // InstallDependency: true,
       Stamp: "MINI_QCBASE"
     };
 

@@ -44,4 +44,5 @@ export interface IFunctionDeployConfig {
     envId: string
     distPath?: string
     override?: boolean
+    runTime?: string
 }
