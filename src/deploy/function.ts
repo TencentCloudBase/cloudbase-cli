@@ -2,13 +2,14 @@ import FunctionBuilder from '../builder/function'
 import FunctionUploader from '../uploader/function';
 import Deploy from './base'
 import Logger from '../logger'
+import * as path from 'path'
 
 const logger = new Logger('FunctionDeploy')
 export default class FunctionDeploy extends Deploy {
     _config: IFunctionDeployConfig
     constructor(config: IFunctionDeployConfig) {
         if (!config.distPath) {
-            config.distPath = './dist'
+            config.distPath = path.resolve(process.cwd(), 'dist')
         }
         super(config)
         this.builder = new FunctionBuilder(config)

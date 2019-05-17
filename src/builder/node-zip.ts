@@ -24,7 +24,7 @@ export default class NodeZipBuilder {
         const distPath = path.resolve(process.cwd(), this._options.distPath)
         await makeDir(distPath)
 
-        const zipPath = distPath + '/dist.zip'
+        const zipPath = path.resolve(distPath, 'dist.zip')
         logger.log(`Building ${entry} to ${zipPath}`)
 
         await zipDir(entry, zipPath)

@@ -38,7 +38,7 @@ export default class NodeUploader {
 
         const { distPath, name, envId, override } = this._options
 
-        const base64 = fs.readFileSync(distPath + '/dist.zip').toString('base64')
+        const base64 = fs.readFileSync(path.resolve(distPath, 'dist.zip')).toString('base64')
 
         const req = {
             Action: 'CreateFunction',
