@@ -60,6 +60,9 @@ export default class NodeController {
     async installDependencies() {
         const { remotePath } = this._options
         logger.log('Installing dependencies...')
+        await this.ssh.execCommand('rm -rf node_modules', {
+            cwd: remotePath
+        })
         const installResult = await this.ssh.execCommand('npm install --production', {
             cwd: remotePath
         })
