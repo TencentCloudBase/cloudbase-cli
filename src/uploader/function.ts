@@ -76,7 +76,7 @@ export default class NodeUploader {
     try {
       return await this.requestCloudApi("CreateFunction", req);
     } catch (e) {
-      if (e.code === "ResourceInUse.FunctionName" && override) {
+      if (e.code === "ResourceInUse.Function" && override) {
         return await this.requestCloudApi("UpdateFunctionCode", req);
       } else {
         throw e;
