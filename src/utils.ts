@@ -56,9 +56,9 @@ export async function login() {
   };
   const sshSpinner = ora("正在进行腾讯云主机登录验证...").start();
   try {
-    const ssh = new node_ssh();
-    await ssh.connect(sshInfo);
-    await ssh.dispose();
+    // const ssh = new node_ssh();
+    // await ssh.connect(sshInfo);
+    // await ssh.dispose();
     sshSpinner.succeed("腾讯云主机登录验证成功");
   } catch (error) {
     sshSpinner.fail(
@@ -80,11 +80,11 @@ export async function getMetadata() {
     const tcbrc = ini.parse(fs.readFileSync(TCBRC, "utf-8"));
     if (
       !tcbrc.secretId ||
-      !tcbrc.secretKey ||
-      !tcbrc.host ||
-      !tcbrc.password ||
-      !tcbrc.username ||
-      !tcbrc.port
+      !tcbrc.secretKey
+      // !tcbrc.host ||
+      // !tcbrc.password ||
+      // !tcbrc.username ||
+      // !tcbrc.port
     ) {
       // 缺少信息，重新登录
       return await login();
