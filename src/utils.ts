@@ -49,23 +49,23 @@ export async function login() {
   }
 
   const sshInfo = {
-    host: await askForInput("请输入主机IP："),
-    password: await askForInput("请输入主机密码："),
-    username: (await askForInput("请输入用户名：(root)")) || "root",
-    port: (await askForInput("请输入ssh端口号：(22)")) || 22
+    // host: await askForInput("请输入主机IP："),
+    // password: await askForInput("请输入主机密码："),
+    // username: (await askForInput("请输入用户名：(root)")) || "root",
+    // port: (await askForInput("请输入ssh端口号：(22)")) || 22
   };
-  const sshSpinner = ora("正在进行腾讯云主机登录验证...").start();
-  try {
-    // const ssh = new node_ssh();
-    // await ssh.connect(sshInfo);
-    // await ssh.dispose();
-    sshSpinner.succeed("腾讯云主机登录验证成功");
-  } catch (error) {
-    sshSpinner.fail(
-      "腾讯云主机登录验证失败，请检查密钥是否正确或本机网络代理有问题"
-    );
-    return;
-  }
+  // const sshSpinner = ora("正在进行腾讯云主机登录验证...").start();
+  // try {
+  //   // const ssh = new node_ssh();
+  //   // await ssh.connect(sshInfo);
+  //   // await ssh.dispose();
+  //   sshSpinner.succeed("腾讯云主机登录验证成功");
+  // } catch (error) {
+  //   sshSpinner.fail(
+  //     "腾讯云主机登录验证失败，请检查密钥是否正确或本机网络代理有问题"
+  //   );
+  //   return;
+  // }
 
   fs.writeFileSync(TCBRC, ini.stringify({ secretId, secretKey, ...sshInfo }));
   return { secretId, secretKey, ...sshInfo };
