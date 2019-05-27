@@ -77,7 +77,10 @@ export default class NodeUploader {
       return await this.requestCloudApi("CreateFunction", req);
     } catch (e) {
       if (e.code === "ResourceInUse.Function" && override) {
-        return await this.requestCloudApi("UpdateFunctionCode", req);
+        delete req["Code"];
+        req["ZipFile"] = base64;
+        let testRes = await this.requestCloudApi("UpdateFunctionCode", req);
+        return testRes;
       } else {
         throw e;
       }
