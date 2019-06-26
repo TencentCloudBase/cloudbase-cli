@@ -1,7 +1,7 @@
 import * as path from 'path'
 import * as fs from 'fs'
 import Logger from '../logger'
-import { IFunctionDeployConfig } from "../deploy/function";
+import { IFunctionDeployConfig } from '../deploy/function'
 import * as tcloud from '../../deps/tencentcloud-sdk-nodejs'
 
 const logger = new Logger('FunctionUploader')
@@ -18,7 +18,7 @@ export default class NodeUploader {
         const { Credential } = tcloud.common
 
         const cred = new Credential(secretId, secretKey)
-        const client = new ScfClient(cred, "ap-shanghai")
+        const client = new ScfClient(cred, 'ap-shanghai')
         const req = new models[`${interfaceName}Request`]()
 
         req.deserialize(params)
@@ -35,10 +35,11 @@ export default class NodeUploader {
     }
 
     async upload() {
-
         const { distPath, name, envId, override } = this._options
 
-        const base64 = fs.readFileSync(path.resolve(distPath, 'dist.zip')).toString('base64')
+        const base64 = fs
+            .readFileSync(path.resolve(distPath, 'dist.zip'))
+            .toString('base64')
 
         const req = {
             Action: 'CreateFunction',
@@ -61,7 +62,7 @@ export default class NodeUploader {
 
         try {
             return await this.requestCloudApi('CreateFunction', req)
-        } catch(e) {
+        } catch (e) {
             if (e.code === 'ResourceInUse.Function' && override) {
                 return await this.requestCloudApi('UpdateFunctionCode', req)
             } else {

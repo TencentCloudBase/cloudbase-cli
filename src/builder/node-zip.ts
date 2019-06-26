@@ -4,7 +4,7 @@ import * as makeDir from 'make-dir'
 import Logger from '../logger'
 import { zipDir } from '../utils'
 import { INodeDeployConfig } from '../deploy/node'
-import * as del from 'del';
+import * as del from 'del'
 import * as fs from 'fs'
 
 const logger = new Logger('NodeZipBuilder')
@@ -38,7 +38,7 @@ export default class NodeZipBuilder {
         }
     }
 
-    async clean(){
+    async clean() {
         const distPath = path.resolve(process.cwd(), this._options.distPath)
         del.sync([distPath])
     }

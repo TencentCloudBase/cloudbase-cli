@@ -1,5 +1,5 @@
 import FunctionBuilder from '../builder/function'
-import FunctionUploader from '../uploader/function';
+import FunctionUploader from '../uploader/function'
 import Deploy from './base'
 import Logger from '../logger'
 import * as path from 'path'
