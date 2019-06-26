@@ -3,8 +3,8 @@ import { IBuildResult } from './base'
 import * as makeDir from 'make-dir'
 import Logger from '../logger'
 import { zipDir } from '../utils'
-import { IFunctionDeployConfig } from '../deploy/function';
-import * as del from 'del';
+import { IFunctionDeployConfig } from '../deploy/function'
+import * as del from 'del'
 
 const logger = new Logger('FunctionBuilder')
 
@@ -39,6 +39,6 @@ export default class FunctionBuilder {
     async clean(): Promise<any> {
         const distPath = path.resolve(process.cwd(), this._options.distPath)
         del.sync([distPath])
-        return;
+        return
     }
 }

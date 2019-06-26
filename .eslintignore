@@ -1,0 +1,6 @@
+server_node_modules/
+deps/
+addons/
+lib/
+types/
+node_modules

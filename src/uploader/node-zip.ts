@@ -1,4 +1,4 @@
-import * as node_ssh from 'node-ssh'
+import * as NodeSSH from 'node-ssh'
 import * as path from 'path'
 import Logger from '../logger'
 import { INodeDeployConfig } from '../deploy/node'
@@ -9,7 +9,7 @@ export default class NodeUploader {
     ssh: any
     _options: INodeDeployConfig
     constructor(options: INodeDeployConfig) {
-        this.ssh = new node_ssh()
+        this.ssh = new NodeSSH()
         this._options = options
     }
 

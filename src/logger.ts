@@ -1,4 +1,3 @@
-
 import chalk from 'chalk'
 export default class Logger {
     private moduleName: string

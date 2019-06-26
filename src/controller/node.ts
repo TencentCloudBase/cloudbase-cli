@@ -1,6 +1,6 @@
-import * as node_ssh from 'node-ssh'
+import * as NodeSSH from 'node-ssh'
 import * as path from 'path'
-import Logger from '../logger';
+import Logger from '../logger'
 import { INodeDeployConfig } from '../deploy/node'
 import { getMetadata } from '../utils'
 import chalk from 'chalk'
@@ -19,7 +19,7 @@ export default class NodeController {
             remotePath: `/data/tcb-service/${config.name}`,
             ...config
         }
-        this.ssh = new node_ssh()
+        this.ssh = new NodeSSH()
         this._options = config
     }
 
@@ -40,7 +40,7 @@ export default class NodeController {
         await this.ssh.execCommand('pm2 delete all')
 
         if (vemo) {
-            logger.log(`start vemo`)
+            logger.log('start vemo')
             const { stdout, stderr } = await this.ssh.execCommand(secret + `pm2 start $(${GET_VEMO_ENTRY}) ${PM2_OPTIONS} --name ${name}`, {
                 cwd: remotePath
             })
@@ -99,7 +99,7 @@ export default class NodeController {
 
     async show() {
         await this.connect()
-        const { stdout, stderr } = await this.ssh.execCommand(`pm2 list`)
+        const { stdout, stderr } = await this.ssh.execCommand('pm2 list')
         console.log(stdout || stderr)
         this.ssh.dispose()
     }
