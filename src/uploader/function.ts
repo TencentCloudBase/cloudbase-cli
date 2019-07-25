@@ -6,18 +6,18 @@ import * as tcloud from '../../deps/tencentcloud-sdk-nodejs'
 
 const logger = new Logger('FunctionUploader')
 
-export default class NodeUploader {
+export default class FunctionUploader {
     _options: IFunctionDeployConfig
     constructor(options: IFunctionDeployConfig) {
         this._options = options
     }
 
     async requestCloudApi(interfaceName, params) {
-        const { secretId, secretKey } = this._options
+        const { secretId, secretKey, token } = this._options
         const { Client: ScfClient, Models: models } = tcloud.scf.v20180416
         const { Credential } = tcloud.common
 
-        const cred = new Credential(secretId, secretKey)
+        const cred = new Credential(secretId, secretKey, token)
         const client = new ScfClient(cred, 'ap-shanghai')
         const req = new models[`${interfaceName}Request`]()
 

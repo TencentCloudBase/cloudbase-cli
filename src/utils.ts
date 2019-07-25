@@ -3,12 +3,11 @@ import * as fs from 'fs'
 import * as readline from 'readline'
 import * as tencentcloud from 'tencentcloud-sdk-nodejs'
 import * as ini from 'ini'
-import * as path from 'path'
-import * as os from 'os'
-import * as NodeSSH from 'node-ssh'
-import * as ora from 'ora'
+import Logger from './logger'
+import { TCBRC } from './constant'
+import { refreshTmpToken } from './auth'
 
-const TCBRC = path.resolve(os.homedir(), '.tcbrc.json')
+const logger = new Logger('Auth')
 
 export async function zipDir(dirPath, outputPath) {
     console.log(dirPath, outputPath)
@@ -67,64 +66,46 @@ export function callCloudApi(secretId, secretKey) {
     })
 }
 
-export async function login() {
-    const secretId = await askForInput('请输入腾讯云SecretID：')
-    const secretKey = await askForInput('请输入腾讯云SecretKey：')
-    const cloudSpinner = ora('正在验证腾讯云密钥...').start()
-    try {
-        await callCloudApi(secretId, secretKey)
-        cloudSpinner.succeed('腾讯云密钥验证成功')
-    } catch (e) {
-        cloudSpinner.fail(
-            '腾讯云密钥验证失败，请检查密钥是否正确或本机网络代理有问题'
-        )
-        return
-    }
-
-    const sshInfo = {
-        host: await askForInput('请输入主机IP：'),
-        password: await askForInput('请输入主机密码：'),
-        username: (await askForInput('请输入用户名：(root)')) || 'root',
-        port: (await askForInput('请输入ssh端口号：(22)')) || 22
-    }
-    const sshSpinner = ora('正在进行腾讯云主机登录验证...').start()
-    try {
-        const ssh = new NodeSSH()
-        await ssh.connect(sshInfo)
-        await ssh.dispose()
-        sshSpinner.succeed('腾讯云主机登录验证成功')
-    } catch (error) {
-        sshSpinner.fail(
-            '腾讯云主机登录验证失败，请检查密钥是否正确或本机网络代理有问题'
-        )
-        return
-    }
-
-    fs.writeFileSync(TCBRC, ini.stringify({ secretId, secretKey, ...sshInfo }))
-    return { secretId, secretKey, ...sshInfo }
-}
-
-export async function logout() {
-    await fs.unlinkSync(TCBRC)
-}
-
+// 获取身份认证信息并校验、自动刷新
 export async function getMetadata() {
-    if (fs.existsSync(TCBRC)) {
-        const tcbrc = ini.parse(fs.readFileSync(TCBRC, 'utf-8'))
-        if (
-            !tcbrc.secretId ||
-            !tcbrc.secretKey ||
-            !tcbrc.host ||
-            !tcbrc.password ||
-            !tcbrc.username ||
-            !tcbrc.port
-        ) {
-            // 缺少信息，重新登录
-            return await login()
-        }
-        return tcbrc
-    } else {
-        // 没有登录过
-        return await login()
+    const isTcbrcExit = fs.existsSync(TCBRC)
+    // 没有登录信息
+    if (!isTcbrcExit) {
+        logger.error('您还没有登录，请使用 tcb login 登录')
+        return {}
     }
+
+    const tcbrc = ini.parse(fs.readFileSync(TCBRC, 'utf-8'))
+
+    // 存在永久密钥
+    if (tcbrc.secretId && tcbrc.secretKey) {
+        return tcbrc
+    }
+
+    // 存在临时密钥信息
+    if (tcbrc.refreshToken) {
+        // 临时密钥在 2 小时有效期内，可以直接使用
+        if (Date.now() < tcbrc.tmpExpired) {
+            const { tmpSecretId, tmpSecretKey, tmpToken } = tcbrc
+            return {
+                secretId: tmpSecretId,
+                secretKey: tmpSecretKey,
+                token: tmpToken
+            }
+        } else if (Date.now() < tcbrc.expired) {
+            // 临时密钥超过两小时有效期，但在 1 个月 refresh 有效期内，刷新临时密钥
+            const credential = await refreshTmpToken(tcbrc)
+            fs.writeFileSync(TCBRC, ini.stringify(credential))
+            const { tmpSecretId, tmpSecretKey, tmpToken } = credential
+            return {
+                secretId: tmpSecretId,
+                secretKey: tmpSecretKey,
+                token: tmpToken
+            }
+        }
+    }
+
+    // 无有效身份信息，提示登录
+    logger.error('无有效身份信息，请使用 tcb login 登录')
+    return {}
 }

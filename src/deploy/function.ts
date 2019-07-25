@@ -37,6 +37,7 @@ export interface IFunctionDeployConfig {
     //metadata
     secretId: string
     secretKey: string
+    token: string
 
     // config
     name: string
