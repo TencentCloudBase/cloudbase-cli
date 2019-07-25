@@ -129,6 +129,9 @@ export async function login() {
 }
 
 export async function logout() {
-    await fs.unlinkSync(TCBRC)
+    const exist = fs.existsSync(TCBRC)
+    if (exist) {
+        await fs.unlinkSync(TCBRC)
+    }
     logger.success('注销登录成功！')
 }

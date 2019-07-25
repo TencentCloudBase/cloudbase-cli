@@ -4,16 +4,16 @@ import { login, authLogin, logout } from './login'
 export function commandRegister() {
     program
         .command('login')
-        .option('-a, --auth', '通过腾讯云控制台授权登录')
+        .option('-k, --key', '使用永久密钥登录（不建议！）')
         .description('登录腾讯云账号')
         .action(async function(options) {
             // 兼容临时密钥和永久密钥登录
-            if (options.auth) {
-                // 使用临时密钥登录-支持自动续期
-                await authLogin()
-            } else {
+            if (options.key) {
                 // 使用永久密钥登录
                 await login()
+            } else {
+                // 使用临时密钥登录-支持自动续期
+                await authLogin()
             }
         })
     program
