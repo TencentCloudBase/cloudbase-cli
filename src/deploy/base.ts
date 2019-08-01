@@ -1,4 +1,3 @@
-import { IBuildResult } from '../builder/base'
 import FunctionBuilder from '../builder/function'
 import NodeZipBuilder from '../builder/node-zip'
 import { INodeDeployConfig } from './node'

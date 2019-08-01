@@ -1,16 +1,16 @@
-import * as fs from 'fs'
-import * as ini from 'ini'
-import * as tencentcloud from 'tencentcloud-sdk-nodejs'
+import * as tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
 import * as ora from 'ora'
-import Logger from './logger'
-import { auth, getAuthData, refreshTmpToken, Credential } from './auth'
-import { askForInput } from './utils'
-import { TCBRC } from './constant'
+import Logger from '../logger'
+import { getAuthTokenFromWeb, refreshTmpToken } from './auth'
+import { askForInput, getCredential } from '../utils'
+import { ConfigItems } from '../constant'
+import { configStore } from '../utils/configstore'
+import { Credential } from '../types'
 
-const logger = new Logger('Auth')
+const logger = new Logger('Login')
 
 // 调用 SCF 接口，检查密钥是否有效
-async function scfCheck(credential) {
+async function checkAuth(credential: Credential) {
     const { tmpSecretId, tmpSecretKey, tmpToken } = credential
     const ScfClient = tencentcloud.scf.v20180416.Client
     const models = tencentcloud.scf.v20180416.Models
@@ -30,20 +30,26 @@ async function scfCheck(credential) {
     })
 }
 
+function getAuthData(): Credential {
+    const tcbrc = configStore.get(ConfigItems.credentail)
+    return tcbrc as Credential
+}
+
 // 打开腾讯云 TCB 控制台，通过获取临时密钥登录，临时密钥可续期，最长时间为 1 个月
 export async function authLogin() {
     const tcbrc: Credential = getAuthData()
     // 已有永久密钥
     if (tcbrc.secretId && tcbrc.secretKey) {
-        logger.log('您已通过 secretKey 登录，无需再次登录！')
+        logger.log('您已登录，无需再次登录！')
         return
     }
+    // 如果存在临时密钥，校验临时密钥是否有效，是否需要续期
     const tmpExpired = Number(tcbrc.tmpExpired) || 0
     let refreshExpired = Number(tcbrc.expired) || 0
     const now = Date.now()
 
     if (now < tmpExpired) {
-        logger.log('您已经登录且身份有效，无需再次登录！')
+        logger.log('您已经登录，无需再次登录！')
         return
     }
 
@@ -57,7 +63,8 @@ export async function authLogin() {
             credential = await refreshTmpToken(tcbrc)
         } else {
             authSpinner.start()
-            credential = await auth()
+            // 通过腾讯云-云开发控制台获取授权
+            credential = await getAuthTokenFromWeb()
         }
         authSpinner.succeed('获取授权成功')
     } catch (error) {
@@ -74,7 +81,7 @@ export async function authLogin() {
     const scfCheckSpinner = ora('验证密匙权限').start()
 
     try {
-        await scfCheck(credential)
+        await checkAuth(credential)
         scfCheckSpinner.succeed('密钥权限验证成功')
     } catch (e) {
         scfCheckSpinner.fail(
@@ -83,27 +90,33 @@ export async function authLogin() {
         return
     }
 
-    fs.writeFileSync(TCBRC, ini.stringify(credential))
+    configStore.set(ConfigItems.credentail, credential)
 
     logger.success('登录成功！')
 }
 
 // 使用永久密钥登录
 export async function login() {
-    const tcbrc: Credential = getAuthData()
+    const tcbrc: Credential = await getCredential()
     // 已有永久密钥
     if (tcbrc.secretId && tcbrc.secretKey) {
         logger.log('您已通过 secretKey 登录，无需再次登录！')
         return
     }
+
     // 存在临时密钥，通过临时密钥登录
     if (tcbrc.refreshToken && tcbrc.uin) {
         logger.log('检查到您已获取腾讯云授权，正在尝试通过授权登录')
         authLogin()
         return
     }
-    const secretId = await askForInput('请输入腾讯云 SecretID：')
-    const secretKey = await askForInput('请输入腾讯云 SecretKey：')
+    const secretId: string = (await askForInput(
+        '请输入腾讯云 SecretID：'
+    )) as string
+    const secretKey: string = (await askForInput(
+        '请输入腾讯云 SecretKey：'
+    )) as string
+
     if (!secretId || !secretKey) {
         logger.error('SecretID 或 SecretKey 不能为空')
         return
@@ -111,7 +124,7 @@ export async function login() {
 
     const cloudSpinner = ora('正在验证腾讯云密钥...').start()
     try {
-        await scfCheck({
+        await checkAuth({
             tmpSecretId: secretId,
             tmpSecretKey: secretKey
         })
@@ -123,15 +136,7 @@ export async function login() {
         return
     }
 
-    fs.writeFileSync(TCBRC, ini.stringify({ secretId, secretKey }))
+    configStore.set(ConfigItems.credentail, { secretId, secretKey })
 
     logger.success('登录成功！')
-}
-
-export async function logout() {
-    const exist = fs.existsSync(TCBRC)
-    if (exist) {
-        await fs.unlinkSync(TCBRC)
-    }
-    logger.success('注销登录成功！')
 }

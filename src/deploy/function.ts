@@ -5,7 +5,7 @@ import Logger from '../logger'
 import * as path from 'path'
 
 const logger = new Logger('FunctionDeploy')
-export default class FunctionDeploy extends Deploy {
+export class FunctionDeploy extends Deploy {
     _config: IFunctionDeployConfig
     constructor(config: IFunctionDeployConfig) {
         if (!config.distPath) {
@@ -16,12 +16,12 @@ export default class FunctionDeploy extends Deploy {
         this.uploader = new FunctionUploader(config)
     }
 
-    async deploy(start = false) {
+    async deploy() {
         await this.builder.clean()
         await this.builder.build()
         try {
             await this.uploader.upload()
-        } catch(e) {
+        } catch (e) {
             if (e.message) {
                 logger.error(e.message)
                 await this.builder.clean()
@@ -29,7 +29,9 @@ export default class FunctionDeploy extends Deploy {
             }
         }
         await this.builder.clean()
-        logger.log(`Depoly serverless function "${this._config.name}" success!`)
+        logger.success(
+            `Depoly serverless function "${this._config.name}" success!`
+        )
     }
 }
 

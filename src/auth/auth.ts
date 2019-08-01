@@ -1,15 +1,13 @@
 import { createServer, IncomingMessage, ServerResponse, Server } from 'http'
 import * as os from 'os'
-import * as fs from 'fs'
-import * as ini from 'ini'
 import * as portfinder from 'portfinder'
 import * as queryString from 'query-string'
 import * as open from 'open'
 import * as ora from 'ora'
 import * as request from 'request'
 import { createHash } from 'crypto'
-import Logger from './logger'
-import { TCBRC } from './constant'
+import Logger from '../logger'
+import { Credential } from '../types'
 
 const logger = new Logger('Auth')
 
@@ -21,20 +19,6 @@ const refreshTokenUrl = 'https://iaas.cloud.tencent.com/tcb_refresh'
 interface ServerRes {
     server: Server
     port: number
-}
-
-export interface Credential {
-    secretId?: string
-    secretKey?: string
-    tmpSecretId: string
-    tmpSecretKey: string
-    tmpToken: string
-    tmpExpired: string
-    expired: string
-    authTime: string
-    refreshToken: string
-    uin: string
-    hash: string
 }
 
 // 获取本地可用端口
@@ -67,20 +51,6 @@ function md5(str: string): string {
     return hash.digest('hex')
 }
 
-export function getAuthData(): Credential {
-    if (fs.existsSync(TCBRC)) {
-        const tcbrc: Credential = ini.parse(fs.readFileSync(TCBRC, 'utf-8'))
-        if (!tcbrc.uin || !tcbrc.refreshToken) {
-            // 缺少信息，重新登录
-            return {} as Credential // eslint-disable-line
-        }
-        return tcbrc
-    } else {
-        // 没有登录过
-        return {} as Credential // eslint-disable-line
-    }
-}
-
 async function createLocalServer(): Promise<ServerRes> {
     return new Promise(async (resolve, reject) => {
         const server = createServer()
@@ -99,7 +69,7 @@ async function createLocalServer(): Promise<ServerRes> {
 }
 
 // 打开云开发控制台，获取授权
-export async function auth(): Promise<Credential | any> {
+export async function getAuthTokenFromWeb(): Promise<Credential> {
     return new Promise(async (resolve, reject) => {
         const authSpinner = ora('正在打开腾讯云获取授权').start()
 
@@ -123,7 +93,9 @@ export async function auth(): Promise<Credential | any> {
                     // CORS
                     res.writeHead(200, {
                         'Access-Control-Allow-Origin': '*',
-                        'Content-Type': 'text/plain'
+                        'Content-Type': 'text/plain',
+                        // 立即关闭 http 连接
+                        'Connection': 'close'
                     })
 
                     res.end('ok')
@@ -133,7 +105,7 @@ export async function auth(): Promise<Credential | any> {
                         server.close()
                     }
 
-                    resolve(query)
+                    resolve(query as Credential)
                 }
             )
         } catch (err) {

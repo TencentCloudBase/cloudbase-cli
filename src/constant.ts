@@ -1,4 +1,5 @@
-import * as os from 'os'
-import * as path from 'path'
 
-export const TCBRC = path.resolve(os.homedir(), '.tcbrc.json')
+// tcb cli 配置的字段名
+export class ConfigItems {
+    static credentail = 'credential'
+}

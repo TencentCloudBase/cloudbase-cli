@@ -1,11 +1,11 @@
 import NodeZipBuilder from '../builder/node-zip'
 import NodeZipUploader from '../uploader/node-zip'
-import NodeController from '../controller/node'
+import { NodeController } from '../controller'
 import Deploy from './base'
 import * as path from 'path'
 import * as del from 'del'
 
-export default class NodeDeploy extends Deploy {
+export class NodeDeploy extends Deploy {
     _config: INodeDeployConfig
     constructor(config: INodeDeployConfig) {
         config = {
