@@ -2,14 +2,13 @@ import * as NodeSSH from 'node-ssh'
 import * as path from 'path'
 import Logger from '../logger'
 import { INodeDeployConfig } from '../deploy/node'
-import { getMetadata } from '../utils'
 import chalk from 'chalk'
 
 const logger = new Logger('NodeController')
 
 const GET_VEMO_ENTRY = 'npm run vemo -- main | tail -n 1'
 const PM2_OPTIONS = '-o out.log -e err.log'
-export default class NodeController {
+export class NodeController {
     ssh: any
     _options: INodeDeployConfig
     constructor(config: INodeDeployConfig) {
