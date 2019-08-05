@@ -1,5 +1,6 @@
 import * as program from 'commander'
 import * as inquirer from 'inquirer'
+import chalk from 'chalk'
 import { TcbError } from '../error'
 import {
     listFunction,
@@ -17,7 +18,8 @@ import {
     batchGetFunctionsDetail,
     batchUpdateFunctionConfig
 } from '../function'
-import { resolveTcbrcConfig, getEnvId } from '../utils'
+import { resolveTcbrcConfig, getEnvId, printCliTable } from '../utils'
+import { successLog } from '../logger'
 
 // 获取函数配置并校验字段有效性
 async function getConfigFunctions() {
@@ -54,7 +56,7 @@ async function getConfigFunctions() {
 
 // 创建云函数
 program
-    .command('function:deploy [name] [envId]')
+    .command('function:deploy [functionName] [envId]')
     .option('--force', '如果存在同名函数，上传后覆盖同名函数')
     .description('创建云函数')
     .action(async function(name: string, envId: string, options) {
@@ -80,12 +82,12 @@ program
         }
 
         if (isBatchCreating) {
-            return batchCreateFunctions(
+            return await batchCreateFunctions({
                 functions,
-                process.cwd(),
-                assignEnvId,
+                root: process.cwd(),
+                envId: assignEnvId,
                 force
-            )
+            })
         }
 
         const newFunction = functions.find(item => item.name === name)
@@ -93,7 +95,12 @@ program
             throw new TcbError(`函数 ${name} 配置不存在`)
         }
 
-        createFunction(newFunction, process.cwd(), assignEnvId, force)
+        createFunction({
+            func: newFunction,
+            root: process.cwd(),
+            envId: assignEnvId,
+            force
+        })
     })
 
 // 展示云函数列表
@@ -115,12 +122,32 @@ program
         }
 
         const assignEnvId = await getEnvId(envId)
-        await listFunction(Number(limit), Number(offset), assignEnvId)
+        const data = await listFunction({
+            limit: Number(limit),
+            offset: Number(offset),
+            envId: assignEnvId
+        })
+
+        const head: string[] = ['Name', 'Runtime', 'AddTime', 'Description']
+        const tableData = data.map(item => {
+            const { FunctionName, Runtime, AddTime, Description } = item
+            return [FunctionName, Runtime, AddTime, Description]
+        })
+
+        printCliTable(head, tableData)
     })
+
+// 调用云函数
+// program
+//     .command('function:invoke [functionName] [envId]')
+//     .description('调用云函数')
+//     .action(async function(name: string, envId: string) {
+
+//     })
 
 // 删除云函数
 program
-    .command('function:delete [name] [envId]')
+    .command('function:delete [functionName] [envId]')
     .description('删除云函数')
     .action(async function(name: string, envId: string) {
         const assignEnvId = await getEnvId(envId)
@@ -155,15 +182,62 @@ program
         if (isBatchDelete) {
             const functions = await getConfigFunctions()
             const names: string[] = functions.map(item => item.name)
-            return await batchDeleteFunctions(names, assignEnvId)
+            return await batchDeleteFunctions({
+                names,
+                envId: assignEnvId
+            })
         }
 
-        await deleteFunction(name, assignEnvId)
+        await deleteFunction({
+            functionName: name,
+            envId: assignEnvId
+        })
     })
+
+function logDetail(info, name) {
+    const ResMap = {
+        Status: '状态',
+        CodeInfo: '函数代码',
+        CodeSize: '代码大小',
+        Description: '描述',
+        Environment: '环境变量(key=value)',
+        FunctionName: '函数名称',
+        FunctionVersion: '函数版本',
+        Handler: '执行方法',
+        MemorySize: '内存配置(MB)',
+        ModTime: '修改时间',
+        Namespace: '环境 Id',
+        Runtime: '运行环境',
+        Timeout: '超时时间(S)',
+        Triggers: '触发器'
+    }
+
+    const funcInfo = Object.keys(ResMap)
+        .map(key => {
+            // 将环境变量数组转换成 key=value 的形式
+            if (key === 'Environment') {
+                const data = info[key].Variables.map(
+                    item => `${item.Key}=${item.Value}`
+                ).join('; ')
+                return `${ResMap[key]}：${data} \n`
+            }
+
+            if (key === 'Triggers') {
+                const data = info[key]
+                    .map(item => `${item.TriggerName}：${item.TriggerDesc}`)
+                    .join('\n')
+                return `${ResMap[key]}：\n${data} \n`
+            }
+
+            return `${ResMap[key]}：${info[key]} \n`
+        })
+        .reduce((prev, next) => prev + next)
+    console.log(chalk.green(`函数 [${name}] 信息：`) + '\n\n' + funcInfo)
+}
 
 // 获取云函数信息
 program
-    .command('function:detail [name] [envId]')
+    .command('function:detail [functionName] [envId]')
     .description('获取云函数信息')
     .action(async function(name: string, envId: string) {
         const assignEnvId = await getEnvId(envId)
@@ -172,14 +246,24 @@ program
         if (!name) {
             const functions = await getConfigFunctions()
             const names = functions.map(item => item.name)
-            return await batchGetFunctionsDetail(names, assignEnvId)
+            const data = await batchGetFunctionsDetail({
+                names,
+                envId: assignEnvId
+            })
+            data.forEach(info => logDetail(info, name))
+            return
         }
-        await getFunctionDetail(name, assignEnvId)
+
+        const data = await getFunctionDetail({
+            functionName: name,
+            envId: assignEnvId
+        })
+        logDetail(data, name)
     })
 
 // 打印函数日志
 program
-    .command('function:log <name> [envId]')
+    .command('function:log <functionName> [envId]')
     .description('打印云函数日志')
     .option('-i, --reqId <reqId>', '函数请求 Id')
     .option(
@@ -264,12 +348,54 @@ program
         // 删除值为 undefined 的字段
         params = JSON.parse(JSON.stringify(params))
 
-        await getFunctionLog(name, assignEnvId, params)
+        const logs = await getFunctionLog({
+            functionName: name,
+            envId: assignEnvId,
+            ...params
+        })
+
+        const ResMap = {
+            StartTime: '请求时间',
+            FunctionName: '函数名称',
+            BillDuration: '计费时间(ms)',
+            Duration: '运行时间(ms)',
+            InvokeFinished: '调用次数',
+            MemUsage: '占用内存',
+            RequestId: '请求 Id',
+            RetCode: '调用状态',
+            RetMsg: '返回结果'
+        }
+
+        console.log(chalk.green(`函数：${name} 调用日志：`) + '\n\n')
+
+        if (logs.length === 0) {
+            return console.log('无调用日志')
+        }
+
+        logs.forEach(log => {
+            const info = Object.keys(ResMap)
+                .map(key => {
+                    if (key === 'RetCode') {
+                        return `${ResMap[key]}：${
+                            Number(log[key]) === 0 ? '成功' : '失败'
+                        }\n`
+                    }
+                    if (key === 'MemUsage') {
+                        const str = Number(
+                            Number(log[key]) / 1024 / 1024
+                        ).toFixed(3)
+                        return `${ResMap[key]}：${str} MB\n`
+                    }
+                    return `${ResMap[key]}：${log[key]} \n`
+                })
+                .reduce((prev, next) => prev + next)
+            console.log(info + `日志：\n ${log.Log} \n`)
+        })
     })
 
 // 更新云函数的配置
 program
-    .command('function:config:update [name] [envId]')
+    .command('function:config:update [functionName] [envId]')
     .description('更新云函数配置')
     .action(async function(name: string, envId: string) {
         const assignEnvId = await getEnvId(envId)
@@ -296,7 +422,12 @@ program
         const functions = await getConfigFunctions()
 
         if (isBathUpdate) {
-            return await batchUpdateFunctionConfig(functions, assignEnvId)
+            await batchUpdateFunctionConfig({
+                functions,
+                envId: assignEnvId
+            })
+            successLog('更新云函数配置成功！')
+            return
         }
 
         const functionItem = functions.find(item => item.name === name)
@@ -305,12 +436,18 @@ program
             throw new TcbError('未找到相关函数配置，请检查函数名是否正确')
         }
 
-        updateFunctionConfig(name, functionItem.config, assignEnvId)
+        await updateFunctionConfig({
+            functionName: name,
+            config: functionItem.config,
+            envId: assignEnvId
+        })
+
+        successLog('更新云函数配置成功！')
     })
 
 // 创建函数触发器
 program
-    .command('function:trigger:create [name] [envId]')
+    .command('function:trigger:create [functionName] [envId]')
     .description('创建云函数触发器')
     .action(async function(name: string, envId: string) {
         const assignEnvId = await getEnvId(envId)
@@ -337,7 +474,10 @@ program
         const functions = await getConfigFunctions()
 
         if (isBatchCreateTrigger) {
-            return await batchCreateTriggers(functions, assignEnvId)
+            return await batchCreateTriggers({
+                functions,
+                envId: assignEnvId
+            })
         }
 
         const functionItem = functions.find(item => item.name === name)
@@ -352,7 +492,11 @@ program
             throw new TcbError('触发器配置不能为空')
         }
 
-        createFunctionTriggers(name, triggers, assignEnvId)
+        await createFunctionTriggers({
+            functionName: name,
+            triggers,
+            envId: assignEnvId
+        })
     })
 
 // 删除函数触发器
@@ -398,7 +542,10 @@ program
 
         if (isBtachDeleteTriggers) {
             const functions = await getConfigFunctions()
-            return await batchDeleteTriggers(functions, assignEnvId)
+            return await batchDeleteTriggers({
+                functions,
+                envId: assignEnvId
+            })
         }
 
         // 指定了函数名称，但没有指定触发器名称，删除此函数的所有触发器
@@ -420,7 +567,10 @@ program
         if (isBatchDeleteFunctionTriggers) {
             const functions = await getConfigFunctions()
             const func = functions.find(item => item.name === functionName)
-            return await batchDeleteTriggers([func], assignEnvId)
+            return await batchDeleteTriggers({
+                functions: [func],
+                envId: assignEnvId
+            })
         }
 
         if (!triggerName) {
@@ -428,5 +578,9 @@ program
         }
 
         // 删除指定函数的单个触发器
-        deleteFunctionTrigger(functionName, triggerName, assignEnvId)
+        deleteFunctionTrigger({
+            functionName,
+            triggerName,
+            envId: assignEnvId
+        })
     })

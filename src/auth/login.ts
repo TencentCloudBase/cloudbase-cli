@@ -6,6 +6,7 @@ import { askForInput, getCredential } from '../utils'
 import { ConfigItems } from '../constant'
 import { configStore } from '../utils/configstore'
 import { Credential } from '../types'
+import { TcbError } from '../error'
 
 const logger = new Logger('Login')
 
@@ -68,9 +69,8 @@ export async function authLogin() {
         }
         authSpinner.succeed('获取授权成功')
     } catch (error) {
-        console.log(error)
         authSpinner.fail(`获取授权失败 ${error}`)
-        return
+        throw new TcbError(error)
     }
 
     if (!credential.refreshToken || !credential.uin) {
@@ -84,10 +84,7 @@ export async function authLogin() {
         await checkAuth(credential)
         scfCheckSpinner.succeed('密钥权限验证成功')
     } catch (e) {
-        scfCheckSpinner.fail(
-            '密钥验证失败，请检查密钥是否正确或本机网络代理有问题'
-        )
-        return
+        throw new TcbError(e.message)
     }
 
     configStore.set(ConfigItems.credentail, credential)

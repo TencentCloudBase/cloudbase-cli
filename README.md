@@ -8,14 +8,14 @@ Cloudbase 命令行工具。
 npm install -g @cloudbase/cli
 ```
 
-## 使用方法
+## 使用
 
 ```bash
 tcb -h
 ```
 
 ```
-Usage: tcb [options] [command]
+Usage:  [options] [command]
 
 Options:
   -h, --help                                                    output usage information
@@ -25,17 +25,54 @@ Commands:
   list                                                          列出云开发所有环境
   login [options]                                               登录腾讯云账号
   logout                                                        登出腾讯云账号
-  function:deploy [options] [name] [envId]                      创建云函数
+  function:deploy [options] [functionName] [envId]              创建云函数
   function:list [options] [envId]                               展示云函数列表
-  function:delete [name] [envId]                                删除云函数
-  function:detail [name] [envId]                                获取云函数信息
-  function:log [options] <name> [envId]                         打印云函数日志
-  function:config:update [name] [envId]                         更新云函数配置
-  function:trigger:create [name] [envId]                        创建云函数触发器
+  function:delete [functionName] [envId]                        删除云函数
+  function:detail [functionName] [envId]                        获取云函数信息
+  function:log [options] <functionName> [envId]                 打印云函数日志
+  function:config:update [functionName] [envId]                 更新云函数配置
+  function:trigger:create [functionName] [envId]                创建云函数触发器
   function:trigger:delete [functionName] [triggerName] [envId]  创建云函数触发器
 ```
 
-## 命令
+### 关于 TCB 项目
+
+TCB 项目是和 TCB 环境资源关联的实体，TCB 项目聚合了云函数、数据库、文件存储等服务，你可以在 TCB 项目中编写函数，存储文件，并通过 `cloudbase cli` 快速的操作你的云函数、文件存储、数据库等资源。
+
+TCB 项目文件结构：
+
+```
+.
+├── _gitignore
+├── functions // 云函数目录
+│   └── app
+│       └── index.js
+└── tcbrc.js // tcb 项目配置文件
+```
+
+### 编程式使用
+
+Cloudbase CLI 支持作为单独的 Node 模块使用，
+
+```js
+const Client = require('@cloudbase/cli')
+// 如果已使用 tcb login 登录过，可以不传入 secretId、secretKey 值
+const client = new Client(secretId, secretKey)
+
+client
+    .list({
+        envId: 'xxx'
+    })
+    .then(function(data) {
+        console.log(data)
+    })
+    .catch(function(err) {
+    })
+```
+
+编程式 API 接口详情：[API 接口](docs/api.md)
+
+## 命令详解
 
 ### login
 
@@ -52,7 +89,7 @@ tcb login --key
 
 `tcb logout` 注销登录
 
-###  list
+### list
 
 `tcb list` 列出所有的云开发环境
 
@@ -70,13 +107,13 @@ tcb login --key
 
 `tcb new` 创建一个包含配置文件 `.tcbrc.js` 的云开发项目
 
-![](assets/img/new.png)
+![](docs/img/new.png)
 
 ### function:list
 
 完整命令：`tcb function:list [options] [envId]`
 
-`function:list [options] [envId]`  以表格的形式展示指定环境的函数信息，`function:list` 命令的参数包含一些可选的选项 options 和可选的环境 Id `envId`。
+`function:list [options] [envId]` 以表格的形式展示指定环境的函数信息，`function:list` 命令的参数包含一些可选的选项 options 和可选的环境 Id `envId`。
 
 可以通过命令行指定环境变量 `envId`
 
@@ -90,7 +127,7 @@ tcb function:list dev-xxxx
 tcb function:list
 ```
 
-![](assets/img/func-list.png)
+![](docs/img/func-list.png)
 
 `function:list` 可选的选项有
 
@@ -123,7 +160,7 @@ tcb function:list -l 10
 tcb function:deploy
 ```
 
-![](assets/img/func-deploy.png)
+![](docs/img/func-deploy.png)
 
 当 `name` 存在时，CLI 只会部署指定的函数。
 
@@ -131,7 +168,7 @@ tcb function:deploy
 tcb function:deploy dev
 ```
 
-![](assets/img/func-deploy-2.png)
+![](docs/img/func-deploy-2.png)
 
 `function:deploy` 可选的选项有
 
@@ -186,7 +223,7 @@ myTrigger2：{"cron": "0 0 3 1 * * *"}
 
 同样，当不指定 `name` 和 `envId` 时，CLI 会尝试检索 `.tcbrc` 文件获取 envId，并删除配置文件中存在的所有函数。
 
-![](assets/img/func-delete.png)
+![](docs/img/func-delete.png)
 
 ### function:log
 
@@ -225,7 +262,7 @@ myTrigger2：{"cron": "0 0 3 1 * * *"}
 
 同样，在包含 `.tcbrc.js` 配置文件的项目根目录执行命令时，`envId` 是可以略去的。
 
-### function:config:update [name] [envId]
+### function:config:update
 
 完整命令：`tcb function:config:update [name] [envId]`
 
@@ -233,9 +270,9 @@ myTrigger2：{"cron": "0 0 3 1 * * *"}
 
 同样，当没有指定函数名 `name` 时，CLI 会更新 `.tcbrc.js` 文件包含的所有函数的配置信息。
 
-![](assets/img/func-update.png)
+![](docs/img/func-update.png)
 
-### function:trigger:create [name] [envId]
+### function:trigger:create
 
 完整命令：`tcb function:trigger:create [name] [envId]`
 
@@ -256,9 +293,9 @@ myTrigger2：{"cron": "0 0 3 1 * * *"}
 
 同样，当没有指定函数名 `name` 时，CLI 会创建 `.tcbrc.js` 文件包含的**所有函数**的**所有触发器**，当制定了函数名 `name` 时，CLI 会创建指定函数的所有触发器。
 
-![](assets/img/func-triggerc.png)
+![](docs/img/func-triggerc.png)
 
-### function:trigger:delete [functionName] [triggerName] [envId]
+### function:trigger:delete
 
 完整命令：`tcb function:trigger:delete [functionName] [triggerName] [envId]`
 
@@ -277,4 +314,4 @@ tcb function:trigger:delete app
 tcb function:trigger:delete app myTrigger
 ```
 
-![](assets/img/func-triggerd.png)
+![](docs/img/func-triggerd.png)

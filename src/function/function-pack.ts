@@ -13,10 +13,7 @@ export class FunctionPack {
         this.distPath = distPath
     }
 
-    /**
-     * .js -> .js
-     *        assets
-     */
+    // 构建 zip 压缩包
     async build(name: string): Promise<IFunctionPackResult> {
         const entry = path.resolve(process.cwd(), this.path)
         const distPath = path.resolve(process.cwd(), this.distPath)
