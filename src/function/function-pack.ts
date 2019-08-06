@@ -1,7 +1,7 @@
-import * as path from 'path'
-import * as del from 'del'
-import * as makeDir from 'make-dir'
-import * as ora from 'ora'
+import path from 'path'
+import del from 'del'
+import makeDir from 'make-dir'
+import ora from 'ora'
 import { IFunctionPackResult } from '../types'
 import { zipDir } from '../utils'
 

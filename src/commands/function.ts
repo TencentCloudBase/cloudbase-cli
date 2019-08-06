@@ -1,5 +1,5 @@
-import * as program from 'commander'
-import * as inquirer from 'inquirer'
+import program from 'commander'
+import inquirer from 'inquirer'
 import chalk from 'chalk'
 import { TcbError } from '../error'
 import {

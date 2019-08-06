@@ -1,5 +1,5 @@
-import * as NodeSSH from 'node-ssh'
-import * as path from 'path'
+import  NodeSSH from 'node-ssh'
+import  path from 'path'
 import Logger from '../logger'
 import { INodeDeployConfig } from '../deploy/node'
 
@@ -29,7 +29,7 @@ export default class NodeUploader {
 
         logger.log('Unzip...')
         logger.log(`cd ${distPath} && unzip dist.zip`)
-        const { stdout, stderr } = await this.ssh.execCommand(`cd ${remotePath} && unzip dist.zip`)
+        const { stderr } = await this.ssh.execCommand(`cd ${remotePath} && unzip dist.zip`)
 
         if (stderr) console.log(stderr)
 

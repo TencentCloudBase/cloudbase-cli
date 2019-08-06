@@ -1,4 +1,4 @@
-import * as program from 'commander'
+import program from 'commander'
 import { listEnvs } from '../env'
 import { printCliTable } from '../utils'
 

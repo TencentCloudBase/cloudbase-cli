@@ -1,4 +1,4 @@
-import * as _ConfigStore from 'configstore'
+import _ConfigStore from 'configstore'
 import { ConfigItems } from '../constant'
 
 const ConfigDefaultItems = [ConfigItems.credentail]

@@ -2,7 +2,7 @@ import FunctionBuilder from '../builder/function'
 import FunctionUploader from '../uploader/function'
 import Deploy from './base'
 import Logger from '../logger'
-import * as path from 'path'
+import  path from 'path'
 
 const logger = new Logger('FunctionDeploy')
 export class FunctionDeploy extends Deploy {

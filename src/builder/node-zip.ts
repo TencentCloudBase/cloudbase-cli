@@ -1,11 +1,11 @@
-import * as path from 'path'
+import  path from 'path'
 import { IBuildResult } from './base'
-import * as makeDir from 'make-dir'
+import  makeDir from 'make-dir'
 import Logger from '../logger'
 import { zipDir } from '../utils'
 import { INodeDeployConfig } from '../deploy/node'
-import * as del from 'del'
-import * as fs from 'fs'
+import  del from 'del'
+import  fs from 'fs'
 
 const logger = new Logger('NodeZipBuilder')
 

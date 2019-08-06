@@ -1,8 +1,8 @@
-import * as fs from 'fs'
-import * as fse from 'fs-extra'
-import * as path from 'path'
-import * as program from 'commander'
-import * as inquirer from 'inquirer'
+import fs from 'fs'
+import fse from 'fs-extra'
+import path from 'path'
+import inquirer from 'inquirer'
+import program from 'commander'
 import { TcbError } from '../error'
 import { successLog } from '../logger'
 

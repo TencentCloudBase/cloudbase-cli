@@ -18,8 +18,9 @@ if (process.argv.length < 3) {
 program.parse(process.argv)
 
 function errorHandler(err) {
-    // 当存在错误栈，且不是 SDK 请求返回的错误时，才打印错误栈
-    if (err.stack && err.name !== 'TencentCloudSDKHttpException') {
+    const stackIngoreErrors = ['TencentCloudSDKHttpException', 'TcbError']
+    // 忽略自定义错误的错误栈
+    if (err.stack && !stackIngoreErrors.includes(err.name)) {
         console.log(err.stack)
     }
     // 3 空格，兼容中文字符编码长度问题

@@ -2,8 +2,8 @@ import NodeZipBuilder from '../builder/node-zip'
 import NodeZipUploader from '../uploader/node-zip'
 import { NodeController } from '../controller'
 import Deploy from './base'
-import * as path from 'path'
-import * as del from 'del'
+import  path from 'path'
+import  del from 'del'
 
 export class NodeDeploy extends Deploy {
     _config: INodeDeployConfig

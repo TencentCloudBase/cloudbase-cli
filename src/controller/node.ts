@@ -1,5 +1,5 @@
-import * as NodeSSH from 'node-ssh'
-import * as path from 'path'
+import  NodeSSH from 'node-ssh'
+import  path from 'path'
 import Logger from '../logger'
 import { INodeDeployConfig } from '../deploy/node'
 import chalk from 'chalk'

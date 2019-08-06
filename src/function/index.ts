@@ -1,9 +1,9 @@
 import chalk from 'chalk'
-import * as fs from 'fs'
-import * as path from 'path'
-import * as ora from 'ora'
+import fs from 'fs'
+import path from 'path'
+import ora from 'ora'
 import { getCredential } from '../utils'
-import * as tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
+import tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
 import { successLog } from '../logger'
 import {
     IFunctionTriggerOptions,

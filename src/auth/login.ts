@@ -1,5 +1,5 @@
-import * as tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
-import * as ora from 'ora'
+import  tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
+import ora from 'ora'
 import Logger from '../logger'
 import { getAuthTokenFromWeb, refreshTmpToken } from './auth'
 import { askForInput, getCredential } from '../utils'

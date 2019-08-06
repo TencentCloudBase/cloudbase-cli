@@ -73,8 +73,8 @@ export interface ICreateFunctionOptions {
 }
 
 export interface IListFunctionOptions {
-    limit: number
-    offset: number
+    limit?: number
+    offset?: number
     envId: string
 }
 

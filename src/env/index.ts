@@ -1,5 +1,5 @@
 import { getCredential } from '../utils'
-import * as tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
+import tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
 
 async function tencentcloudTcbEnvRequest(
     interfaceName: string,

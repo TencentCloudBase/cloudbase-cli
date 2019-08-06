@@ -8,7 +8,8 @@
     "removeComments": true,
     "types": [
       "node"
-    ]
+    ],
+    "esModuleInterop": true,
   },
   "include": [
     "src/**/*"
