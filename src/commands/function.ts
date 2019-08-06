@@ -16,7 +16,9 @@ import {
     batchDeleteFunctions,
     batchDeleteTriggers,
     batchGetFunctionsDetail,
-    batchUpdateFunctionConfig
+    batchUpdateFunctionConfig,
+    batchInvokeFunctions,
+    invokeFunction
 } from '../function'
 import { resolveTcbrcConfig, getEnvId, printCliTable } from '../utils'
 import { successLog } from '../logger'
@@ -502,7 +504,7 @@ program
 // 删除函数触发器
 program
     .command('function:trigger:delete [functionName] [triggerName] [envId]')
-    .description('创建云函数触发器')
+    .description('删除云函数触发器')
     .action(async function(
         functionName: string,
         triggerName: string,
@@ -582,5 +584,66 @@ program
             functionName,
             triggerName,
             envId: assignEnvId
+        })
+    })
+
+// 触发云函数
+program
+    .command('function:invoke [functionName] [params] [envId]')
+    .description('触发云函数')
+    .action(async function(
+        name: string,
+        jsonStringParams: string,
+        envId: string
+    ) {
+        const assignEnvId = await getEnvId(envId)
+
+        let isBatchInvoke = false
+
+        // 不指定云函数名称，触发配置文件中的所有函数
+        if (!name) {
+            const { isBatch } = await inquirer.prompt({
+                type: 'confirm',
+                name: 'isBatch',
+                message: '无云函数名称，是否需要触发配置文件中的全部云函数？',
+                default: false
+            })
+
+            isBatchInvoke = isBatch
+
+            if (!isBatchInvoke) {
+                throw new TcbError('请指定云函数名称！')
+            }
+        }
+
+        let params
+        if (jsonStringParams) {
+            try {
+                params = JSON.parse(jsonStringParams)
+            } catch (e) {
+                console.log(e)
+                throw new TcbError('jsonStringParams 参数不是正确的 JSON 字符串')
+            }
+        }
+
+        const functions = await getConfigFunctions()
+
+        if (isBatchInvoke) {
+            return await batchInvokeFunctions({
+                functions,
+                envId: assignEnvId
+            })
+        }
+
+        const func = functions.find(item => item.name === name)
+
+        if (!func) {
+            throw new TcbError('未找到相关函数配置，请检查函数名是否正确')
+        }
+
+        await invokeFunction({
+            functionName: name,
+            envId: assignEnvId,
+            params: params || func.params
         })
     })

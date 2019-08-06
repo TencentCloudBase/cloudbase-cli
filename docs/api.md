@@ -1,11 +1,39 @@
 # API 接口
 
-
 #### list()
 
 参数： 无
 
 响应：void
+
+#### function.invoke(options)
+
+参数：
+
+```js
+{
+    envId: string,
+    functionName: string,
+    params: {
+        a: 1
+    }
+}
+```
+
+响应：
+
+```js
+{
+    Log: '',
+    RetMsg: '{"a":1}', // 响应结果，JSON 字符串，可使用 JSON.parse() 方法序列化为对象
+    ErrMsg: '',
+    MemUsage: 217088,
+    Duration: 2.569999933242798,
+    BillDuration: 100,
+    FunctionRequestId: 'e9ba6ddc-b828-11e9-9290-52540029942f',
+    InvokeResult: 0 
+}
+```
 
 #### function.deploy(options)
 

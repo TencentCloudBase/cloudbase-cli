@@ -19,8 +19,12 @@ export interface TmpCredential {
     hash?: string
 }
 
-export interface Credential extends PermanentCredential, TmpCredential {
-    [key: string]: string
+export type Credential = TmpCredential & PermanentCredential
+
+export interface AuthSecret {
+    secretId: string
+    secretKey: string
+    token?: string
 }
 
 export interface IConfig {
@@ -43,17 +47,14 @@ export interface IFunctionPackResult {
 }
 
 export interface ICloudFunctionConfig {
-    timeout: number
-    envVariables: Record<string, string | number | boolean>
-}
-
-export enum TriggerType {
-    Timer = 'timer'
+    timeout?: number
+    envVariables?: Record<string, string | number | boolean>
+    runtime?: string
 }
 
 export interface ICloudFunctionTrigger {
     name: string
-    type: TriggerType
+    type: string
     config: string
 }
 
@@ -61,6 +62,8 @@ export interface ICloudFunction {
     name: string
     config: ICloudFunctionConfig
     triggers: ICloudFunctionTrigger[]
+    params?: Record<string, string>
+    handler?: string
 }
 
 export interface ICreateFunctionOptions {
@@ -97,7 +100,7 @@ export interface IUpdateFunctionConfigOptions {
 }
 
 export interface IFunctionBatchOptions {
-    functions: ICloudFunction[],
+    functions: ICloudFunction[]
     envId: string
 }
 

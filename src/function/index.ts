@@ -6,6 +6,7 @@ import { getCredential } from '../utils'
 import tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
 import { successLog } from '../logger'
 import {
+    AuthSecret,
     IFunctionTriggerOptions,
     ICreateFunctionOptions,
     IListFunctionOptions,
@@ -20,7 +21,7 @@ async function tencentcloudScfRequest(
     interfaceName: string,
     params?: Record<string, any>
 ) {
-    const credential = await getCredential()
+    const credential: AuthSecret = await getCredential()
     const { secretId, secretKey, token } = credential
     const ScfClient = tencentcloud.scf.v20180416.Client
     const models = tencentcloud.scf.v20180416.Models
@@ -138,6 +139,17 @@ export async function batchDeleteTriggers(
     await Promise.all(promises)
 }
 
+function getJavaZipFilePath(funcPath: string, funcName: string) {
+    const jarExist = fs.existsSync(`${funcPath}.jar`)
+    const zipExist = fs.existsSync(`${funcPath}.zip`)
+    if (!jarExist && !zipExist) {
+        throw new TcbError(
+            `${funcName} Java 编译文件不存在，部署终止。Java 仅支持编译打包后的 Zip/Jar 包`
+        )
+    }
+    return jarExist ? `${funcPath}.jar` : `${funcPath}.zip`
+}
+
 // 创建云函数
 export async function createFunction(
     options: ICreateFunctionOptions
@@ -146,19 +158,39 @@ export async function createFunction(
     let base64
     let packer
     const funcName = func.name
+
+    // 校验运行时
+    const validRuntime = ['Nodejs8.9', 'Php7', 'Java8']
+    if (func.config.runtime && !validRuntime.includes(func.config.runtime)) {
+        throw new TcbError(
+            `${funcName} 非法的运行环境：${
+                func.config.runtime
+            }，当前支持环境：${validRuntime.join(', ')}`
+        )
+    }
+
+    // CLI 从本地读取
     if (!zipFile) {
-        // 函数目录
+        let zipFilePath = ''
         const funcPath = path.join(root, 'functions', funcName)
-        const distPath = `${funcPath}/dist`
-        packer = new FunctionPack(funcPath, distPath)
-        // 清除原打包文件
-        await packer.clean()
-        // 生成 zip 文件
-        await packer.build(funcName)
+        // Java
+        if (func.config.runtime === 'Java8') {
+            zipFilePath = getJavaZipFilePath(funcPath, funcName)
+        } else {
+            // 函数目录
+            if (!fs.existsSync(funcPath)) {
+                throw new TcbError(`${funcName} 函数文件不存在，部署终止`)
+            }
+            const distPath = `${funcPath}/dist`
+            packer = new FunctionPack(funcPath, distPath)
+            // 清除原打包文件
+            await packer.clean()
+            // 生成 zip 文件
+            await packer.build(funcName)
+            zipFilePath = path.join(distPath, 'dist.zip')
+        }
         // 将 zip 文件转化成 base64
-        base64 = fs
-            .readFileSync(path.join(distPath, 'dist.zip'))
-            .toString('base64')
+        base64 = fs.readFileSync(zipFilePath).toString('base64')
     } else {
         base64 = zipFile
     }
@@ -178,12 +210,7 @@ export async function createFunction(
             ZipFile: base64
         },
         // 不可选择
-        MemorySize: 256,
-        // 不可选择
-        Handler: 'index.main',
-        InstallDependency: true,
-        // 不可选择
-        Runtime: 'Nodejs8.9'
+        MemorySize: 256
     }
 
     // 修复参数存在 undefined 字段时，会出现鉴权失败的情况
@@ -191,13 +218,21 @@ export async function createFunction(
     envVariables.length && (params.Environment = { Variables: envVariables })
     // 默认超时时间为 3S
     params.Timeout = func.config.timeout || 3
+    // 默认运行环境 Nodejs8.9
+    params.Runtime = func.config.runtime || 'Nodejs8.9'
+    // 处理入口
+    params.Handler = func.handler || 'index.main'
+    // Node 安装依赖
+    // func.config.runtime === 'Nodejs8.9' && (params.InstallDependency = true)
 
     const uploadSpin = ora('云函数上传中').start()
+
+    console.log(params)
 
     try {
         // 创建云函数
         await tencentcloudScfRequest('CreateFunction', params)
-        !zipFile && (await packer.clean())
+        !zipFile && packer && (await packer.clean())
         uploadSpin.succeed(`函数 "${funcName}" 上传成功！`)
         // 创建函数触发器
         await createFunctionTriggers({
@@ -223,7 +258,7 @@ export async function createFunction(
         // 不强制覆盖，抛出错误
         if (e.message && !force) {
             uploadSpin.fail(chalk.red(`[${funcName}] 部署失败： ${e.message}`))
-            !zipFile && (await packer.clean())
+            !zipFile && packer && (await packer.clean())
         }
     }
 }
@@ -429,6 +464,44 @@ export async function batchUpdateFunctionConfig(
                 })
             } catch (e) {
                 throw new TcbError(`${func.name} 更新配置失败：${e.message}`)
+            }
+        })()
+    )
+
+    await Promise.all(promises)
+}
+
+// 调用函数
+export async function invokeFunction(options): Promise<any> {
+    const { functionName, envId, params = {} } = options
+
+    const _params: any = {
+        FunctionName: functionName,
+        Namespace: envId,
+        ClientContext: JSON.stringify(params)
+    }
+
+    const { Result }: any = await tencentcloudScfRequest('Invoke', _params)
+
+    successLog(`${functionName} 调用成功\n响应结果：\n`)
+    console.log(Result)
+
+    return Result
+}
+
+export async function batchInvokeFunctions(options: IFunctionBatchOptions) {
+    const { functions, envId } = options
+
+    const promises = functions.map(func =>
+        (async () => {
+            try {
+                await invokeFunction({
+                    functionName: func.name,
+                    params: func.params,
+                    envId
+                })
+            } catch (e) {
+                throw new TcbError(`${func.name} 函数调用失败：${e.message}`)
             }
         })()
     )

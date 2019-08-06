@@ -1,0 +1,24 @@
+{
+    "envId": "dev-xxx",
+    "functions": [
+        {
+            "name": "app",
+            "config": {
+                "timeout": "5",
+                "envVariables": {
+                    "key": "value"
+                },
+                "runtime": "Java8"
+            },
+            "triggers": [
+                {
+                    "name": "myTrigger",
+                    "type": "timer",
+                    "config": "0 0 2 1 * * *"
+                }
+            ],
+            "params": {},
+            "handler": "example.Hello::mainHandler"
+        }
+    ]
+}

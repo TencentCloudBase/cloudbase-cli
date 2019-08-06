@@ -1,11 +1,12 @@
 import { getCredential } from '../utils'
 import tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
+import { AuthSecret } from '../types'
 
 async function tencentcloudTcbEnvRequest(
     interfaceName: string,
     params?: Record<string, any>
 ) {
-    const credential = await getCredential()
+    const credential: AuthSecret = await getCredential()
     const { secretId, secretKey, token } = credential
     const TcbClient = tencentcloud.tcb.v20180608.Client
     const models = tencentcloud.tcb.v20180608.Models

@@ -25,10 +25,6 @@ function errorHandler(err) {
     }
     // 3 空格，兼容中文字符编码长度问题
     console.log(logSymbols.error + ' ' + chalk.red(err.message))
-    process.exitCode = err.exit || 2
-    setTimeout(function() {
-        process.exit()
-    }, 250)
 }
 
 process.on('uncaughtException', errorHandler)

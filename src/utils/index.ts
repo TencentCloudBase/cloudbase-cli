@@ -5,7 +5,7 @@ import readline from 'readline'
 import tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
 import { refreshTmpToken } from '../auth/auth'
 import { configStore } from './configstore'
-import { IConfig, Credential } from '../types'
+import { IConfig, Credential, AuthSecret } from '../types'
 import { ConfigItems } from '../constant'
 import { TcbError } from '../error'
 
@@ -66,12 +66,15 @@ export function callCloudApi(secretId, secretKey) {
 }
 
 // 获取身份认证信息并校验、自动刷新
-export async function getCredential(): Promise<Credential> {
+export async function getCredential(): Promise<AuthSecret> {
     const credential: Credential = configStore.get(ConfigItems.credentail)
 
     // 存在永久密钥
     if (credential.secretId && credential.secretKey) {
-        return credential
+        return {
+            secretId: credential.secretId,
+            secretKey: credential.secretKey
+        }
     }
 
     // 存在临时密钥信息
@@ -136,7 +139,7 @@ export function parseCommandArgs(
 
 // 找到 tcbrc 配置文件
 export async function resolveTcbrcConfig() {
-    const tcbrcPath = path.join(process.cwd(), 'tcbrc.js')
+    const tcbrcPath = path.join(process.cwd(), '.tcbrc.json')
     if (!fs.existsSync(tcbrcPath)) {
         return {}
     }
