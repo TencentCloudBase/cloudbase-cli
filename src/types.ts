@@ -23,8 +23,16 @@ export interface Credential extends PermanentCredential, TmpCredential {
     [key: string]: string
 }
 
+export interface SSH {
+    host: string
+    port: string
+    username: string
+    password: string
+}
+
 export interface IConfig {
     credential?: Credential
+    ssh?: SSH
 }
 
 export interface IGetCredential {
@@ -97,7 +105,7 @@ export interface IUpdateFunctionConfigOptions {
 }
 
 export interface IFunctionBatchOptions {
-    functions: ICloudFunction[],
+    functions: ICloudFunction[]
     envId: string
 }
 

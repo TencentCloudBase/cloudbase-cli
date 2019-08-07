@@ -2,15 +2,15 @@ import NodeZipBuilder from '../builder/node-zip'
 import NodeZipUploader from '../uploader/node-zip'
 import { NodeController } from '../controller'
 import Deploy from './base'
-import  path from 'path'
-import  del from 'del'
+import path from 'path'
+import del from 'del'
 
 export class NodeDeploy extends Deploy {
     _config: INodeDeployConfig
     constructor(config: INodeDeployConfig) {
         config = {
             username: 'root',
-            port: 22,
+            port: '22',
             distPath: './.tcb-dist',
             remotePath: `/data/tcb-service/${config.name}`,
             ...config
@@ -36,17 +36,20 @@ export class NodeDeploy extends Deploy {
 }
 
 export interface INodeDeployConfig {
-    // metadata
+    // ssh meta data
     host: string
     username: string
-    port: number
+    port: string
     password: string
+
+    // credential data
     secretId: string
     secretKey: string
+    token?: string
 
     // config
-    name: string
-    path: string
-    distPath: string
-    remotePath: string
+    name?: string
+    path?: string
+    distPath?: string
+    remotePath?: string
 }
