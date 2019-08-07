@@ -1,29 +1,22 @@
-import NodeZipBuilder from '../builder/node-zip'
-import NodeZipUploader from '../uploader/node-zip'
-import { NodeController } from '../controller'
-import Deploy from './base'
+import NodeZipBuilder from './builder'
+import NodeZipUploader from './uploader'
 import path from 'path'
 import del from 'del'
 
-export class NodeDeploy extends Deploy {
-    _config: INodeDeployConfig
+export class NodeDeployer {
+    config: INodeDeployConfig
+    builder: NodeZipBuilder
+    uploader: { upload(): Promise<any> }
     constructor(config: INodeDeployConfig) {
-        config = {
+        this.config = {
             username: 'root',
             port: '22',
             distPath: './.tcb-dist',
             remotePath: `/data/tcb-service/${config.name}`,
             ...config
         }
-        super(config)
-        this.builder = new NodeZipBuilder(config)
-        this.uploader = new NodeZipUploader(config)
-        this.controller = new NodeController(config)
-    }
-
-    clear() {
-        const distPath = path.resolve(__dirname, this._config.distPath)
-        del.sync([distPath])
+        this.builder = new NodeZipBuilder(this.config)
+        this.uploader = new NodeZipUploader(this.config)
     }
 
     async deploy() {
@@ -31,7 +24,8 @@ export class NodeDeploy extends Deploy {
         const buildResult = await this.builder.build()
         await this.uploader.upload()
         await this.builder.clean()
-        await this.controller.start({ vemo: buildResult.vemo })
+        return buildResult
+        // await this.controller.start({ vemo: buildResult.vemo })
     }
 }
 

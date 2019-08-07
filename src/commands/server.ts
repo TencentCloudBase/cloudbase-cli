@@ -2,8 +2,7 @@ import program from 'commander'
 import fs from 'fs'
 import path from 'path'
 import fse from 'fs-extra'
-import { NodeController } from '../controller'
-import { NodeDeploy } from '../deploy'
+import { NodeController } from '../server/node/controller'
 import { TcbError } from '../error'
 import { getCredential, resolveTcbrcConfig, getSSH } from '../utils'
 
@@ -38,7 +37,7 @@ async function getServers(
 }
 
 program
-    .command('node:deploy [name]')
+    .command('server:deploy [name]')
     .description('部署 node 服务')
     .action(async function(name: string) {
         const servers = await getServers(name)
@@ -49,7 +48,7 @@ program
             if (!server.path) {
                 throw new TcbError('未指定发布目录')
             }
-            await new NodeDeploy({
+            await new NodeController({
                 ...sshConfig,
                 ...server,
                 ...credential
@@ -59,26 +58,46 @@ program
     })
 
 program
-    .command('node:log <name>')
+    .command('server:log <name>')
     .description('查看日志')
-    .option('-n <n>', '输出日志的行数')
+    .option('-n, --lines <n>', '输出日志的行数')
     .action(async function(name, options) {
         const servers = await getServers(name)
         const server = servers[0]
         const credential = await getCredential()
         const sshConfig = await getSSH()
 
+        // console.log(options.lines)
         await new NodeController({
             ...credential,
             ...sshConfig,
             ...server
         }).logs({
-            lines: options.n || 20
+            lines: options.lines || 20
         })
     })
 
 program
-    .command('node:stop <name>')
+    .command('server:reload <name>')
+    .description('重启 node 服务')
+    .action(async function(name: string) {
+        const servers = await getServers(name)
+        const server = servers[0]
+        const credential = await getCredential()
+        const sshConfig = await getSSH()
+
+        servers.forEach(async server => {
+            await new NodeController({
+                ...sshConfig,
+                ...server,
+                ...credential
+            }).reload()
+            return
+        })
+    })
+
+program
+    .command('server:stop <name>')
     .description('停止应用')
     .action(async function(name) {
         const servers = await getServers(name)
@@ -94,7 +113,7 @@ program
     })
 
 program
-    .command('node:show')
+    .command('server:show')
     .description('查看状态')
     .action(async function() {
         const credential = await getCredential()
@@ -105,13 +124,3 @@ program
             ...sshConfig
         }).show()
     })
-
-// program
-//     .command('create <name>')
-//     .description('创建项目')
-//     .action(async function(name) {
-//         fse.copySync(
-//             path.resolve(__dirname, '../assets/helloworld'),
-//             path.resolve(process.cwd(), name)
-//         )
-//     })

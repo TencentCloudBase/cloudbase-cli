@@ -1,8 +1,9 @@
 {
-    "deploys": [
+    "envId": "dev-xxx",
+    "servers": [
         {
-            "name": "app",
             "type": "node",
+            "name": "helloworld",
             "path": "./"
         }
     ]

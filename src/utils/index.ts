@@ -115,7 +115,6 @@ export function getSSHConfig(): SSH {
 
 export async function getSSH(): Promise<SSH> {
     let sshConfig = getSSHConfig()
-    console.log(sshConfig)
     if (
         !sshConfig.host ||
         !sshConfig.port ||

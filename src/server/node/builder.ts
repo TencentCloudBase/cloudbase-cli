@@ -1,13 +1,23 @@
-import  path from 'path'
-import { IBuildResult } from './base'
-import  makeDir from 'make-dir'
-import Logger from '../logger'
-import { zipDir } from '../utils'
-import { INodeDeployConfig } from '../deploy/node'
-import  del from 'del'
-import  fs from 'fs'
+import path from 'path'
+import makeDir from 'make-dir'
+import Logger from '../../logger'
+import { zipDir } from '../../utils/index.js'
+import { INodeDeployConfig } from './deployer'
+
+import del from 'del'
+import fs from 'fs'
 
 const logger = new Logger('NodeZipBuilder')
+
+export interface IBuildResult {
+    success: boolean
+    /**
+     * assets.0 => zipPath
+     * assets.1 => zipFileName
+     */
+    assets: string[]
+    vemo?: boolean
+}
 
 export default class NodeZipBuilder {
     _options: INodeDeployConfig
@@ -19,12 +29,12 @@ export default class NodeZipBuilder {
      * .js -> .js
      *        assets
      */
-    async build(): Promise<IBuildResult> {
+    async build(zipFileName = 'dist.zip'): Promise<IBuildResult> {
         const entry = path.resolve(process.cwd(), this._options.path)
         const distPath = path.resolve(process.cwd(), this._options.distPath)
         await makeDir(distPath)
 
-        const zipPath = path.resolve(distPath, 'dist.zip')
+        const zipPath = path.resolve(distPath, zipFileName)
         logger.log(`Building ${entry} to ${zipPath}`)
 
         await zipDir(entry, zipPath)
@@ -33,7 +43,7 @@ export default class NodeZipBuilder {
 
         return {
             success: true,
-            assets: [zipPath],
+            assets: [zipPath, zipFileName],
             vemo: fs.existsSync(path.resolve(entry, 'vemofile.js'))
         }
     }
