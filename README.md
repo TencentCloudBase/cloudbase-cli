@@ -77,7 +77,7 @@ client
 
 `.tcbrc.json` 文件是 Cloudbase CLI 使用的配置文件，主要是为了简化 Cloudbase CLI 使用，方便 TCB 项目开发，当使用 CLI 命令参数缺失时，Cloudbase CLI 会尝试从 `.tcbrc.json` 解析相关参数，使用者可以使用简单的命令操作云开发资源。
 
-```json
+```js
 {
     // 关联环境 ID
     "envId": "dev-97eb6c",

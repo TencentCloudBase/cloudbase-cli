@@ -227,8 +227,6 @@ export async function createFunction(
 
     const uploadSpin = ora('云函数上传中').start()
 
-    console.log(params)
-
     try {
         // 创建云函数
         await tencentcloudScfRequest('CreateFunction', params)
