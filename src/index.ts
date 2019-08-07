@@ -14,7 +14,9 @@ import {
 import { configStore } from './utils/configstore'
 
 export = class Client {
-    list = listEnvs
+    env = {
+        list: listEnvs
+    }
 
     function = {
         invoke: invokeFunction,

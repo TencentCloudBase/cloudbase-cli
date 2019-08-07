@@ -1,6 +1,25 @@
 # API 接口
 
-#### list()
+## 使用
+
+```js
+const Client = require('@cloudbase/cli')
+// 如果已使用 tcb login 登录过，可以不传入 secretId、secretKey 值
+const client = new Client(secretId, secretKey)
+
+client
+    .env
+    .list()
+    .then(function(data) {
+        console.log(data)
+    })
+    .catch(function(err) {
+    })
+```
+
+## Client 类方法
+
+#### env.list()
 
 参数： 无
 

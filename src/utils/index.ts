@@ -139,7 +139,7 @@ export function parseCommandArgs(
 
 // 找到 tcbrc 配置文件
 export async function resolveTcbrcConfig() {
-    const tcbrcPath = path.join(process.cwd(), '.tcbrc.json')
+    const tcbrcPath = path.join(process.cwd(), 'tcbrc.json')
     if (!fs.existsSync(tcbrcPath)) {
         return {}
     }
