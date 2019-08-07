@@ -5,7 +5,7 @@ import { getAuthTokenFromWeb, refreshTmpToken } from './auth'
 import { askForInput, getCredential, getCredentialConfig } from '../utils'
 import { ConfigItems } from '../constant'
 import { configStore } from '../utils/configstore'
-import { Credential } from '../types'
+import { Credential, AuthSecret } from '../types'
 import { TcbError } from '../error'
 
 const logger = new Logger('Login')
@@ -50,7 +50,7 @@ export async function authLogin() {
     const now = Date.now()
 
     if (now < tmpExpired) {
-        logger.log('您已经登录，无需再次登录！')
+        logger.log('您已登录，无需再次登录！')
         return
     }
 
@@ -94,19 +94,13 @@ export async function authLogin() {
 
 // 使用永久密钥登录
 export async function login() {
-    const tcbrc: Credential = await getCredential()
+    const tcbrc: AuthSecret = await getCredential()
     // 已有永久密钥
     if (tcbrc.secretId && tcbrc.secretKey) {
-        logger.log('您已通过 secretKey 登录，无需再次登录！')
+        logger.log('您已登录，无需再次登录！')
         return
     }
 
-    // 存在临时密钥，通过临时密钥登录
-    if (tcbrc.refreshToken && tcbrc.uin) {
-        logger.log('检查到您已获取腾讯云授权，正在尝试通过授权登录')
-        authLogin()
-        return
-    }
     const secretId: string = (await askForInput(
         '请输入腾讯云 SecretID：'
     )) as string

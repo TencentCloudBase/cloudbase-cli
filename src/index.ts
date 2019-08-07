@@ -8,7 +8,8 @@ import {
     getFunctionLog,
     updateFunctionConfig,
     createFunctionTriggers,
-    deleteFunctionTrigger
+    deleteFunctionTrigger,
+    invokeFunction
 } from './function'
 import { configStore } from './utils/configstore'
 
@@ -16,6 +17,7 @@ export = class Client {
     list = listEnvs
 
     function = {
+        invoke: invokeFunction,
         deploy: createFunction,
         list: listFunction,
         delete: deleteFunction,

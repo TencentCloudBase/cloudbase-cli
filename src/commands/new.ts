@@ -11,6 +11,14 @@ program
     .command('new')
     .description('创建一个新的项目')
     .action(async function() {
+        // 项目类型
+        const { type } = await inquirer.prompt({
+            type: 'list',
+            name: 'type',
+            message: '请选择项目类型',
+            choices: ['Node', 'Java', 'PHP'],
+            default: 'Node'
+        })
         const { name } = await inquirer.prompt({
             type: 'input',
             name: 'name',
@@ -18,7 +26,11 @@ program
             default: 'tcb-demo'
         })
         // 模板目录
-        const templatePath = path.resolve(__dirname, '../../templates')
+        const templatePath = path.resolve(
+            __dirname,
+            '../../templates',
+            type.toLowerCase()
+        )
         // 项目目录
         const projectPath = path.join(process.cwd(), name)
 

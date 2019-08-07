@@ -5,7 +5,7 @@ import fse from 'fs-extra'
 import { NodeController } from '../controller'
 import { FunctionDeploy, NodeDeploy } from '../deploy'
 import { TcbError } from '../error'
-import { Credential } from '../types'
+import { Credential, AuthSecret } from '../types'
 import { getCredential } from '../utils'
 
 function checkDeploys(deploys) {
@@ -41,7 +41,7 @@ program
     .description('执行完整的发布')
     .action(async function(name) {
         const { deploys } = await getDeploys(name)
-        const credential: Credential = await getCredential()
+        const credential: AuthSecret = await getCredential()
         if (!credential.secretId || !credential.secretKey) {
             throw new TcbError('你还没有登录，请登录后执行此操作！')
         }
@@ -95,7 +95,7 @@ program
         const {
             deploys: [deploy]
         } = await getDeploys(name)
-        const credential: Credential = await getCredential()
+        const credential: AuthSecret = await getCredential()
         if (deploy.type === 'node') {
             await new NodeController({
                 ...credential,
@@ -108,6 +108,7 @@ program
     .command('show')
     .description('查看状态')
     .action(async function() {
+        // TODO: 修改
         const credential: any = await getCredential()
         await new NodeController({
             ...credential

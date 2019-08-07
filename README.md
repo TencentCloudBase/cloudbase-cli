@@ -15,7 +15,7 @@ tcb -h
 ```
 
 ```
-Usage:  [options] [command]
+Usage: tcb [options] [command]
 
 Options:
   -h, --help                                                    output usage information
@@ -32,7 +32,8 @@ Commands:
   function:log [options] <functionName> [envId]                 打印云函数日志
   function:config:update [functionName] [envId]                 更新云函数配置
   function:trigger:create [functionName] [envId]                创建云函数触发器
-  function:trigger:delete [functionName] [triggerName] [envId]  创建云函数触发器
+  function:trigger:delete [functionName] [triggerName] [envId]  删除云函数触发器
+  function:invoke [functionName] [params] [envId]               触发云函数
 ```
 
 ### 关于 TCB 项目
@@ -47,7 +48,7 @@ TCB 项目文件结构：
 ├── functions // 云函数目录
 │   └── app
 │       └── index.js
-└── tcbrc.js // tcb 项目配置文件
+└── .tcbrc.json // tcb 项目配置文件
 ```
 
 ### 编程式使用
@@ -71,6 +72,53 @@ client
 ```
 
 编程式 API 接口详情：[API 接口](docs/api.md)
+
+### .tcbrc.json 文件说明
+
+`.tcbrc.json` 文件是 Cloudbase CLI 使用的配置文件，主要是为了简化 Cloudbase CLI 使用，方便 TCB 项目开发，当使用 CLI 命令参数缺失时，Cloudbase CLI 会尝试从 `.tcbrc.json` 解析相关参数，使用者可以使用简单的命令操作云开发资源。
+
+```json
+{
+    // 关联环境 ID
+    "envId": "dev-97eb6c",
+    // 函数配置
+    "functions": [
+        {
+            // functions 文件夹下函数文件夹的名称，即函数名
+            "name": "app",
+            // 函数配置
+            "config": {
+                // 超时时间，单位：秒 S
+                "timeout": "5",
+                // 环境变量
+                "envVariables": {
+                    "key": "value"
+                },
+                // 运行时，目前可选运行包含：Nodejs8.9, Php7, Java8
+                // 此参数可以省略，默认为 Nodejs8.9
+                "runtime": "Nodejs8.9"
+            },
+            // 函数触发器，说明见文档: https://cloud.tencent.com/document/product/876/32314
+            "triggers": [
+                {
+                    // name: 触发器的名字                    
+                    "name": "myTrigger",
+                    // type: 触发器类型，目前仅支持 timer （即定时触发器）
+                    "type": "timer",
+                    // config: 触发器配置，在定时触发器下，config 格式为 cron 表达式
+                    "config": "0 0 2 1 * * *"
+                }
+            ],
+            // 触发云函数时的函数参数
+            "params": {},
+            // 函数处理入口，可以省略，默认值为 index.main
+            // 因 Java 的 handler 配置较为特殊，所以当运行时为 Java 时，handler 不能省略
+            // 如：package.Class::mainHandler
+            "handler": "index.main"
+        }
+    ]
+}
+```
 
 ## 命令详解
 
@@ -105,7 +153,7 @@ tcb login --key
 
 ### new
 
-`tcb new` 创建一个包含配置文件 `.tcbrc.js` 的云开发项目
+`tcb new` 创建一个包含配置文件 `.tcbrc.json` 的云开发项目
 
 ![](docs/img/new.png)
 
@@ -121,7 +169,7 @@ tcb login --key
 tcb function:list dev-xxxx
 ```
 
-在包含 `.tcbrc.js` 配置文件的项目根目录下时，CLI 工具会自动读取配置文件中的 `envId` 信息，可以在命令中略去 `envId`
+在包含 `.tcbrc.json` 配置文件的项目根目录下时，CLI 工具会自动读取配置文件中的 `envId` 信息，可以在命令中略去 `envId`
 
 ```shell
 tcb function:list
@@ -144,17 +192,17 @@ tcb function:list -l 10
 
 ### function:deploy
 
-完整命令：`tcb function:deploy [options] [name] [envId]`
+完整命令：`tcb function:deploy [options] [functionName] [envId]`
 
-> **注意** `function:deploy` 命令必须在包含 `.tcbrc.js` 配置文件的项目根目录下执行。
+> **注意** `function:deploy` 命令必须在包含 `.tcbrc.json` 配置文件的项目根目录下执行。
 
-`function:deploy` 会根据 `.tcbrc.js` 配置文件部署云函数，`function:deploy` 命令的参数包含一些可选的选项 options 和可选的函数名称 `name`，以及可选的环境 Id `envId`。
+`function:deploy` 会根据 `.tcbrc.json` 配置文件部署云函数，`function:deploy` 命令的参数包含一些可选的选项 options 和可选的函数名称 `functionName`，以及可选的环境 Id `envId`。
 
-**同 `function:list` 类似，环境 Id 可以列出在命令中，也可以缺省，CLI 会从 `.tcbrc.js` 文件中读取。（下文不做再次说明）**
+**同 `function:list` 类似，环境 Id 可以列出在命令中，也可以缺省，CLI 会从 `.tcbrc.json` 文件中读取。（下文不做再次说明）**
 
-使用 `function:list` 时，`name` 选项是可以省略的。
+使用 `function:list` 时，`functionName` 选项是可以省略的。
 
-当 `name` 省略时，CLI 会部署配置文件中的全部函数
+当 `functionName` 省略时，CLI 会部署配置文件中的全部函数
 
 ```shell
 tcb function:deploy
@@ -162,7 +210,7 @@ tcb function:deploy
 
 ![](docs/img/func-deploy.png)
 
-当 `name` 存在时，CLI 只会部署指定的函数。
+当 `functionName` 存在时，CLI 只会部署指定的函数。
 
 ```shell
 tcb function:deploy dev
@@ -184,9 +232,15 @@ tcb function:deploy --force
 tcb function:deploy dev --force
 ```
 
+### function:invoke
+
+完整命令：`tcb function:invoke [functionName] [params] [envId]`
+
+`function:invoke` 命令会触发云函数运行。当 `functionName` 存在时，CLI 只会触发指定的云函数，否则，CLI 会触发 `.tcbrc.json` 文件中配置的所有函数。
+
 ### function:detail
 
-完整命令：`tcb function:detail [name] [envId]`
+完整命令：`tcb function:detail [functionName] [envId]`
 
 `function:detail` 命令主要用来获取函数的信息。
 
@@ -213,21 +267,21 @@ myTrigger：{"cron": "0 0 2 1 * * *"}
 myTrigger2：{"cron": "0 0 3 1 * * *"}
 ```
 
-同样，当不指定 `name` 和 `envId` 时，CLI 会尝试检索 `.tcbrc` 文件获取 envId，并展示配置文件中的所有函数的信息。
+同样，当不指定 `functionName` 和 `envId` 时，CLI 会尝试检索 `.tcbrc` 文件获取 envId，并展示配置文件中的所有函数的信息。
 
 ### function delete
 
-完整命令：`tcb function:delete [name] [envId]`
+完整命令：`tcb function:delete [functionName] [envId]`
 
 `function:delete` 命令用于删除云函数。
 
-同样，当不指定 `name` 和 `envId` 时，CLI 会尝试检索 `.tcbrc` 文件获取 envId，并删除配置文件中存在的所有函数。
+同样，当不指定 `functionName` 和 `envId` 时，CLI 会尝试检索 `.tcbrc` 文件获取 envId，并删除配置文件中存在的所有函数。
 
 ![](docs/img/func-delete.png)
 
 ### function:log
 
-完整命令 `tcb function:log [options] <name> [envId]`
+完整命令 `tcb function:log [options] <functionName> [envId]`
 
 `function:log` 命令会打印出指定函数的日志信息，使用此命令时必须指定函数的名称。
 
@@ -260,25 +314,25 @@ myTrigger2：{"cron": "0 0 3 1 * * *"}
 日志：....
 ```
 
-同样，在包含 `.tcbrc.js` 配置文件的项目根目录执行命令时，`envId` 是可以略去的。
+同样，在包含 `.tcbrc.json` 配置文件的项目根目录执行命令时，`envId` 是可以略去的。
 
 ### function:config:update
 
-完整命令：`tcb function:config:update [name] [envId]`
+完整命令：`tcb function:config:update [functionName] [envId]`
 
-`function:update:config` 命令会根据 `.tcbrc.js` 文件中的云函数配置信息更新线上云函数的配置。目前支持的配置包含超时时间 `timeout` 和环境变量 `envVariables`。
+`function:update:config` 命令会根据 `.tcbrc.json` 文件中的云函数配置信息更新线上云函数的配置。目前支持的配置包含超时时间 `timeout` 和环境变量 `envVariables`。
 
-同样，当没有指定函数名 `name` 时，CLI 会更新 `.tcbrc.js` 文件包含的所有函数的配置信息。
+同样，当没有指定函数名 `functionName` 时，CLI 会更新 `.tcbrc.json` 文件包含的所有函数的配置信息。
 
 ![](docs/img/func-update.png)
 
 ### function:trigger:create
 
-完整命令：`tcb function:trigger:create [name] [envId]`
+完整命令：`tcb function:trigger:create [functionName] [envId]`
 
-`function:trigger:create` 命令会根据 `.tcbrc.js` 文件中的函数配置创建函数触发器，关于函数触发器说明见文档 [https://cloud.tencent.com/document/product/876/32314](https://cloud.tencent.com/document/product/876/32314)。
+`function:trigger:create` 命令会根据 `.tcbrc.json` 文件中的函数配置创建函数触发器，关于函数触发器说明见文档 [https://cloud.tencent.com/document/product/876/32314](https://cloud.tencent.com/document/product/876/32314)。
 
-一个函数可以包含多个触发器，一个触发器包含了以下 3 个主要信息：name, type, config
+一个函数可以包含多个触发器，一个触发器包含了以下 3 个主要信息：`name, type, config`
 
 ```
 {
@@ -291,7 +345,7 @@ myTrigger2：{"cron": "0 0 3 1 * * *"}
 }
 ```
 
-同样，当没有指定函数名 `name` 时，CLI 会创建 `.tcbrc.js` 文件包含的**所有函数**的**所有触发器**，当制定了函数名 `name` 时，CLI 会创建指定函数的所有触发器。
+同样，当没有指定函数名 `functionName` 时，CLI 会创建 `.tcbrc.json` 文件包含的**所有函数**的**所有触发器**，当制定了函数名 `functionName` 时，CLI 会创建指定函数的所有触发器。
 
 ![](docs/img/func-triggerc.png)
 
@@ -301,10 +355,10 @@ myTrigger2：{"cron": "0 0 3 1 * * *"}
 
 `function:trigger:delete` 命令用于删除函数的触发器。
 
-同样，当没有指定函数名 `name` 时，CLI 会删除 `.tcbrc.js` 文件包含的**所有函数**的**所有触发器**。当只指定了函数名 `functionName` 时，CLI 会删除指定函数的所有触发器，当同时指定了 `triggerName` 时，CLI 只会删除指定的触发器。
+同样，当没有指定函数名 `functionName` 时，CLI 会删除 `.tcbrc.json` 文件包含的**所有函数**的**所有触发器**。当只指定了函数名 `functionName` 时，CLI 会删除指定函数的所有触发器，当同时指定了 `triggerName` 时，CLI 只会删除指定的触发器。
 
 ```
-# 删除 tcbrc.js 文件中所有函数的所有触发器
+# 删除 tcbrc.json 文件中所有函数的所有触发器
 tcb function:trigger:delete
 
 # 删除函数 app 的所有触发器
