@@ -2,6 +2,17 @@
 const program = require('commander')
 const chalk = require('chalk')
 const logSymbols = require('log-symbols')
+const updateNotifier = require('update-notifier')
+const pkg = require('../package.json')
+
+// 检查更新
+const notifier = updateNotifier({
+    pkg,
+    // 检查更新间隔 1h
+    updateCheckInterval: 1000 * 60 * 60
+})
+notifier.notify()
+
 // 注册命令
 require('../lib')
 
