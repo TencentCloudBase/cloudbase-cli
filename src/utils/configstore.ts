@@ -25,7 +25,7 @@ class ConfigStore extends _ConfigStore {
 
     // TODO: 删除旧的配置文件（在后续迭代中删除）
     deleteOldConfig() {
-        const oldConfigPath = path.resolve(os.homedir(), '.tcbrc.json')
+        const oldConfigPath = path.resolve(os.homedir(), 'tcbrc.json')
         if (fs.existsSync(oldConfigPath)) {
             fs.unlinkSync(oldConfigPath)
         }

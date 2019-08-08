@@ -12,7 +12,7 @@ import {
 
 const envId = 'dev-97eb6c'
 
-test('列出所有函数: function:list', async () => {
+test('列出所有函数: functions:list', async () => {
     const data = await listFunction({
         envId
     })
@@ -20,7 +20,7 @@ test('列出所有函数: function:list', async () => {
     expect(data.length).toBeGreaterThanOrEqual(1)
 })
 
-test('列出所有函数: function:list --offset', async () => {
+test('列出所有函数: functions:list --offset', async () => {
     const data = await listFunction({
         envId,
         offset: 1
@@ -29,7 +29,7 @@ test('列出所有函数: function:list --offset', async () => {
     expect(data.length).toBeGreaterThanOrEqual(0)
 })
 
-test('列出所有函数: function:list --limit', async () => {
+test('列出所有函数: functions:list --limit', async () => {
     const data = await listFunction({
         envId,
         limit: 1
@@ -75,7 +75,7 @@ test('deploy function', async () => {
     expect(res).toBe(undefined)
 })
 
-test('获取函数详情: function:detail', async () => {
+test('获取函数详情: functions:detail', async () => {
     const detail = await getFunctionDetail({
         envId,
         functionName: 'app'
@@ -85,7 +85,7 @@ test('获取函数详情: function:detail', async () => {
     expect(detail.MemorySize).toEqual(256)
 })
 
-test('获取函数日志: function:log', async () => {
+test('获取函数日志: functions:log', async () => {
     const logs = await getFunctionLog({
         envId,
         functionName: 'app'
@@ -94,7 +94,7 @@ test('获取函数日志: function:log', async () => {
     expect(logs.length).toBeGreaterThanOrEqual(0)
 })
 
-test('获取函数日志: function:log', async () => {
+test('获取函数日志: functions:log', async () => {
     const logs = await getFunctionLog({
         envId,
         functionName: 'app'
@@ -103,7 +103,7 @@ test('获取函数日志: function:log', async () => {
     expect(logs.length).toEqual(0)
 })
 
-test('更新函数配置: function:config:update', async () => {
+test('更新函数配置: functions:config:update', async () => {
     await updateFunctionConfig({
         envId,
         functionName: 'app',
@@ -120,7 +120,7 @@ test('更新函数配置: function:config:update', async () => {
     expect(detail.Timeout).toEqual(6)
 })
 
-test('创建触发器: function:trigger:create', async () => {
+test('创建触发器: functions:trigger:create', async () => {
     const res = await createFunctionTriggers({
         envId,
         functionName: 'app',
@@ -145,7 +145,7 @@ test('创建触发器: function:trigger:create', async () => {
     expect(detail.Triggers.length).toBeGreaterThan(0)
 })
 
-test('删除触发器: function:trigger:delete', async () => {
+test('删除触发器: functions:trigger:delete', async () => {
     const res = await deleteFunctionTrigger({
         envId,
         functionName: 'app',
@@ -162,7 +162,7 @@ test('删除触发器: function:trigger:delete', async () => {
     expect(detail.Triggers.length).toEqual(0)
 })
 
-test('触发函数: function:invoke', async () => {
+test('触发函数: functions:invoke', async () => {
     const res = await invokeFunction({
         envId,
         functionName: 'app',
@@ -178,7 +178,7 @@ test('触发函数: function:invoke', async () => {
     )
 })
 
-test('删除函数: function:delete', async () => {
+test('删除函数: functions:delete', async () => {
     const res = await deleteFunction({
         envId,
         functionName: 'app'

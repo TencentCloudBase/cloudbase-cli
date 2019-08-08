@@ -1,5 +1,5 @@
 {
-    "envId": "dev-xxx",
+    "envId": "{{envId}}",
     "functions": [
         {
             "name": "app",
@@ -8,7 +8,7 @@
                 "envVariables": {
                     "key": "value"
                 },
-                "runtime": "Java8"
+                "runtime": "Nodejs8.9"
             },
             "triggers": [
                 {
@@ -18,7 +18,7 @@
                 }
             ],
             "params": {},
-            "handler": "example.Hello::mainHandler"
+            "handler": "index.main"
         }
     ]
 }

@@ -58,7 +58,7 @@ async function getConfigFunctions() {
 
 // 创建云函数
 program
-    .command('function:deploy [functionName] [envId]')
+    .command('functions:deploy [functionName] [envId]')
     .option('--force', '如果存在同名函数，上传后覆盖同名函数')
     .description('创建云函数')
     .action(async function(name: string, envId: string, options) {
@@ -107,7 +107,7 @@ program
 
 // 展示云函数列表
 program
-    .command('function:list [envId]')
+    .command('functions:list [envId]')
     .option('-l, --limit <limit>', '返回数据长度，默认值为 20')
     .option('-o, --offset <offset>', '数据偏移量，默认值为 0')
     .description('展示云函数列表')
@@ -141,7 +141,7 @@ program
 
 // 调用云函数
 // program
-//     .command('function:invoke [functionName] [envId]')
+//     .command('functions:invoke [functionName] [envId]')
 //     .description('调用云函数')
 //     .action(async function(name: string, envId: string) {
 
@@ -149,7 +149,7 @@ program
 
 // 删除云函数
 program
-    .command('function:delete [functionName] [envId]')
+    .command('functions:delete [functionName] [envId]')
     .description('删除云函数')
     .action(async function(name: string, envId: string) {
         const assignEnvId = await getEnvId(envId)
@@ -239,7 +239,7 @@ function logDetail(info, name) {
 
 // 获取云函数信息
 program
-    .command('function:detail [functionName] [envId]')
+    .command('functions:detail [functionName] [envId]')
     .description('获取云函数信息')
     .action(async function(name: string, envId: string) {
         const assignEnvId = await getEnvId(envId)
@@ -265,7 +265,7 @@ program
 
 // 打印函数日志
 program
-    .command('function:log <functionName> [envId]')
+    .command('functions:log <functionName> [envId]')
     .description('打印云函数日志')
     .option('-i, --reqId <reqId>', '函数请求 Id')
     .option(
@@ -397,7 +397,7 @@ program
 
 // 更新云函数的配置
 program
-    .command('function:config:update [functionName] [envId]')
+    .command('functions:config:update [functionName] [envId]')
     .description('更新云函数配置')
     .action(async function(name: string, envId: string) {
         const assignEnvId = await getEnvId(envId)
@@ -449,7 +449,7 @@ program
 
 // 创建函数触发器
 program
-    .command('function:trigger:create [functionName] [envId]')
+    .command('functions:trigger:create [functionName] [envId]')
     .description('创建云函数触发器')
     .action(async function(name: string, envId: string) {
         const assignEnvId = await getEnvId(envId)
@@ -503,7 +503,7 @@ program
 
 // 删除函数触发器
 program
-    .command('function:trigger:delete [functionName] [triggerName] [envId]')
+    .command('functions:trigger:delete [functionName] [triggerName] [envId]')
     .description('删除云函数触发器')
     .action(async function(
         functionName: string,
@@ -589,7 +589,7 @@ program
 
 // 触发云函数
 program
-    .command('function:invoke [functionName] [params] [envId]')
+    .command('functions:invoke [functionName] [params] [envId]')
     .description('触发云函数')
     .action(async function(
         name: string,

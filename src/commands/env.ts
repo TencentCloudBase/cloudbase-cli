@@ -3,7 +3,7 @@ import { listEnvs } from '../env'
 import { printCliTable } from '../utils'
 
 program
-    .command('list')
+    .command('env:list')
     .description('列出云开发所有环境')
     .action(async function() {
         const data = await listEnvs()
