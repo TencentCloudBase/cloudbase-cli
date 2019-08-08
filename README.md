@@ -34,9 +34,9 @@ TCB 项目文件结构：
 
 ### 2. 编写函数
 
-所有函数都存放在 `functions` 目录下，并以函数名作为文件夹名称。`tcb init` 时默认会成一些函数模板，不需要的可以删除。
+为了规范使用，所有函数都统一存放在 `functions` 目录下，并以函数名作为文件夹名称。`tcb init` 创建项目时默认会成 Node 函数模板，供使用参考。
 
-下面是 `functions/node/index.js` 的内容
+例如，创建一个 app 函数，下面是 `functions/app/index.js` 的内容
 
 ```js
 'use strict'
@@ -51,7 +51,7 @@ exports.main = (event, context, callback) => {
 
 ### 3. 修改配置
 
-项目配置存储在 `tcbrc.json` 文件中，默认生成的函数配置为 Node 函数的配置，其他语言如 PHP，Java 等需要修改对应的 [handler(运行入口) 和 runtime(运行时)](#tcbrc.json%20%E6%96%87%E4%BB%B6%E8%AF%B4%E6%98%8E)
+项目配置存储在 `tcbrc.json` 文件中，默认生成的函数配置为 Node 语言相关的配置，其他语言如 PHP，Java 等需要修改对应的 `handler(运行入口) 和 runtime(运行时)`，参考下面的 [tcbrc.json 文件说明部分](#tcbrc.json%20%E6%96%87%E4%BB%B6%E8%AF%B4%E6%98%8E)
 
 ```json
 {
@@ -82,7 +82,7 @@ exports.main = (event, context, callback) => {
 
 #### tcbrc.json 文件说明
 
-`tcbrc.json` 文件是 Cloudbase CLI 使用的配置文件，主要是为了简化 Cloudbase CLI 使用，方便 TCB 项目开发，当使用 CLI 命令参数缺失时，Cloudbase CLI 会尝试从 `tcbrc.json` 解析相关参数，使用者可以使用简单的命令操作云开发资源。
+`tcbrc.json` 文件是 Cloudbase CLI 使用的配置文件，主要是为了简化 Cloudbase CLI 使用，方便 TCB 项目开发，当使用 CLI 命令参数缺失时，Cloudbase CLI 会尝试从 `tcbrc.json` 解析相关参数， 方便使用者以更简单的命令操作云开发资源。
 
 ```js
 {
@@ -129,10 +129,10 @@ exports.main = (event, context, callback) => {
 
 ### 4. 部署函数
 
-在项目根目录下运行下面的命令，即可部署 node 函数到云端
+最后，在项目根目录下运行下面的命令，即可部署 app 函数到云端
 
 ```
-tcb functions:deploy node
+tcb functions:deploy app
 ```
 
 ## 所有命令

@@ -2,7 +2,7 @@ const Client = require('../../lib')
 
 const client = new Client()
 
-client.function
+client.functions
     .deploy({
         envId: 'dev-97eb6c',
         func: {
@@ -38,19 +38,19 @@ client.function
     .then()
     .catch(console.log)
 
-client
+client.env
     .list()
     .then(console.log)
     .catch(console.log)
 
-client.function
+client.functions
     .list({
         envId: 'dev-97eb6c'
     })
     .then(console.log)
     .catch(console.log)
 
-client.function
+client.functions
     .detail({
         envId: 'dev-97eb6c',
         functionName: 'app'
@@ -60,7 +60,7 @@ client.function
     })
     .catch(console.log)
 
-client.function
+client.functions
     .log({
         envId: 'dev-97eb6c',
         functionName: 'test-scf',
@@ -69,7 +69,7 @@ client.function
     .then(console.log)
     .catch(console.log)
 
-client.function.trigger
+client.functions.trigger
     .create({
         envId: 'dev-97eb6c',
         functionName: 'app',
@@ -87,7 +87,7 @@ client.function.trigger
     .then(console.log)
     .catch(console.log)
 
-client.function.trigger
+client.functions.trigger
     .delete({
         envId: 'dev-97eb6c',
         functionName: 'app',
@@ -96,7 +96,7 @@ client.function.trigger
     .then(console.log)
     .catch(console.log)
 
-client.function.config
+client.functions.config
     .update({
         envId: 'dev-97eb6c',
         functionName: 'app',
@@ -114,7 +114,7 @@ client.function.config
     .catch(console.log)
 
 setTimeout(() => {
-    client.function
+    client.functions
         .delete({
             envId: 'dev-97eb6c',
             functionName: 'app'

@@ -25,7 +25,7 @@ client
 
 响应：void
 
-#### function.invoke(options)
+#### functions.invoke(options)
 
 参数：
 
@@ -54,7 +54,7 @@ client
 }
 ```
 
-#### function.deploy(options)
+#### functions.deploy(options)
 
 参数：
 
@@ -95,7 +95,7 @@ client
 
 响应：void
 
-#### function.list(options)
+#### functions.list(options)
 
 参数：
 
@@ -124,7 +124,7 @@ client
 ]
 ```
 
-#### function.delete(options)
+#### functions.delete(options)
 
 参数：
 
@@ -137,7 +137,7 @@ client
 
 响应：void
 
-#### function.detail(options)
+#### functions.detail(options)
 
 参数：
 
@@ -189,7 +189,7 @@ client
 }
 ```
 
-#### function.log(options)
+#### functions.log(options)
 
 参数：
 
@@ -219,7 +219,7 @@ client
 ]
 ```
 
-#### function.config.update(options)
+#### functions.config.update(options)
 
 参数：
 
@@ -241,7 +241,7 @@ client
 
 响应：void
 
-#### function.trigger.create(options)
+#### functions.trigger.create(options)
 
 参数：
 
@@ -264,7 +264,7 @@ client
 
 响应：void
 
-#### function.trigger.delete(options)
+#### functions.trigger.delete(options)
 
 参数：
 

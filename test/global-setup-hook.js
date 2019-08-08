@@ -4,7 +4,7 @@ const Client = require('../lib')
 const client = new Client()
 
 module.exports = async () => {
-    await client.function.deploy({
+    await client.functions.deploy({
         envId: 'dev-97eb6c',
         func: {
             // functions 文件夹下函数文件夹的名称，即函数名
