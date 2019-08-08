@@ -18,7 +18,7 @@ export = class Client {
         list: listEnvs
     }
 
-    function = {
+    functions = {
         invoke: invokeFunction,
         deploy: createFunction,
         list: listFunction,

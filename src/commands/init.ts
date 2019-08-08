@@ -1,4 +1,5 @@
 import fs from 'fs'
+import ora from 'ora'
 import fse from 'fs-extra'
 import path from 'path'
 import inquirer from 'inquirer'
@@ -12,8 +13,12 @@ program
     .command('init')
     .description('创建并初始化一个新的项目')
     .action(async function() {
+        const load = ora('拉取环境列表').start()
         const envData = (await listEnvs()) || []
-        const envs = envData.map(item => `${item.envId}:${item.packageName}`)
+        load.succeed('获取环境列表成功')
+        const envs: string[] = envData.map(
+            item => `${item.envId}:${item.packageName}`
+        )
 
         if (!envs.length) {
             throw new TcbError(
@@ -35,28 +40,8 @@ program
             default: 'tcb-demo'
         })
 
-        const { template } = await inquirer.prompt({
-            type: 'confirm',
-            name: 'template',
-            message: '是否生成函数模板文件',
-            default: 'y'
-        })
-
-        let selectLangs: string[] = []
-        // 选择模板语言
-        if (template) {
-            const { langs } = await inquirer.prompt({
-                type: 'checkbox',
-                name: 'langs',
-                message: '选择模板函数语言类型（可多选）',
-                choices: ['Node', 'Java', 'PHP'],
-                default: 'node'
-            })
-            selectLangs = langs
-        }
-
         // 模板目录
-        const templatePath = path.resolve(__dirname, '../../templates')
+        const templatePath = path.resolve(__dirname, '../../templates/faas')
         // 项目目录
         const projectPath = path.join(process.cwd(), name)
 
@@ -78,25 +63,7 @@ program
         }
 
         // 拷贝模板
-        fse.copySync(templatePath, projectPath, {
-            // 过滤没有选择的语言
-            filter(src) {
-                if (
-                    src.indexOf('functions') === -1 ||
-                    src === path.join(templatePath, 'functions')
-                ) {
-                    return true
-                }
-                return selectLangs.some(lang => {
-                    const selectPath = path.join(
-                        templatePath,
-                        'functions',
-                        lang.toLocaleLowerCase()
-                    )
-                    return src.indexOf(selectPath) > -1
-                })
-            }
-        })
+        fse.copySync(templatePath, projectPath)
 
         // 重命名 _gitignore 文件
         fs.renameSync(
