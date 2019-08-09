@@ -23,7 +23,22 @@ program.action(cmd => {
 
 // 当没有输入任何命令时，显示帮助信息
 if (process.argv.length < 3) {
-    program.help()
+    program.outputHelp()
+    const tips = `\nTips:
+
+    ${chalk.gray('–')} 登录
+  
+      ${chalk.cyan('$ tcb login')}
+  
+    ${chalk.gray('–')} 列出环境列表
+  
+      ${chalk.cyan('$ tcb env:list')}
+  
+    ${chalk.gray('–')} 部署云函数
+  
+      ${chalk.cyan('$ tcb functions:deploy')}`
+
+    console.log(tips)
 }
 
 program.parse(process.argv)
