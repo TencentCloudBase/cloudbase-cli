@@ -8,11 +8,11 @@ import { TcbError } from '../error'
 import { successLog } from '../logger'
 import { listEnvs } from '../env'
 
-// 创建一个新的 tcb 项目
 program
     .command('init')
+    .option('--server', '创建 node 项目')
     .description('创建并初始化一个新的项目')
-    .action(async function() {
+    .action(async function(cmd) {
         const load = ora('拉取环境列表').start()
         const envData = (await listEnvs()) || []
         load.succeed('获取环境列表成功')
@@ -41,7 +41,11 @@ program
         })
 
         // 模板目录
-        const templatePath = path.resolve(__dirname, '../../templates/faas')
+        const templatePath = path.resolve(
+            __dirname,
+            '../../templates',
+            cmd.server ? 'server/node' : 'faas'
+        )
         // 项目目录
         const projectPath = path.join(process.cwd(), name)
 

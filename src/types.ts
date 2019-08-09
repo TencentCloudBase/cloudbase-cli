@@ -27,14 +27,32 @@ export interface AuthSecret {
     token?: string
 }
 
+export interface SSH {
+    host: string
+    port: string
+    username: string
+    password: string
+}
+
 export interface IConfig {
     credential?: Credential
+    ssh?: SSH
 }
 
 export interface IGetCredential {
     secretId?: string
     secretKey?: string
     token: string
+}
+
+export enum ServerLanguageType {
+    node = 'node'
+}
+
+export interface ServerConfig {
+    type: ServerLanguageType.node
+    name: string
+    path: string
 }
 
 /**

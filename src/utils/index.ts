@@ -5,7 +5,7 @@ import readline from 'readline'
 import tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
 import { refreshTmpToken } from '../auth/auth'
 import { configStore } from './configstore'
-import { IConfig, Credential, AuthSecret } from '../types'
+import { IConfig, Credential, AuthSecret, SSH } from '../types'
 import { ConfigItems } from '../constant'
 import { TcbError } from '../error'
 
@@ -33,7 +33,7 @@ export async function zipDir(dirPath, outputPath) {
     })
 }
 
-export function askForInput(question) {
+export function askForInput(question): Promise<string> {
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -65,9 +65,13 @@ export function callCloudApi(secretId, secretKey) {
     })
 }
 
+export function getCredentialConfig(): Credential {
+    return configStore.get(ConfigItems.credentail) as Credential
+}
+
 // 获取身份认证信息并校验、自动刷新
 export async function getCredential(): Promise<AuthSecret> {
-    const credential: Credential = configStore.get(ConfigItems.credentail)
+    const credential = getCredentialConfig()
 
     // 存在永久密钥
     if (credential.secretId && credential.secretKey) {
@@ -103,6 +107,40 @@ export async function getCredential(): Promise<AuthSecret> {
 
     // 无有效身份信息，报错
     throw new TcbError('无有效身份信息，请使用 tcb login 登录')
+}
+
+export function getSSHConfig(): SSH {
+    return (configStore.get(ConfigItems.ssh) || {}) as SSH
+}
+
+export async function getSSH(): Promise<SSH> {
+    let sshConfig = getSSHConfig()
+    if (
+        !sshConfig.host ||
+        !sshConfig.port ||
+        !sshConfig.username ||
+        !sshConfig.password
+    ) {
+        let { host, port = '22', username = 'root', password } = sshConfig
+        host =
+            (await askForInput(
+                `请输入服务器 host${host ? `(${host})` : ''}:`
+            )) || host
+        port = (await askForInput(`请输入服务器 ssh 端口(${port}):`)) || port
+        username = (await askForInput(`请输入用户名(${username}):`)) || username
+        password = await askForInput(
+            `请输入登录密码${password ? `(${password})` : ''}:`
+        )
+        let config: SSH = {
+            host,
+            port,
+            username,
+            password
+        }
+        configStore.set(ConfigItems.ssh, config)
+        return config
+    }
+    return sshConfig
 }
 
 // 获取 tcb 存储在本地的配置

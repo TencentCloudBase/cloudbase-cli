@@ -1,7 +1,7 @@
 import { createServer, IncomingMessage, ServerResponse, Server } from 'http'
-import  os from 'os'
-import  portfinder from 'portfinder'
-import  queryString from 'query-string'
+import os from 'os'
+import portfinder from 'portfinder'
+import queryString from 'query-string'
 import open from 'open'
 import ora from 'ora'
 import request from 'request'
@@ -95,7 +95,7 @@ export async function getAuthTokenFromWeb(): Promise<Credential> {
                         'Access-Control-Allow-Origin': '*',
                         'Content-Type': 'text/plain',
                         // 立即关闭 http 连接
-                        'Connection': 'close'
+                        Connection: 'close'
                     })
 
                     res.end('ok')

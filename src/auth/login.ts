@@ -1,8 +1,8 @@
-import  tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
+import tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
 import ora from 'ora'
 import Logger from '../logger'
 import { getAuthTokenFromWeb, refreshTmpToken } from './auth'
-import { askForInput, getCredential } from '../utils'
+import { askForInput, getCredential, getCredentialConfig } from '../utils'
 import { ConfigItems } from '../constant'
 import { configStore } from '../utils/configstore'
 import { Credential, AuthSecret } from '../types'
@@ -31,14 +31,9 @@ async function checkAuth(credential: Credential) {
     })
 }
 
-function getAuthData(): Credential {
-    const tcbrc = configStore.get(ConfigItems.credentail)
-    return tcbrc as Credential
-}
-
 // 打开腾讯云 TCB 控制台，通过获取临时密钥登录，临时密钥可续期，最长时间为 1 个月
 export async function authLogin() {
-    const tcbrc: Credential = getAuthData()
+    const tcbrc: Credential = getCredentialConfig()
     // 已有永久密钥
     if (tcbrc.secretId && tcbrc.secretKey) {
         logger.log('您已登录，无需再次登录！')
@@ -115,10 +110,7 @@ export async function login() {
 
     const cloudSpinner = ora('正在验证腾讯云密钥...').start()
     try {
-        await checkAuth({
-            tmpSecretId: secretId,
-            tmpSecretKey: secretKey
-        })
+        await checkAuth({ tmpSecretId: secretId, tmpSecretKey: secretKey })
         cloudSpinner.succeed('腾讯云密钥验证成功')
     } catch (e) {
         cloudSpinner.fail(
