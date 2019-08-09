@@ -2,6 +2,17 @@
 const program = require('commander')
 const chalk = require('chalk')
 const logSymbols = require('log-symbols')
+const updateNotifier = require('update-notifier')
+const pkg = require('../package.json')
+
+// 检查更新
+const notifier = updateNotifier({
+    pkg,
+    // 检查更新间隔 1h
+    updateCheckInterval: 1000 * 60 * 60
+})
+notifier.notify()
+
 // 注册命令
 require('../lib')
 
@@ -12,22 +23,34 @@ program.action(cmd => {
 
 // 当没有输入任何命令时，显示帮助信息
 if (process.argv.length < 3) {
-    program.help()
+    program.outputHelp()
+    const tips = `\nTips:
+
+    ${chalk.gray('–')} 登录
+  
+      ${chalk.cyan('$ tcb login')}
+  
+    ${chalk.gray('–')} 列出环境列表
+  
+      ${chalk.cyan('$ tcb env:list')}
+  
+    ${chalk.gray('–')} 部署云函数
+  
+      ${chalk.cyan('$ tcb functions:deploy')}`
+
+    console.log(tips)
 }
 
 program.parse(process.argv)
 
 function errorHandler(err) {
-    // 当存在错误栈，且不是 SDK 请求返回的错误时，才打印错误栈
-    if (err.stack && err.name !== 'TencentCloudSDKHttpException') {
+    const stackIngoreErrors = ['TencentCloudSDKHttpException', 'TcbError']
+    // 忽略自定义错误的错误栈
+    if (err.stack && !stackIngoreErrors.includes(err.name)) {
         console.log(err.stack)
     }
     // 3 空格，兼容中文字符编码长度问题
     console.log(logSymbols.error + ' ' + chalk.red(err.message))
-    process.exitCode = err.exit || 2
-    setTimeout(function() {
-        process.exit()
-    }, 250)
 }
 
 process.on('uncaughtException', errorHandler)

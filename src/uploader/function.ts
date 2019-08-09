@@ -1,8 +1,8 @@
-import * as path from 'path'
-import * as fs from 'fs'
+import  path from 'path'
+import  fs from 'fs'
 import Logger from '../logger'
 import { IFunctionDeployConfig } from '../deploy/function'
-import * as tcloud from '../../deps/tencentcloud-sdk-nodejs'
+import  tcloud from '../../deps/tencentcloud-sdk-nodejs'
 
 const logger = new Logger('FunctionUploader')
 

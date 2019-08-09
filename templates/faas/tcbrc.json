@@ -1,0 +1,24 @@
+{
+    "envId": "{{envId}}",
+    "functions": [
+        {
+            "name": "app",
+            "config": {
+                "timeout": "5",
+                "envVariables": {
+                    "key": "value"
+                },
+                "runtime": "Nodejs8.9"
+            },
+            "triggers": [
+                {
+                    "name": "myTrigger",
+                    "type": "timer",
+                    "config": "0 0 2 1 * * *"
+                }
+            ],
+            "params": {},
+            "handler": "index.main"
+        }
+    ]
+}

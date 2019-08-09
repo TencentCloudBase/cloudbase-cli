@@ -1,7 +1,7 @@
-import * as path from 'path'
-import * as del from 'del'
-import * as makeDir from 'make-dir'
-import * as ora from 'ora'
+import path from 'path'
+import del from 'del'
+import makeDir from 'make-dir'
+import ora from 'ora'
 import { IFunctionPackResult } from '../types'
 import { zipDir } from '../utils'
 
@@ -13,10 +13,7 @@ export class FunctionPack {
         this.distPath = distPath
     }
 
-    /**
-     * .js -> .js
-     *        assets
-     */
+    // 构建 zip 压缩包
     async build(name: string): Promise<IFunctionPackResult> {
         const entry = path.resolve(process.cwd(), this.path)
         const distPath = path.resolve(process.cwd(), this.distPath)

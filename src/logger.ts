@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import * as logSymbols from 'log-symbols'
+import logSymbols from 'log-symbols'
 
 export default class Logger {
     private moduleName: string

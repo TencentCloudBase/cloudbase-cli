@@ -1,4 +1,4 @@
-import * as program from 'commander'
+import program from 'commander'
 import { login, authLogin } from '../auth'
 
 // 登录

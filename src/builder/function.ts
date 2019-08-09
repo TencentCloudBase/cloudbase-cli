@@ -1,10 +1,10 @@
-import * as path from 'path'
+import  path from 'path'
 import { IBuildResult } from './base'
-import * as makeDir from 'make-dir'
+import  makeDir from 'make-dir'
 import Logger from '../logger'
 import { zipDir } from '../utils'
 import { IFunctionDeployConfig } from '../deploy/function'
-import * as del from 'del'
+import  del from 'del'
 
 const logger = new Logger('FunctionBuilder')
 

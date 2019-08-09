@@ -1,11 +1,12 @@
-import * as tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
-import * as ora from 'ora'
+import  tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
+import ora from 'ora'
 import Logger from '../logger'
 import { getAuthTokenFromWeb, refreshTmpToken } from './auth'
 import { askForInput, getCredential } from '../utils'
 import { ConfigItems } from '../constant'
 import { configStore } from '../utils/configstore'
-import { Credential } from '../types'
+import { Credential, AuthSecret } from '../types'
+import { TcbError } from '../error'
 
 const logger = new Logger('Login')
 
@@ -49,7 +50,7 @@ export async function authLogin() {
     const now = Date.now()
 
     if (now < tmpExpired) {
-        logger.log('您已经登录，无需再次登录！')
+        logger.log('您已登录，无需再次登录！')
         return
     }
 
@@ -68,9 +69,8 @@ export async function authLogin() {
         }
         authSpinner.succeed('获取授权成功')
     } catch (error) {
-        console.log(error)
         authSpinner.fail(`获取授权失败 ${error}`)
-        return
+        throw new TcbError(error)
     }
 
     if (!credential.refreshToken || !credential.uin) {
@@ -84,10 +84,7 @@ export async function authLogin() {
         await checkAuth(credential)
         scfCheckSpinner.succeed('密钥权限验证成功')
     } catch (e) {
-        scfCheckSpinner.fail(
-            '密钥验证失败，请检查密钥是否正确或本机网络代理有问题'
-        )
-        return
+        throw new TcbError(e.message)
     }
 
     configStore.set(ConfigItems.credentail, credential)
@@ -97,19 +94,13 @@ export async function authLogin() {
 
 // 使用永久密钥登录
 export async function login() {
-    const tcbrc: Credential = await getCredential()
+    const tcbrc: AuthSecret = await getCredential()
     // 已有永久密钥
     if (tcbrc.secretId && tcbrc.secretKey) {
-        logger.log('您已通过 secretKey 登录，无需再次登录！')
+        logger.log('您已登录，无需再次登录！')
         return
     }
 
-    // 存在临时密钥，通过临时密钥登录
-    if (tcbrc.refreshToken && tcbrc.uin) {
-        logger.log('检查到您已获取腾讯云授权，正在尝试通过授权登录')
-        authLogin()
-        return
-    }
     const secretId: string = (await askForInput(
         '请输入腾讯云 SecretID：'
     )) as string

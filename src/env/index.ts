@@ -1,11 +1,12 @@
-import { getCredential, printCliTable } from '../utils'
-import * as tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
+import { getCredential } from '../utils'
+import tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
+import { AuthSecret } from '../types'
 
 async function tencentcloudTcbEnvRequest(
     interfaceName: string,
     params?: Record<string, any>
 ) {
-    const credential = await getCredential()
+    const credential: AuthSecret = await getCredential()
     const { secretId, secretKey, token } = credential
     const TcbClient = tencentcloud.tcb.v20180608.Client
     const models = tencentcloud.tcb.v20180608.Models
@@ -37,11 +38,15 @@ async function tencentcloudTcbEnvRequest(
 export async function listEnvs() {
     const res: any = await tencentcloudTcbEnvRequest('DescribeEnvs')
     const { EnvList = [] } = res
-    const head = ['EnvId', 'PackageName', 'Source', 'CreateTime']
-    const data: string[][] = []
+    const data: Record<string, string>[] = []
     EnvList.forEach(env => {
         const { EnvId, PackageName, Source, CreateTime } = env
-        data.push([EnvId, PackageName, Source, CreateTime])
+        data.push({
+            envId: EnvId,
+            packageName: PackageName,
+            source: Source,
+            createTime: CreateTime
+        })
     })
-    printCliTable(head, data)
+    return data
 }

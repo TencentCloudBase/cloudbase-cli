@@ -1,22 +1,27 @@
 import chalk from 'chalk'
-import * as fs from 'fs'
-import * as path from 'path'
-import * as ora from 'ora'
-import { getCredential, printCliTable } from '../utils'
-import * as tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
-import { successLog, errorLog } from '../logger'
+import fs from 'fs'
+import path from 'path'
+import ora from 'ora'
+import { getCredential } from '../utils'
+import tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
+import { successLog } from '../logger'
 import {
-    ICloudFunctionTrigger,
-    ICloudFunction,
-    ICloudFunctionConfig
+    AuthSecret,
+    IFunctionTriggerOptions,
+    ICreateFunctionOptions,
+    IListFunctionOptions,
+    IFunctionLogOptions,
+    IUpdateFunctionConfigOptions,
+    IFunctionBatchOptions
 } from '../types'
 import { FunctionPack } from './function-pack'
+import { TcbError } from '../error'
 
 async function tencentcloudScfRequest(
     interfaceName: string,
     params?: Record<string, any>
 ) {
-    const credential = await getCredential()
+    const credential: AuthSecret = await getCredential()
     const { secretId, secretKey, token } = credential
     const ScfClient = tencentcloud.scf.v20180416.Client
     const models = tencentcloud.scf.v20180416.Models
@@ -47,10 +52,10 @@ async function tencentcloudScfRequest(
 
 // 创建函数触发器
 export async function createFunctionTriggers(
-    name: string,
-    triggers: ICloudFunctionTrigger[],
-    envId: string
-) {
+    options: IFunctionTriggerOptions
+): Promise<void> {
+    const { functionName: name, triggers, envId } = options
+
     const parsedTriggers = triggers.map(item => ({
         TriggerName: item.name,
         Type: item.type,
@@ -64,82 +69,131 @@ export async function createFunctionTriggers(
             Triggers: JSON.stringify(parsedTriggers),
             Count: parsedTriggers.length
         })
-
         successLog(`[${name}] 创建云函数触发器成功！`)
     } catch (e) {
-        errorLog(`[${name}] 创建触发器失败：${e.message}`)
+        throw new TcbError(`[${name}] 创建触发器失败：${e.message}`)
     }
 }
 
+// 批量部署函数触发器
 export async function batchCreateTriggers(
-    functions: ICloudFunction[],
-    envId: string
-) {
-    functions.forEach(async func => {
-        // 一个函数部署失败不影响其他函数部署
-        try {
-            await createFunctionTriggers(func.name, func.triggers, envId)
-        } catch (e) {
-            errorLog(e.message)
-        }
-    })
+    options: IFunctionBatchOptions
+): Promise<void> {
+    const { functions, envId } = options
+
+    const promises = functions.map(func =>
+        (async () => {
+            try {
+                await createFunctionTriggers({
+                    functionName: func.name,
+                    triggers: func.triggers,
+                    envId
+                })
+            } catch (e) {
+                throw new TcbError(e.message)
+            }
+        })()
+    )
+
+    await Promise.all(promises)
 }
 
 // 删除函数触发器
 export async function deleteFunctionTrigger(
-    name: string,
-    triggerName: string,
-    envId: string
-) {
+    options: IFunctionTriggerOptions
+): Promise<void> {
+    const { functionName, triggerName, envId } = options
     try {
         await tencentcloudScfRequest('DeleteTrigger', {
-            FunctionName: name,
+            FunctionName: functionName,
             Namespace: envId,
             TriggerName: triggerName,
             Type: 'timer'
         })
-        successLog(`[${name}] 删除云函数触发器 ${triggerName} 成功！`)
+        successLog(`[${functionName}] 删除云函数触发器 ${triggerName} 成功！`)
     } catch (e) {
-        errorLog(`[${name}] 删除触发器失败：${e.message}`)
+        throw new TcbError(`[${functionName}] 删除触发器失败：${e.message}`)
     }
 }
 
 export async function batchDeleteTriggers(
-    functions: ICloudFunction[],
-    envId: string
-) {
-    functions.forEach(async func => {
-        // 一个函数部署失败不影响其他函数部署
-        try {
-            func.triggers.forEach(async trigger => {
-                await deleteFunctionTrigger(func.name, trigger.name, envId)
-            })
-        } catch (e) {
-            errorLog(e.message)
-        }
-    })
+    options: IFunctionBatchOptions
+): Promise<void> {
+    const { functions, envId } = options
+    const promises = functions.map(func =>
+        (async () => {
+            try {
+                func.triggers.forEach(async trigger => {
+                    await deleteFunctionTrigger({
+                        functionName: func.name,
+                        triggerName: trigger.name,
+                        envId
+                    })
+                })
+            } catch (e) {
+                throw new TcbError(e.message)
+            }
+        })()
+    )
+
+    await Promise.all(promises)
+}
+
+function getJavaZipFilePath(funcPath: string, funcName: string) {
+    const jarExist = fs.existsSync(`${funcPath}.jar`)
+    const zipExist = fs.existsSync(`${funcPath}.zip`)
+    if (!jarExist && !zipExist) {
+        throw new TcbError(
+            `${funcName} Java 编译文件不存在，部署终止。Java 仅支持编译打包后的 Zip/Jar 包`
+        )
+    }
+    return jarExist ? `${funcPath}.jar` : `${funcPath}.zip`
 }
 
 // 创建云函数
 export async function createFunction(
-    func: ICloudFunction,
-    projectPath: string,
-    envId: string,
-    force?: boolean
-) {
+    options: ICreateFunctionOptions
+): Promise<void> {
+    const { func, root = '', envId, force = false, zipFile = '' } = options
+    let base64
+    let packer
     const funcName = func.name
-    // 函数目录
-    const funcPath = path.join(projectPath, 'functions', funcName)
-    const distPath = `${funcPath}/dist`
-    const packer = new FunctionPack(funcPath, distPath)
-    // 清除原打包文件
-    await packer.clean()
-    // 生成 zip 文件
-    await packer.build(funcName)
-    // 将 zip 文件转化成 base64
-    const base64 = fs
-        .readFileSync(path.join(distPath, 'dist.zip'))
-        .toString('base64')
+
+    // 校验运行时
+    const validRuntime = ['Nodejs8.9', 'Php7', 'Java8']
+    if (func.config.runtime && !validRuntime.includes(func.config.runtime)) {
+        throw new TcbError(
+            `${funcName} 非法的运行环境：${
+                func.config.runtime
+            }，当前支持环境：${validRuntime.join(', ')}`
+        )
+    }
+
+    // CLI 从本地读取
+    if (!zipFile) {
+        let zipFilePath = ''
+        const funcPath = path.join(root, 'functions', funcName)
+        // Java
+        if (func.config.runtime === 'Java8') {
+            zipFilePath = getJavaZipFilePath(funcPath, funcName)
+        } else {
+            // 函数目录
+            if (!fs.existsSync(funcPath)) {
+                throw new TcbError(`${funcName} 函数文件不存在，部署终止`)
+            }
+            const distPath = `${funcPath}/dist`
+            packer = new FunctionPack(funcPath, distPath)
+            // 清除原打包文件
+            await packer.clean()
+            // 生成 zip 文件
+            await packer.build(funcName)
+            zipFilePath = path.join(distPath, 'dist.zip')
+        }
+        // 将 zip 文件转化成 base64
+        base64 = fs.readFileSync(zipFilePath).toString('base64')
+    } else {
+        base64 = zipFile
+    }
 
     // 转换环境变量
     const envVariables = Object.keys(func.config.envVariables || {}).map(
@@ -156,12 +210,7 @@ export async function createFunction(
             ZipFile: base64
         },
         // 不可选择
-        MemorySize: 256,
-        // 不可选择
-        Handler: 'index.main',
-        InstallDependency: true,
-        // 不可选择
-        Runtime: 'Nodejs8.9'
+        MemorySize: 256
     }
 
     // 修复参数存在 undefined 字段时，会出现鉴权失败的情况
@@ -169,16 +218,26 @@ export async function createFunction(
     envVariables.length && (params.Environment = { Variables: envVariables })
     // 默认超时时间为 3S
     params.Timeout = func.config.timeout || 3
+    // 默认运行环境 Nodejs8.9
+    params.Runtime = func.config.runtime || 'Nodejs8.9'
+    // 处理入口
+    params.Handler = func.handler || 'index.main'
+    // Node 安装依赖
+    // func.config.runtime === 'Nodejs8.9' && (params.InstallDependency = true)
 
     const uploadSpin = ora('云函数上传中').start()
 
     try {
         // 创建云函数
         await tencentcloudScfRequest('CreateFunction', params)
-        await packer.clean()
+        !zipFile && packer && (await packer.clean())
         uploadSpin.succeed(`函数 "${funcName}" 上传成功！`)
         // 创建函数触发器
-        await createFunctionTriggers(funcName, func.triggers, envId)
+        await createFunctionTriggers({
+            functionName: funcName,
+            triggers: func.triggers,
+            envId
+        })
         successLog(`[${funcName}] 云函数部署成功!`)
     } catch (e) {
         // 已存在同名函数，强制更新
@@ -186,205 +245,196 @@ export async function createFunction(
             await tencentcloudScfRequest('UpdateFunctionCode', params)
             uploadSpin.succeed(`已存在同名函数 "${funcName}"，覆盖成功！`)
             // 创建函数触发器
-            await createFunctionTriggers(funcName, func.triggers, envId)
+            await createFunctionTriggers({
+                functionName: funcName,
+                triggers: func.triggers,
+                envId
+            })
             successLog(`[${funcName}] 云函数部署成功!`)
         }
 
         // 不强制覆盖，抛出错误
         if (e.message && !force) {
             uploadSpin.fail(chalk.red(`[${funcName}] 部署失败： ${e.message}`))
-            await packer.clean()
+            !zipFile && packer && (await packer.clean())
         }
     }
 }
 
+// 批量创建云函数
 export async function batchCreateFunctions(
-    functions: ICloudFunction[],
-    projectPath: string,
-    envId: string,
-    force?: boolean
-) {
-    functions.forEach(async func => {
-        try {
-            await createFunction(func, projectPath, envId, force)
-        } catch (e) {
-            errorLog(e.message)
-        }
-    })
+    options: ICreateFunctionOptions
+): Promise<void> {
+    const { functions, root, envId, force } = options
+    const promises = functions.map(func =>
+        (async () => {
+            try {
+                await createFunction({
+                    func,
+                    root,
+                    envId,
+                    force
+                })
+            } catch (e) {
+                throw new TcbError(e.message)
+            }
+        })()
+    )
+
+    await Promise.all(promises)
 }
 
 // 列出函数
 export async function listFunction(
-    limit: number,
-    offset: number,
-    envId: string
-) {
+    options: IListFunctionOptions
+): Promise<Record<string, string>[]> {
+    const { limit = 20, offset = 0, envId } = options
     const res: any = await tencentcloudScfRequest('ListFunctions', {
         Namespace: envId,
         Limit: limit,
         Offset: offset
     })
     const { Functions = [] } = res
-    const head: string[] = ['Name', 'Runtime', 'AddTime', 'Description']
-    const data: string[][] = []
+    const data: Record<string, string>[] = []
     Functions.forEach(func => {
         const { FunctionName, Runtime, AddTime, Description } = func
-        data.push([FunctionName, Runtime, AddTime, Description])
+        data.push({
+            FunctionName,
+            Runtime,
+            AddTime,
+            Description
+        })
     })
-    printCliTable(head, data)
+
+    return data
 }
 
 // 删除函数
-export async function deleteFunction(name: string, envId: string) {
+export async function deleteFunction({ functionName, envId }): Promise<void> {
     try {
         await tencentcloudScfRequest('DeleteFunction', {
-            FunctionName: name,
+            FunctionName: functionName,
             Namespace: envId
         })
-        successLog(`删除函数 [${name}] 成功！`)
+        successLog(`删除函数 [${functionName}] 成功！`)
     } catch (e) {
-        errorLog(`[${name}] 删除操作失败：${e.message}！`)
+        throw new TcbError(`[${functionName}] 删除操作失败：${e.message}！`)
     }
 }
 
-export async function batchDeleteFunctions(names: string[], envId: string) {
-    names.forEach(async name => {
-        try {
-            await deleteFunction(name, envId)
-        } catch (e) {
-            errorLog(e.message)
-        }
-    })
+// 批量删除云函数
+export async function batchDeleteFunctions({ names, envId }): Promise<void> {
+    const promises = names.map(name =>
+        (async () => {
+            try {
+                await deleteFunction({ functionName: name, envId })
+            } catch (e) {
+                throw new TcbError(e.message)
+            }
+        })()
+    )
+
+    await Promise.all(promises)
 }
 
 // 获取云函数详细信息
-export async function getFunctionDetail(name: string, envId: string) {
+export async function getFunctionDetail(
+    options
+): Promise<Record<string, string>> {
+    const { functionName, envId } = options
     const res = await tencentcloudScfRequest('GetFunction', {
-        FunctionName: name,
+        FunctionName: functionName,
         Namespace: envId
     })
 
-    const ResMap = {
-        Status: '状态',
-        CodeInfo: '函数代码',
-        CodeSize: '代码大小',
-        Description: '描述',
-        Environment: '环境变量(key=value)',
-        FunctionName: '函数名称',
-        FunctionVersion: '函数版本',
-        Handler: '执行方法',
-        MemorySize: '内存配置(MB)',
-        ModTime: '修改时间',
-        Namespace: '环境 Id',
-        Runtime: '运行环境',
-        Timeout: '超时时间(S)',
-        Triggers: '触发器'
-    }
+    const data: Record<string, string> = {}
+    // 提取信息的键
+    const validKeys = [
+        'Status',
+        'CodeInfo',
+        'CodeSize',
+        'Description',
+        'Environment',
+        'FunctionName',
+        'FunctionVersion',
+        'Handler',
+        'MemorySize',
+        'ModTime',
+        'Namespace',
+        'Runtime',
+        'Timeout',
+        'Triggers'
+    ]
 
-    const info = Object.keys(ResMap)
-        .map(key => {
-            // 将环境变量数组转换成 key=value 的形式
-            if (key === 'Environment') {
-                const data = res[key].Variables.map(
-                    item => `${item.Key}=${item.Value}`
-                ).join('; ')
-                return `${ResMap[key]}：${data} \n`
-            }
+    // 响应字段为 Duration 首字母大写形式，将字段转换成驼峰命名
+    Object.keys(res).forEach(key => {
+        if (!validKeys.includes(key)) return
+        data[key] = res[key]
+    })
 
-            if (key === 'Triggers') {
-                const data = res[key].map(
-                    item => `${item.TriggerName}：${item.TriggerDesc}`
-                ).join('\n')
-                return `${ResMap[key]}：\n${data} \n`
-            }
-
-            return `${ResMap[key]}：${res[key]} \n`
-        })
-        .reduce((prev, next) => prev + next)
-    console.log(chalk.green(`函数 [${name}] 信息：`) + '\n\n' + info)
+    return data
 }
 
-export async function batchGetFunctionsDetail(names: string[], envId: string) {
-    names.forEach(async name => {
-        try {
-            await getFunctionDetail(name, envId)
-        } catch (e) {
-            errorLog(`${name} 获取信息失败：${e.message}`)
-        }
-    })
+// 批量获取函数信息
+export async function batchGetFunctionsDetail({
+    names,
+    envId
+}): Promise<Record<string, string>[]> {
+    const data: Record<string, string>[] = []
+    const promises = names.map(name =>
+        (async () => {
+            try {
+                const info = await getFunctionDetail({
+                    name,
+                    envId
+                })
+                data.push(info)
+            } catch (e) {
+                throw new TcbError(`${name} 获取信息失败：${e.message}`)
+            }
+        })()
+    )
+
+    await Promise.all(promises)
+
+    return data
 }
 
 // 获取函数日志
 export async function getFunctionLog(
-    name: string,
-    envId: string,
-    condition: Record<string, string | number>
-) {
+    options: IFunctionLogOptions
+): Promise<Record<string, string>[]> {
+    const { envId } = options
+
     const params = {
-        FunctionName: name,
         Namespace: envId
     }
-    Object.keys(condition).forEach(key => {
-        const keyFistCharUpperCase = key.charAt(0).toUpperCase() + key.slice(1)
-        params[keyFistCharUpperCase] = condition[key]
+
+    Object.keys(options).forEach(key => {
+        if (key === 'envId') return
+        const keyFirstCharUpperCase = key.charAt(0).toUpperCase() + key.slice(1)
+        params[keyFirstCharUpperCase] = options[key]
     })
+
     const { Data = [] }: any = await tencentcloudScfRequest(
         'GetFunctionLogs',
         params
     )
-
-    const ResMap = {
-        StartTime: '请求时间',
-        FunctionName: '函数名称',
-        BillDuration: '计费时间(ms)',
-        Duration: '运行时间(ms)',
-        InvokeFinished: '调用次数',
-        MemUsage: '占用内存',
-        RequestId: '请求 Id',
-        RetCode: '调用状态',
-        RetMsg: '返回结果'
-    }
-
-    console.log(chalk.green(`函数：${name} 调用日志：`) + '\n\n')
-
-    if (Data.length === 0) {
-        return console.log('无调用日志')
-    }
-
-    Data.forEach(log => {
-        const info = Object.keys(ResMap)
-            .map(key => {
-                if (key === 'RetCode') {
-                    return `${ResMap[key]}：${
-                        log[key] === 0 ? '成功' : '失败'
-                    }\n`
-                }
-                if (key === 'MemUsage') {
-                    const str = Number(Number(Data[key]) / 1024 / 1024).toFixed(
-                        3
-                    )
-                    return `${ResMap[key]}：${str} MB\n`
-                }
-                return `${ResMap[key]}：${log[key]} \n`
-            })
-            .reduce((prev, next) => prev + next)
-        console.log(info + `日志：\n ${log.Log} \n`)
-    })
+    return Data
 }
 
 // 更新函数配置
 export async function updateFunctionConfig(
-    name: string,
-    config: ICloudFunctionConfig,
-    envId: string
-) {
+    options: IUpdateFunctionConfigOptions
+): Promise<void> {
+    const { functionName, config, envId } = options
     const envVariables = Object.keys(config.envVariables || {}).map(key => ({
         Key: key,
         Value: config.envVariables[key]
     }))
 
     const params: any = {
-        FunctionName: name,
+        FunctionName: functionName,
         Namespace: envId
     }
 
@@ -395,18 +445,64 @@ export async function updateFunctionConfig(
     config.timeout && (params.Timeout = config.timeout)
 
     await tencentcloudScfRequest('UpdateFunctionConfiguration', params)
-    successLog('更新云函数配置成功！')
 }
 
+// 批量更新函数配置
 export async function batchUpdateFunctionConfig(
-    functions: ICloudFunction[],
-    envId: string
-) {
-    functions.forEach(async func => {
-        try {
-            await updateFunctionConfig(func.name, func.config, envId)
-        } catch (e) {
-            errorLog(`${func.name} 更新配置失败：${e.message}`)
-        }
-    })
+    options: IFunctionBatchOptions
+): Promise<void> {
+    const { functions, envId } = options
+    const promises = functions.map(func =>
+        (async () => {
+            try {
+                await updateFunctionConfig({
+                    functionName: func.name,
+                    config: func.config,
+                    envId
+                })
+            } catch (e) {
+                throw new TcbError(`${func.name} 更新配置失败：${e.message}`)
+            }
+        })()
+    )
+
+    await Promise.all(promises)
+}
+
+// 调用函数
+export async function invokeFunction(options): Promise<any> {
+    const { functionName, envId, params = {} } = options
+
+    const _params: any = {
+        FunctionName: functionName,
+        Namespace: envId,
+        ClientContext: JSON.stringify(params)
+    }
+
+    const { Result }: any = await tencentcloudScfRequest('Invoke', _params)
+
+    successLog(`${functionName} 调用成功\n响应结果：\n`)
+    console.log(Result)
+
+    return Result
+}
+
+export async function batchInvokeFunctions(options: IFunctionBatchOptions) {
+    const { functions, envId } = options
+
+    const promises = functions.map(func =>
+        (async () => {
+            try {
+                await invokeFunction({
+                    functionName: func.name,
+                    params: func.params,
+                    envId
+                })
+            } catch (e) {
+                throw new TcbError(`${func.name} 函数调用失败：${e.message}`)
+            }
+        })()
+    )
+
+    await Promise.all(promises)
 }

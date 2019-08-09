@@ -5,14 +5,15 @@
     "target": "ES2017",
     "moduleResolution": "node",
     "outDir": "lib",
-    "removeComments": true,
     "types": [
-      "node"
+      "node",
+      "jest"
     ],
     "esModuleInterop": true,
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "test/**/*"
   ],
   "exclude": [
     "node_modules",
