@@ -1,14 +1,15 @@
 import NodeSSH from 'node-ssh'
 import path from 'path'
 import Logger from '../../logger'
-import { INodeDeployConfig } from './deployer'
+import { INodeZipBuilderConfig } from './builder'
+import { SSH } from '../../types'
 
 const logger = new Logger('NodeZipUploader')
 
 export default class NodeUploader {
     ssh: any
-    _options: INodeDeployConfig
-    constructor(options: INodeDeployConfig) {
+    _options: NodeUploaderConfig
+    constructor(options: NodeUploaderConfig) {
         this.ssh = new NodeSSH()
         this._options = options
     }
@@ -46,4 +47,9 @@ export default class NodeUploader {
 
         this.ssh.dispose()
     }
+}
+
+export interface NodeUploaderConfig extends SSH {
+    distPath: INodeZipBuilderConfig['distPath']
+    remotePath: string
 }

@@ -2,10 +2,10 @@ import path from 'path'
 import makeDir from 'make-dir'
 import Logger from '../../logger'
 import { zipDir } from '../../utils/index.js'
-import { INodeDeployConfig } from './deployer'
 
 import del from 'del'
 import fs from 'fs'
+import { ServerConfig } from '../../types'
 
 const logger = new Logger('NodeZipBuilder')
 
@@ -20,8 +20,8 @@ export interface IBuildResult {
 }
 
 export default class NodeZipBuilder {
-    _options: INodeDeployConfig
-    constructor(options: INodeDeployConfig) {
+    _options: INodeZipBuilderConfig
+    constructor(options: INodeZipBuilderConfig) {
         this._options = options
     }
 
@@ -52,4 +52,9 @@ export default class NodeZipBuilder {
         const distPath = path.resolve(process.cwd(), this._options.distPath)
         del.sync([distPath])
     }
+}
+
+export interface INodeZipBuilderConfig {
+    path: ServerConfig['path']
+    distPath: string
 }

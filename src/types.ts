@@ -45,6 +45,16 @@ export interface IGetCredential {
     token: string
 }
 
+export enum ServerLanguageType {
+    node = 'node'
+}
+
+export interface ServerConfig {
+    type: ServerLanguageType.node
+    name: string
+    path: string
+}
+
 /**
  * 函数
  */

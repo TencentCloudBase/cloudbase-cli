@@ -31,11 +31,6 @@ async function checkAuth(credential: Credential) {
     })
 }
 
-function getAuthData(): Credential {
-    const tcbrc = configStore.get(ConfigItems.credentail)
-    return tcbrc as Credential
-}
-
 // 打开腾讯云 TCB 控制台，通过获取临时密钥登录，临时密钥可续期，最长时间为 1 个月
 export async function authLogin() {
     const tcbrc: Credential = getCredentialConfig()

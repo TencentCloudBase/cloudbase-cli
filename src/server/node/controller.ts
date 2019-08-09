@@ -3,24 +3,32 @@ import path from 'path'
 import Logger from '../../logger'
 import { INodeDeployConfig, NodeDeployer } from './deployer'
 import chalk from 'chalk'
+import { ServerConfig } from '../../types'
 
 const logger = new Logger('NodeController')
 
 const GET_VEMO_ENTRY = 'npm run vemo -- main | tail -n 1'
 const PM2_OPTIONS = '-o out.log -e err.log'
+
 export class NodeController {
     ssh: any
-    config: INodeDeployConfig
+    config: NodeControllerConfig
     deployer: NodeDeployer
-    constructor(config: INodeDeployConfig) {
-        this.config = {
+    constructor(config: NodeControllerConfig) {
+        let _config = {
             username: 'root',
-            port: 22,
+            port: '22',
+            path: '.',
+            distPath: './.tcb-dist',
             remotePath: `/data/tcb-service/${config.name}`,
             ...config
         }
+        this.config = _config
         this.ssh = new NodeSSH()
-        this.deployer = new NodeDeployer(this.config)
+
+        this.deployer = new NodeDeployer({
+            ..._config
+        })
     }
 
     async connect() {
@@ -85,8 +93,8 @@ export class NodeController {
     }
 
     injectSecret() {
-        const { secretId, secretKey, token } = this.config
-        let authSecret = `export TENCENTCLOUD_SECRETID=${secretId} && export TENCENTCLOUD_SECRETKEY=${secretKey} && `
+        const { secretId, secretKey, token, envId } = this.config
+        let authSecret = `export TCB_ENV=${envId} && export TENCENTCLOUD_SECRETID=${secretId} && export TENCENTCLOUD_SECRETKEY=${secretKey} && `
         return token
             ? authSecret + `export TENCENTCLOUD_SESSIONTOKEN=${token} && `
             : authSecret
@@ -145,4 +153,18 @@ export class NodeController {
         console.log(stdout || stderr)
         this.ssh.dispose()
     }
+}
+
+export interface NodeControllerConfig
+    extends Omit<
+        INodeDeployConfig,
+        'username' | 'port' | 'remotePath' | 'distPath' | 'path'
+    > {
+    envId?: string
+    name?: ServerConfig['name']
+    path?: ServerConfig['path']
+    username?: INodeDeployConfig['username']
+    port?: INodeDeployConfig['port']
+    remotePath?: INodeDeployConfig['remotePath']
+    disPath?: INodeDeployConfig['distPath']
 }

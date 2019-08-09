@@ -1,19 +1,17 @@
 import program from 'commander'
-import fs from 'fs'
-import path from 'path'
-import fse from 'fs-extra'
 import { NodeController } from '../server/node/controller'
 import { TcbError } from '../error'
-import { getCredential, resolveTcbrcConfig, getSSH } from '../utils'
+import { getCredential, resolveTcbrcConfig, getSSH, getEnvId } from '../utils'
+import { ServerConfig, ServerLanguageType } from '../types'
 
 function checkServers(servers) {
     const names = {}
-    servers.forEach(server => {
+    servers.forEach((server: ServerConfig) => {
         if (!server.name) {
-            throw new TcbError(`Every server must have a name.`)
+            throw new TcbError('Every server must have a name.')
         } else if (!server.path) {
             throw new TcbError('未指定发布目录')
-        } else if (server.type != 'node') {
+        } else if (server.type != ServerLanguageType.node) {
             throw new TcbError(`Unsupported deploy type: "${server.type}"`)
         } else if (names[server.name]) {
             throw new TcbError(`Duplicated deploy name: "${server.name}"`)
@@ -24,7 +22,7 @@ function checkServers(servers) {
 
 async function getServers(
     name: string
-): Promise<{ name: string; path: string; type: string }[]> {
+): Promise<{ name: string; path: string; type: ServerLanguageType }[]> {
     const config = await resolveTcbrcConfig()
     if (!config.servers || !Array.isArray(config.servers)) {
         throw new Error('服务配置错误')
@@ -41,6 +39,7 @@ program
     .description('部署 node 服务')
     .action(async function(name: string) {
         const servers = await getServers(name)
+        const envId = await getEnvId('')
         const credential = await getCredential()
         const sshConfig = await getSSH()
 
@@ -49,6 +48,7 @@ program
                 throw new TcbError('未指定发布目录')
             }
             await new NodeController({
+                envId,
                 ...sshConfig,
                 ...server,
                 ...credential
@@ -86,14 +86,12 @@ program
         const credential = await getCredential()
         const sshConfig = await getSSH()
 
-        servers.forEach(async server => {
-            await new NodeController({
-                ...sshConfig,
-                ...server,
-                ...credential
-            }).reload()
-            return
-        })
+        await new NodeController({
+            ...sshConfig,
+            ...server,
+            ...credential
+        }).reload()
+        return
     })
 
 program

@@ -1,20 +1,13 @@
-import NodeZipBuilder from './builder'
-import NodeZipUploader from './uploader'
-import path from 'path'
-import del from 'del'
+import { default as NodeZipBuilder, INodeZipBuilderConfig } from './builder'
+import { default as NodeZipUploader, NodeUploaderConfig } from './uploader'
+import { SSH, AuthSecret, ServerConfig } from '../../types'
 
 export class NodeDeployer {
     config: INodeDeployConfig
     builder: NodeZipBuilder
     uploader: { upload(): Promise<any> }
     constructor(config: INodeDeployConfig) {
-        this.config = {
-            username: 'root',
-            port: '22',
-            distPath: './.tcb-dist',
-            remotePath: `/data/tcb-service/${config.name}`,
-            ...config
-        }
+        this.config = { ...config }
         this.builder = new NodeZipBuilder(this.config)
         this.uploader = new NodeZipUploader(this.config)
     }
@@ -29,21 +22,8 @@ export class NodeDeployer {
     }
 }
 
-export interface INodeDeployConfig {
-    // ssh meta data
-    host: string
-    username: string
-    port: string
-    password: string
-
-    // credential data
-    secretId: string
-    secretKey: string
-    token?: string
-
-    // config
-    name?: string
-    path?: string
-    distPath?: string
-    remotePath?: string
+export interface INodeDeployConfig extends SSH, AuthSecret {
+    path: ServerConfig['path']
+    distPath: INodeZipBuilderConfig['distPath']
+    remotePath: NodeUploaderConfig['remotePath']
 }

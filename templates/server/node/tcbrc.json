@@ -1,5 +1,5 @@
 {
-    "envId": "dev-xxx",
+    "envId": "{{envId}}",
     "servers": [
         {
             "type": "node",
