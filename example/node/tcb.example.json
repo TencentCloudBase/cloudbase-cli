@@ -1,9 +1,0 @@
-{
-    "deploys": [
-        {
-            "name": "app",
-            "path": "./server",
-            "type": "node"
-        }
-    ]
-}

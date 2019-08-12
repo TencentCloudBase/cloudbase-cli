@@ -53,12 +53,16 @@ async function publish() {
 
   if (confirm.result) {
     console.log('发布中...')
-    const { stdout, stderr } = await exec(
-      `npm version ${newVersion} && ${publishCommand}`
-    )
-    console.log('stdout:', stdout)
-    console.log('stderr:', stderr)
-    console.log('发布成功！')
+    try {
+        const { stdout, stderr } = await exec(
+            `npm version ${newVersion} && ${publishCommand}`
+          )
+          console.log('stdout:', stdout)
+          console.log('stderr:', stderr)
+          console.log('发布成功！')   
+    } catch (error) {
+        console.log(error)
+    }
   }
 }
 publish()
