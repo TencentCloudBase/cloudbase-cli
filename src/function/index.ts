@@ -25,9 +25,12 @@ async function tencentcloudScfRequest(
     const { secretId, secretKey, token } = credential
     const ScfClient = tencentcloud.scf.v20180416.Client
     const models = tencentcloud.scf.v20180416.Models
-    const Credential = tencentcloud.common.Credential
+    const { Credential, HttpProfile } = tencentcloud.common
     let cred = new Credential(secretId, secretKey, token)
-    let client = new ScfClient(cred, 'ap-shanghai')
+    let client = new ScfClient(cred, 'ap-shanghai', {
+        signMethod: 'TC3-HMAC-SHA256',
+        httpProfile: new HttpProfile()
+    })
     let req = new models[`${interfaceName}Request`]()
 
     const _params = {
@@ -243,6 +246,7 @@ export async function createFunction(
         // 已存在同名函数，强制更新
         if (e.code === 'ResourceInUse.FunctionName' && force) {
             await tencentcloudScfRequest('UpdateFunctionCode', params)
+            !zipFile && packer && (await packer.clean())
             uploadSpin.succeed(`已存在同名函数 "${funcName}"，覆盖成功！`)
             // 创建函数触发器
             await createFunctionTriggers({
