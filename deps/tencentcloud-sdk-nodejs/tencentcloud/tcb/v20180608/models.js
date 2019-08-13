@@ -560,6 +560,64 @@ class ModifyDatabaseACLResponse extends  AbstractModel {
     }
 }
 
+/**
+ * CreateEnvAndResource返回参数结构体
+ * @class
+ */
+class CreateEnvAndResourceResponse extends AbstractModel {
+    constructor(){
+        super();
+
+        /**
+         * 唯一请求 ID，每次请求都会返回。定位问题时需要提供该次请求的 RequestId。
+         * @type {string || null}
+         */
+        this.RequestId = null;
+
+        this.Status = null;
+    }
+
+    /**
+     * @private
+     */
+    deserialize(params) {
+        if (!params) {
+            return;
+        }
+        this.RequestId = 'RequestId' in params ? params.RequestId : null;
+        this.Status = 'Status' in params ? params.Status : null;
+    }
+}
+
+/**
+ * CreateEnvAndResource请求参数结构体
+ * @class
+ */
+class CreateEnvAndResourceRequest extends AbstractModel {
+    constructor(){
+        super();
+
+        /**
+         * 环境ID，如果传了这个参数则只返回该环境的相关信息
+         * @type {string || null}
+         */
+        this.EnvId = null;
+
+        this.Alias = null;
+    }
+
+    /**
+     * @private
+     */
+    deserialize(params) {
+        if (!params) {
+            return;
+        }
+        this.EnvId = 'EnvId' in params ? params.EnvId : null;
+        this.Alias = 'Alias' in params ? params.Alias : null;
+    }
+}
+
 module.exports = {
     DescribeDatabaseACLResponse: DescribeDatabaseACLResponse,
     StorageInfo: StorageInfo,
@@ -573,5 +631,6 @@ module.exports = {
     DescribeEnvsResponse: DescribeEnvsResponse,
     ModifyEnvResponse: ModifyEnvResponse,
     ModifyDatabaseACLResponse: ModifyDatabaseACLResponse,
-
+    CreateEnvAndResourceResponse: CreateEnvAndResourceResponse,
+    CreateEnvAndResourceRequest: CreateEnvAndResourceRequest   
 }
