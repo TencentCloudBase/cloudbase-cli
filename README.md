@@ -142,16 +142,18 @@ tcb -h
 ```
 
 ```
-Usage: tcb [options] [command]
+Usage:  [options] [command]
 
 Options:
+  -V, --version                                                  output the version number
   -h, --help                                                     output usage information
 
 Commands:
-  init                                                           创建并初始化一个新的项目
+  init [options]                                                 创建并初始化一个新的项目
   login [options]                                                登录腾讯云账号
   logout                                                         登出腾讯云账号
   env:list                                                       列出云开发所有环境
+  env:create <alias> <envId>                                     创建新的云环境
   functions:deploy [options] [functionName] [envId]              创建云函数
   functions:list [options] [envId]                               展示云函数列表
   functions:delete [functionName] [envId]                        删除云函数
@@ -161,6 +163,11 @@ Commands:
   functions:trigger:create [functionName] [envId]                创建云函数触发器
   functions:trigger:delete [functionName] [triggerName] [envId]  删除云函数触发器
   functions:invoke [functionName] [params] [envId]               触发云函数
+  server:deploy [name]                                           部署 node 服务
+  server:log [options] <name>                                    查看日志
+  server:reload <name>                                           重启 node 服务
+  server:stop <name>                                             停止应用
+  server:show                                                    查看状态
 ```
 
 ### 编程式使用
@@ -202,7 +209,7 @@ tcb login --key
 
 `tcb logout` 注销登录
 
-### list
+### env:list
 
 `tcb env:list` 列出所有的云开发环境
 
@@ -215,6 +222,12 @@ tcb login --key
 │ dev-xxxxxx  │   基础版     │ qcloud  │ 2019-06-20 13:24:51 │
 └─────────────┴─────────────┴─────────┴─────────────────────┘
 ```
+
+### env:create
+
+完整命令：`tcb env:create <alias> <envId>`
+
+`env:create` 命令创建一个新的云开发环境，需要传入环境的别名 `alias` 和环境的唯一标志 `envId`，当 `envId` 已存在时，会创建环境失败。
 
 ### new
 

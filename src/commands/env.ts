@@ -21,7 +21,7 @@ program
 
 program
     .command('env:create <alias> <envId>')
-    .description('创建云环境')
+    .description('创建新的云环境')
     .action(async function(alias: string, envId: string) {
         if (!alias || !envId) {
             throw new TcbError('环境名称或环境 Id 不能为空！')
