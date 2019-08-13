@@ -16,9 +16,12 @@ notifier.notify()
 // 注册命令
 require('../lib')
 
+program.version(pkg.version)
+
 // 处理无效命令
 program.action(cmd => {
-    console.log(chalk.bold.red('Error: ') + `${cmd} 不是有效的命令`)
+    console.log(chalk.bold.red('Error: ') + `${cmd} 不是有效的命令！`)
+    console.log(`使用 ${chalk.bold('tcb -h')} 查看所有命令~`)
 })
 
 // 当没有输入任何命令时，显示帮助信息

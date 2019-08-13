@@ -1,4 +1,3 @@
-import chalk from 'chalk'
 import fs from 'fs'
 import path from 'path'
 import ora from 'ora'
@@ -220,7 +219,7 @@ export async function createFunction(
     // Environment 为覆盖式修改，不保留已有字段
     envVariables.length && (params.Environment = { Variables: envVariables })
     // 默认超时时间为 3S
-    params.Timeout = func.config.timeout || 3
+    params.Timeout = Number(func.config.timeout) || 3
     // 默认运行环境 Nodejs8.9
     params.Runtime = func.config.runtime || 'Nodejs8.9'
     // 处理入口
@@ -255,12 +254,16 @@ export async function createFunction(
                 envId
             })
             successLog(`[${funcName}] 云函数部署成功!`)
+            return
         }
 
         // 不强制覆盖，抛出错误
         if (e.message && !force) {
-            uploadSpin.fail(chalk.red(`[${funcName}] 部署失败： ${e.message}`))
             !zipFile && packer && (await packer.clean())
+            uploadSpin.fail(`[${funcName}] 存在同名云函数`)
+            throw new TcbError(`[${funcName}] 部署失败： ${e.message}`, {
+                code: e.code
+            })
         }
     }
 }

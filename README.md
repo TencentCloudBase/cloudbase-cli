@@ -60,7 +60,7 @@ exports.main = (event, context, callback) => {
         {
             "name": "app",
             "config": {
-                "timeout": "5",
+                "timeout": 5,
                 "envVariables": {
                     "key": "value"
                 },
@@ -96,7 +96,7 @@ exports.main = (event, context, callback) => {
             // 函数配置
             "config": {
                 // 超时时间，单位：秒 S
-                "timeout": "5",
+                "timeout": 5,
                 // 环境变量
                 "envVariables": {
                     "key": "value"

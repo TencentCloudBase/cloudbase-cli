@@ -4,7 +4,7 @@
         {
             "name": "app",
             "config": {
-                "timeout": "5",
+                "timeout": 5,
                 "envVariables": {
                     "key": "value"
                 },

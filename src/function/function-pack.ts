@@ -24,7 +24,7 @@ export class FunctionPack {
 
         await zipDir(entry, zipPath)
 
-        packSpin.succeed(`${name} 函数压缩包构建完成！`)
+        packSpin.succeed(`[${name}] 函数压缩包构建完成！`)
 
         return {
             success: true,

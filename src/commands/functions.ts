@@ -97,12 +97,35 @@ program
             throw new TcbError(`函数 ${name} 配置不存在`)
         }
 
-        createFunction({
-            func: newFunction,
-            root: process.cwd(),
-            envId: assignEnvId,
-            force
-        })
+        try {
+            await createFunction({
+                func: newFunction,
+                root: process.cwd(),
+                envId: assignEnvId,
+                force
+            })
+        } catch (e) {
+            // 询问是否覆盖同名函数
+            if (e.code === 'ResourceInUse.FunctionName') {
+                const { force } = await inquirer.prompt({
+                    type: 'confirm',
+                    name: 'force',
+                    message: '存在同名云函数，是否覆盖',
+                    default: false
+                })
+
+                if (force) {
+                    createFunction({
+                        func: newFunction,
+                        root: process.cwd(),
+                        envId: assignEnvId,
+                        force: true
+                    })
+                    return
+                }
+            }
+            throw e
+        }
     })
 
 // 展示云函数列表
@@ -138,14 +161,6 @@ program
 
         printCliTable(head, tableData)
     })
-
-// 调用云函数
-// program
-//     .command('functions:invoke [functionName] [envId]')
-//     .description('调用云函数')
-//     .action(async function(name: string, envId: string) {
-
-//     })
 
 // 删除云函数
 program
@@ -622,7 +637,9 @@ program
                 params = JSON.parse(jsonStringParams)
             } catch (e) {
                 console.log(e)
-                throw new TcbError('jsonStringParams 参数不是正确的 JSON 字符串')
+                throw new TcbError(
+                    'jsonStringParams 参数不是正确的 JSON 字符串'
+                )
             }
         }
 
