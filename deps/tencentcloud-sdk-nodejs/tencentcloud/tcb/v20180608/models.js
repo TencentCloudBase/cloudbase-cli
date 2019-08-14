@@ -604,6 +604,8 @@ class CreateEnvAndResourceRequest extends AbstractModel {
         this.EnvId = null;
 
         this.Alias = null;
+
+        this.Source = null;
     }
 
     /**
@@ -615,6 +617,7 @@ class CreateEnvAndResourceRequest extends AbstractModel {
         }
         this.EnvId = 'EnvId' in params ? params.EnvId : null;
         this.Alias = 'Alias' in params ? params.Alias : null;
+        this.Source = 'Source' in params ? params.Source : null;
     }
 }
 

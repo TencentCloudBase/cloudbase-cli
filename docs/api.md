@@ -23,6 +23,30 @@ client
 
 参数： 无
 
+响应：
+
+```js
+[ 
+    { 
+        envId: 'dev-97eb6c',
+        packageName: '基础版',
+        source: 'qcloud',
+        createTime: '2019-06-20 13:24:51'
+    }
+]
+```
+
+#### env.create(options)
+
+参数：
+
+```
+{
+    envId: string
+    alias: string
+}
+```
+
 响应：void
 
 #### functions.invoke(options)

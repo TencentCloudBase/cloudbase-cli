@@ -50,7 +50,7 @@ export async function listEnvs() {
     return data
 }
 
-export async function createEnv(alias: string, envId: string) {
+export async function createEnv({ alias, envId }) {
     const params = {
         Alias: alias,
         EnvId: envId,
@@ -68,6 +68,8 @@ export async function createEnv(alias: string, envId: string) {
                 `创建环境失败：${res.Error.Message || res.Error}`
             )
         }
+
+        return res
     } catch (e) {
         throw new TcbError(`创建环境失败：${e.message}`)
     }

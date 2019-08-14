@@ -26,6 +26,9 @@ program
         if (!alias || !envId) {
             throw new TcbError('环境名称或环境 Id 不能为空！')
         }
-        await createEnv(alias, envId)
+        await createEnv({
+            alias,
+            envId
+        })
         successLog('创建环境成功！')
     })

@@ -2,10 +2,10 @@ import tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
 import ora from 'ora'
 import Logger from '../logger'
 import { getAuthTokenFromWeb, refreshTmpToken } from './auth'
-import { askForInput, getCredential, getCredentialConfig } from '../utils'
+import { askForInput, getCredentialConfig } from '../utils'
 import { ConfigItems } from '../constant'
 import { configStore } from '../utils/configstore'
-import { Credential, AuthSecret } from '../types'
+import { Credential } from '../types'
 import { TcbError } from '../error'
 
 const logger = new Logger('Login')
@@ -89,7 +89,7 @@ export async function authLogin() {
 
 // 使用永久密钥登录
 export async function login() {
-    const tcbrc: AuthSecret = await getCredential()
+    const tcbrc: Credential = await getCredentialConfig()
     // 已有永久密钥
     if (tcbrc.secretId && tcbrc.secretKey) {
         logger.log('您已登录，无需再次登录！')

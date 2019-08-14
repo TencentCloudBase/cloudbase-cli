@@ -1,5 +1,5 @@
 import './commands'
-import { listEnvs } from './env'
+import { listEnvs, createEnv } from './env'
 import {
     createFunction,
     listFunction,
@@ -15,7 +15,8 @@ import { configStore } from './utils/configstore'
 
 export = class Client {
     env = {
-        list: listEnvs
+        list: listEnvs,
+        create: createEnv
     }
 
     functions = {
