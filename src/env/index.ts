@@ -1,4 +1,4 @@
-import { getCredential } from '../utils'
+import { getCredential, guid6 } from '../utils'
 import tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
 import { AuthSecret } from '../types'
 import { TcbError } from '../error'
@@ -50,10 +50,10 @@ export async function listEnvs() {
     return data
 }
 
-export async function createEnv({ alias, envId }) {
+export async function createEnv({ alias }) {
     const params = {
         Alias: alias,
-        EnvId: envId,
+        EnvId: `${alias}-${guid6()}`,
         Source: 'qcloud'
     }
 
@@ -62,15 +62,16 @@ export async function createEnv({ alias, envId }) {
             'CreateEnvAndResource',
             params
         )
-
-        if (res.Error) {
-            throw new TcbError(
-                `创建环境失败：${res.Error.Message || res.Error}`
-            )
-        }
-
         return res
     } catch (e) {
         throw new TcbError(`创建环境失败：${e.message}`)
     }
+}
+
+export async function initTcb(skey: string) {
+    console.log(skey)
+    const res: any = await tencentcloudTcbEnvRequest('InitTcb', {
+        Skey: skey
+    })
+    return res
 }

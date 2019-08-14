@@ -20,15 +20,14 @@ program
     })
 
 program
-    .command('env:create <alias> <envId>')
+    .command('env:create <alias>')
     .description('创建新的云环境')
-    .action(async function(alias: string, envId: string) {
-        if (!alias || !envId) {
-            throw new TcbError('环境名称或环境 Id 不能为空！')
+    .action(async function(alias: string) {
+        if (!alias) {
+            throw new TcbError('环境名称不能为空！')
         }
         await createEnv({
-            alias,
-            envId
+            alias
         })
         successLog('创建环境成功！')
     })

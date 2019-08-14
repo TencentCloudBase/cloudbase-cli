@@ -621,6 +621,54 @@ class CreateEnvAndResourceRequest extends AbstractModel {
     }
 }
 
+
+class InitTcbResponse extends AbstractModel {
+    constructor(){
+        super();
+
+        /**
+         * 唯一请求 ID，每次请求都会返回。定位问题时需要提供该次请求的 RequestId。
+         * @type {string || null}
+         */
+        this.RequestId = null;
+    }
+
+    /**
+     * @private
+     */
+    deserialize(params) {
+        if (!params) {
+            return;
+        }
+        this.RequestId = 'RequestId' in params ? params.RequestId : null;
+    }
+}
+
+class InitTcbRequest extends AbstractModel {
+    constructor(){
+        super();
+
+        /**
+         * 环境ID，如果传了这个参数则只返回该环境的相关信息
+         * @type {string || null}
+         */
+        // this.EnvId = null;
+        this.Skey = null;
+    }
+
+    /**
+     * @private
+     */
+    deserialize(params) {
+        if (!params) {
+            return;
+        }
+        // this.EnvId = 'EnvId' in params ? params.EnvId : null;
+
+        this.Skey = 'Skey' in params ? params.Skey : null;
+    }
+}
+
 module.exports = {
     DescribeDatabaseACLResponse: DescribeDatabaseACLResponse,
     StorageInfo: StorageInfo,
@@ -635,5 +683,7 @@ module.exports = {
     ModifyEnvResponse: ModifyEnvResponse,
     ModifyDatabaseACLResponse: ModifyDatabaseACLResponse,
     CreateEnvAndResourceResponse: CreateEnvAndResourceResponse,
-    CreateEnvAndResourceRequest: CreateEnvAndResourceRequest   
+    CreateEnvAndResourceRequest: CreateEnvAndResourceRequest,
+    InitTcbResponse: InitTcbResponse,
+    InitTcbRequest: InitTcbRequest
 }

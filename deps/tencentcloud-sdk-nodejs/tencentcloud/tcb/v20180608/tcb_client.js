@@ -29,7 +29,7 @@ const DescribeEnvsResponse = models.DescribeEnvsResponse;
 const ModifyEnvResponse = models.ModifyEnvResponse;
 const ModifyDatabaseACLResponse = models.ModifyDatabaseACLResponse;
 const CreateEnvAndResourceResponse = models.CreateEnvAndResourceResponse;
-
+const InitTcbResponse = models.InitTcbResponse;
 
 /**
  * tcb client
@@ -91,6 +91,14 @@ class TcbClient extends AbstractClient {
     CreateEnvAndResource(req, cb) {
         let resp = new CreateEnvAndResourceResponse();
         this.request("CreateEnvAndResource", req, resp, cb);
+    }
+
+    /**
+     * 初始化
+     */
+    InitTcb(req, cb) {
+        let resp = new InitTcbResponse();
+        this.request("InitTcb", req, resp, cb)
     }
 }
 module.exports = TcbClient;

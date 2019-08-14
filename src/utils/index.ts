@@ -10,6 +10,7 @@ import { ConfigItems } from '../constant'
 import { TcbError } from '../error'
 
 export { printCliTable } from './cli-table'
+export { guid6 } from './uuid'
 
 export async function zipDir(dirPath, outputPath) {
     return new Promise((resolve, reject) => {

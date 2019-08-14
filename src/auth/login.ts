@@ -103,6 +103,10 @@ export async function login() {
         '请输入腾讯云 SecretKey：'
     )) as string
 
+    const skey: string = (await askForInput(
+        '请输入腾讯云 SKey：'
+    )) as string
+
     if (!secretId || !secretKey) {
         logger.error('SecretID 或 SecretKey 不能为空')
         return
@@ -122,4 +126,6 @@ export async function login() {
     configStore.set(ConfigItems.credentail, { secretId, secretKey })
 
     logger.success('登录成功！')
+
+    return skey
 }

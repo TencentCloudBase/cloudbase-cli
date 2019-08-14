@@ -5,6 +5,7 @@ class TencentCloudSDKHttpException extends Error {
     constructor(error, requestId="") {
         super(error);
         this.requestId = requestId || '';
+        this.name = 'TencentCloudSDKHttpException';
     }
 
     getMessage() {
