@@ -226,6 +226,7 @@ function logDetail(info, name) {
         Namespace: '环境 Id',
         Runtime: '运行环境',
         Timeout: '超时时间(S)',
+        VpcConfig: '网络配置',
         Triggers: '触发器'
     }
 
@@ -244,6 +245,17 @@ function logDetail(info, name) {
                     .map(item => `${item.TriggerName}：${item.TriggerDesc}`)
                     .join('\n')
                 return `${ResMap[key]}：\n${data} \n`
+            }
+
+            if (key === 'VpcConfig') {
+                const { vpc, subnet }: any = info[key]
+                if (vpc && subnet) {
+                    return `${ResMap[key]}：${vpc.VpcId}(${vpc.VpcName} | ${
+                        subnet.CidrBlock
+                    }) / ${subnet.SubnetId}(${subnet.SubnetName})]\n`
+                } else {
+                    return '${ResMap[key]}：无\n'
+                }
             }
 
             return `${ResMap[key]}：${info[key]} \n`

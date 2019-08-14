@@ -64,6 +64,10 @@ exports.main = (event, context, callback) => {
                 "envVariables": {
                     "key": "value"
                 },
+                "vpc": {
+                    "subnetId": "subnet-xxx",
+                    "vpcId": "vpc-xxx"
+                },
                 "runtime": "Nodejs8.9"
             },
             "triggers": [
@@ -100,6 +104,13 @@ exports.main = (event, context, callback) => {
                 // 环境变量
                 "envVariables": {
                     "key": "value"
+                },
+                // 网络配置
+                "vpc": {
+                    // vpc id
+                    "vpcId": "vpc-xxx",
+                    // 子网 id
+                    "subnetId": "subnet-xxx"
                 },
                 // 运行时，目前可选运行包含：Nodejs8.9, Php7, Java8
                 // 此参数可以省略，默认为 Nodejs8.9
@@ -225,9 +236,9 @@ tcb login --key
 
 ### env:create
 
-完整命令：`tcb env:create <alias> <envId>`
+完整命令：`tcb env:create <alias>`
 
-`env:create` 命令创建一个新的云开发环境，需要传入环境的别名 `alias` 和环境的唯一标志 `envId`，当 `envId` 已存在时，会创建环境失败。
+`env:create` 命令创建一个新的云开发环境，需要制定环境的别名 `alias`。
 
 ### new
 
@@ -340,6 +351,7 @@ tcb functions:deploy dev --force
 环境 Id：dev-97eb6c
 运行环境：Nodejs8.9
 超时时间(S)：5
+网络配置：vpc-xxx(私有网络 | 100.0.0.0/16) / subnet-xxx(子网)]
 触发器：
 myTrigger：{"cron": "0 0 2 1 * * *"}
 myTrigger2：{"cron": "0 0 3 1 * * *"}

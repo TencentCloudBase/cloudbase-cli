@@ -64,10 +64,16 @@ export interface IFunctionPackResult {
     vemo?: boolean
 }
 
+export interface IFunctionVPC {
+    subnetId: string
+    vpcId: string
+}
+
 export interface ICloudFunctionConfig {
     timeout?: number
     envVariables?: Record<string, string | number | boolean>
     runtime?: string
+    vpc: IFunctionVPC
 }
 
 export interface ICloudFunctionTrigger {

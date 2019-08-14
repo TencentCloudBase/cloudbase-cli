@@ -8,6 +8,10 @@
                 "envVariables": {
                     "key": "value"
                 },
+                "vpc": {
+                    "subnetId": "subnet-xxx",
+                    "vpcId": "vpc-xxx"
+                },
                 "runtime": "Nodejs8.9"
             },
             "triggers": [

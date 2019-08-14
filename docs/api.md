@@ -42,7 +42,6 @@ client
 
 ```
 {
-    envId: string
     alias: string
 }
 ```

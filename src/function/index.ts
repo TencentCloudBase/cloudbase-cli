@@ -15,6 +15,7 @@ import {
 } from '../types'
 import { FunctionPack } from './function-pack'
 import { TcbError } from '../error'
+import { getVpcs, getSubnets } from './vpc'
 
 async function tencentcloudScfRequest(
     interfaceName: string,
@@ -215,15 +216,21 @@ export async function createFunction(
         MemorySize: 256
     }
 
+    const { config } = func
     // 修复参数存在 undefined 字段时，会出现鉴权失败的情况
     // Environment 为覆盖式修改，不保留已有字段
     envVariables.length && (params.Environment = { Variables: envVariables })
-    // 默认超时时间为 3S
-    params.Timeout = Number(func.config.timeout) || 3
-    // 默认运行环境 Nodejs8.9
-    params.Runtime = func.config.runtime || 'Nodejs8.9'
     // 处理入口
     params.Handler = func.handler || 'index.main'
+    // 默认超时时间为 3S
+    params.Timeout = Number(config.timeout) || 3
+    // 默认运行环境 Nodejs8.9
+    params.Runtime = config.runtime || 'Nodejs8.9'
+    // VPC 网络
+    params.VpcConfig = {
+        SubnetId: (config.vpc && config.vpc.subnetId) || '',
+        VpcId: (config.vpc && config.vpc.subnetId) || ''
+    }
     // Node 安装依赖
     // func.config.runtime === 'Nodejs8.9' && (params.InstallDependency = true)
 
@@ -354,7 +361,7 @@ export async function getFunctionDetail(
         Namespace: envId
     })
 
-    const data: Record<string, string> = {}
+    const data: Record<string, any> = {}
     // 提取信息的键
     const validKeys = [
         'Status',
@@ -370,7 +377,8 @@ export async function getFunctionDetail(
         'Namespace',
         'Runtime',
         'Timeout',
-        'Triggers'
+        'Triggers',
+        'VpcConfig'
     ]
 
     // 响应字段为 Duration 首字母大写形式，将字段转换成驼峰命名
@@ -378,6 +386,26 @@ export async function getFunctionDetail(
         if (!validKeys.includes(key)) return
         data[key] = res[key]
     })
+
+    const { VpcId = '', SubnetId = '' } = data.VpcConfig || {}
+
+    if (VpcId && SubnetId) {
+        try {
+            const vpcs = await getVpcs()
+            const subnets = await getSubnets(VpcId)
+            const vpc = vpcs.find(item => item.VpcId === VpcId)
+            const subnet = subnets.find(item => item.SubnetId === SubnetId)
+            data.VpcConfig = {
+                vpc,
+                subnet
+            }
+        } catch (e) {
+            data.VPC = {
+                vpc: '',
+                subnet: ''
+            }
+        }
+    }
 
     return data
 }
@@ -450,6 +478,11 @@ export async function updateFunctionConfig(
     envVariables.length && (params.Environment = { Variables: envVariables })
     // 不设默认超时时间，防止覆盖已有配置
     config.timeout && (params.Timeout = config.timeout)
+    // VPC 网络
+    params.VpcConfig = {
+        SubnetId: (config.vpc && config.vpc.subnetId) || '',
+        VpcId: (config.vpc && config.vpc.vpcId) || ''
+    }
 
     await tencentcloudScfRequest('UpdateFunctionConfiguration', params)
 }
@@ -489,6 +522,7 @@ export async function invokeFunction(options): Promise<any> {
     const { Result }: any = await tencentcloudScfRequest('Invoke', _params)
 
     successLog(`${functionName} 调用成功\n响应结果：\n`)
+    // 打印结果
     console.log(Result)
 
     return Result

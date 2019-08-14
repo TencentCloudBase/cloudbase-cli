@@ -1,5 +1,6 @@
 import program from 'commander'
-import { listEnvs, createEnv } from '../env'
+import ora from 'ora'
+import { listEnvs, createEnv, getEnvInfo } from '../env'
 import { printCliTable } from '../utils'
 import { TcbError } from '../error'
 import { successLog } from '../logger'
@@ -9,15 +10,40 @@ program
     .description('列出云开发所有环境')
     .action(async function() {
         const data = await listEnvs()
-        const head = ['EnvId', 'PackageName', 'Source', 'CreateTime']
+        const head = ['EnvId', 'PackageName', 'Source', 'CreateTime', 'Status']
         const tableData = data.map(item => [
             item.envId,
             item.packageName,
             item.source,
-            item.createTime
+            item.createTime,
+            item.status === 'NORMAL' ? '正常' : '不可用'
         ])
         printCliTable(head, tableData)
     })
+
+async function checkEnvAvailability(envId: string) {
+    const MAX_TRY = 10
+    let retry = 0
+
+    return new Promise((resolve, reject) => {
+        const timer = setInterval(async () => {
+            const envInfo = await getEnvInfo(envId)
+            if (envInfo.Status === 'NORMAL') {
+                clearInterval(timer)
+                resolve()
+            } else {
+                retry++
+            }
+            if (retry > MAX_TRY) {
+                reject(
+                    new TcbError(
+                        '环境初始化查询超时，请稍后通过 tcb env:list 查看环境状态'
+                    )
+                )
+            }
+        }, 1000)
+    })
+}
 
 program
     .command('env:create <alias>')
@@ -26,8 +52,22 @@ program
         if (!alias) {
             throw new TcbError('环境名称不能为空！')
         }
-        await createEnv({
+
+        const res = await createEnv({
             alias
         })
-        successLog('创建环境成功！')
+
+        if (res.Status === 'NORMAL') {
+            successLog('创建环境成功！')
+            return
+        }
+
+        // 检查环境是否初始化成功
+        const initSpinner = ora('环境初始化中...').start()
+        try {
+            await checkEnvAvailability(res.EnvId)
+            initSpinner.succeed('环境初始化成功')
+        } catch (e) {
+            initSpinner.fail(e.message)
+        }
     })
