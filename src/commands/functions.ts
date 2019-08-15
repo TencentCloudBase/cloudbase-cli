@@ -20,7 +20,11 @@ import {
     batchInvokeFunctions,
     invokeFunction
 } from '../function'
-import { resolveTcbrcConfig, getEnvId, printCliTable } from '../utils'
+import {
+    resolveTcbrcConfig,
+    getEnvId,
+    printCliTable
+} from '../utils'
 import { successLog } from '../logger'
 
 // 获取函数配置并校验字段有效性
@@ -252,9 +256,9 @@ function logDetail(info, name) {
                 if (vpc && subnet) {
                     return `${ResMap[key]}：${vpc.VpcId}(${vpc.VpcName} | ${
                         subnet.CidrBlock
-                    }) / ${subnet.SubnetId}(${subnet.SubnetName})]\n`
+                    }) / ${subnet.SubnetId}(${subnet.SubnetName})\n`
                 } else {
-                    return '${ResMap[key]}：无\n'
+                    return `${ResMap[key]}：无\n`
                 }
             }
 

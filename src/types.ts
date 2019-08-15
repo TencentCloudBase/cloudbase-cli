@@ -123,6 +123,12 @@ export interface IUpdateFunctionConfigOptions {
     envId: string
 }
 
+export interface InvokeFunctionOptions {
+    functionName: string
+    params?: Record<string, any>
+    envId: string
+}
+
 export interface IFunctionBatchOptions {
     functions: ICloudFunction[]
     envId: string

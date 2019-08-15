@@ -11,7 +11,8 @@ import {
     IListFunctionOptions,
     IFunctionLogOptions,
     IUpdateFunctionConfigOptions,
-    IFunctionBatchOptions
+    IFunctionBatchOptions,
+    InvokeFunctionOptions
 } from '../types'
 import { FunctionPack } from './function-pack'
 import { TcbError } from '../error'
@@ -229,7 +230,7 @@ export async function createFunction(
     // VPC 网络
     params.VpcConfig = {
         SubnetId: (config.vpc && config.vpc.subnetId) || '',
-        VpcId: (config.vpc && config.vpc.subnetId) || ''
+        VpcId: (config.vpc && config.vpc.vpcId) || ''
     }
     // Node 安装依赖
     // func.config.runtime === 'Nodejs8.9' && (params.InstallDependency = true)
@@ -267,7 +268,7 @@ export async function createFunction(
         // 不强制覆盖，抛出错误
         if (e.message && !force) {
             !zipFile && packer && (await packer.clean())
-            uploadSpin.fail(`[${funcName}] 存在同名云函数`)
+            uploadSpin.fail(`[${funcName}] 云函数上传失败！`)
             throw new TcbError(`[${funcName}] 部署失败： ${e.message}`, {
                 code: e.code
             })
@@ -450,7 +451,7 @@ export async function getFunctionLog(
         const keyFirstCharUpperCase = key.charAt(0).toUpperCase() + key.slice(1)
         params[keyFirstCharUpperCase] = options[key]
     })
-
+    
     const { Data = [] }: any = await tencentcloudScfRequest(
         'GetFunctionLogs',
         params
@@ -510,7 +511,9 @@ export async function batchUpdateFunctionConfig(
 }
 
 // 调用函数
-export async function invokeFunction(options): Promise<any> {
+export async function invokeFunction(
+    options: InvokeFunctionOptions
+): Promise<any> {
     const { functionName, envId, params = {} } = options
 
     const _params: any = {
@@ -519,13 +522,15 @@ export async function invokeFunction(options): Promise<any> {
         ClientContext: JSON.stringify(params)
     }
 
-    const { Result }: any = await tencentcloudScfRequest('Invoke', _params)
-
-    successLog(`${functionName} 调用成功\n响应结果：\n`)
-    // 打印结果
-    console.log(Result)
-
-    return Result
+    try {
+        const { Result }: any = await tencentcloudScfRequest('Invoke', _params)
+        successLog(`[${functionName}] 调用成功\n响应结果：\n`)
+        // 打印结果
+        console.log(Result)
+        return Result
+    } catch (e) {
+        throw new TcbError(`[${functionName}] 调用失败：\n${e.message}`)
+    }
 }
 
 export async function batchInvokeFunctions(options: IFunctionBatchOptions) {

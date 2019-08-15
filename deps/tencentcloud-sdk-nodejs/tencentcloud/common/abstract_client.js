@@ -136,8 +136,7 @@ class AbstractClient {
         } else {
             const data = await res.json();
             if (data.Response.Error) {
-                const tcError = new TencentCloudSDKHttpException(data.Response.Error.Message, data.Response.RequestId)
-                tcError.code = data.Response.Error.Code
+                const tcError = new TencentCloudSDKHttpException(data.Response.Error.Message, data.Response.RequestId, data.Response.Error.Code)
                 throw tcError;
             } else {
                 return data.Response;

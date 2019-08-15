@@ -6,10 +6,11 @@ const updateNotifier = require('update-notifier')
 const pkg = require('../package.json')
 
 // 检查更新
+const ONE_DAY = 86400000
 const notifier = updateNotifier({
     pkg,
-    // 检查更新间隔 1h
-    updateCheckInterval: 1000 * 60 * 60
+    // 检查更新间隔 1 天
+    updateCheckInterval: ONE_DAY
 })
 notifier.notify()
 
@@ -53,7 +54,7 @@ function errorHandler(err) {
         console.log(err.stack)
     }
     // 3 空格，兼容中文字符编码长度问题
-    console.log(logSymbols.error + ' ' + chalk.red(err.message))
+    console.log(logSymbols.error + ' ' + err.message)
 }
 
 process.on('uncaughtException', errorHandler)

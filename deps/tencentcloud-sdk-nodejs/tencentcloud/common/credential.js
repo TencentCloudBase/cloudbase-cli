@@ -13,19 +13,19 @@ class Credential {
          * secretId,可在控制台获取
          * @type {string || null}
          */
-        this.secretId = secretId || null;
+        this.secretId = secretId || '';
 
         /**
          * secretKey,可在控制台获取
          * @type {string || null}
          */
-        this.secretKey = secretKey || null;
+        this.secretKey = secretKey || '';
 
         /**
          * token
          * @type {string || null}
          */
-        this.token = token || null
+        this.token = token || ''
     }
 }
 module.exports = Credential;
