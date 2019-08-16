@@ -58,7 +58,7 @@ async function tencentcloudScfRequest(
 export async function createFunctionTriggers(
     options: IFunctionTriggerOptions
 ): Promise<void> {
-    const { functionName: name, triggers, envId } = options
+    const { functionName: name, triggers = [], envId } = options
 
     const parsedTriggers = triggers.map(item => ({
         TriggerName: item.name,
@@ -252,6 +252,8 @@ export async function createFunction(
     } catch (e) {
         // 已存在同名函数，强制更新
         if (e.code === 'ResourceInUse.FunctionName' && force) {
+            params.ZipFile = base64
+            delete params.Code
             await tencentcloudScfRequest('UpdateFunctionCode', params)
             !zipFile && packer && (await packer.clean())
             uploadSpin.succeed(`已存在同名函数 "${funcName}"，覆盖成功！`)
@@ -273,6 +275,70 @@ export async function createFunction(
                 code: e.code
             })
         }
+    }
+}
+
+// 更新云函数代码
+export async function updateFunctionCode(options: ICreateFunctionOptions) {
+    const { func, root = '', envId, zipFile = '' } = options
+    let base64
+    let packer
+    const funcName = func.name
+
+    // 校验运行时
+    const validRuntime = ['Nodejs8.9', 'Php7', 'Java8']
+    if (func.config.runtime && !validRuntime.includes(func.config.runtime)) {
+        throw new TcbError(
+            `${funcName} 非法的运行环境：${
+                func.config.runtime
+            }，当前支持环境：${validRuntime.join(', ')}`
+        )
+    }
+
+    // CLI 从本地读取
+    if (!zipFile) {
+        let zipFilePath = ''
+        const funcPath = path.join(root, 'functions', funcName)
+        // Java
+        if (func.config.runtime === 'Java8') {
+            zipFilePath = getJavaZipFilePath(funcPath, funcName)
+        } else {
+            // 函数目录
+            if (!fs.existsSync(funcPath)) {
+                throw new TcbError(`${funcName} 函数文件不存在，部署终止`)
+            }
+            const distPath = `${funcPath}/dist`
+            packer = new FunctionPack(funcPath, distPath)
+            // 清除原打包文件
+            await packer.clean()
+            // 生成 zip 文件
+            await packer.build(funcName)
+            zipFilePath = path.join(distPath, 'dist.zip')
+        }
+        // 将 zip 文件转化成 base64
+        base64 = fs.readFileSync(zipFilePath).toString('base64')
+    } else {
+        base64 = zipFile
+    }
+
+    const params: any = {
+        FunctionName: funcName,
+        Namespace: envId,
+        ZipFile: base64,
+        Handler: func.handler || 'index.main'
+    }
+
+    const uploadSpin = ora('云函数上传中').start()
+
+    try {
+        // 更新云函数代码
+        await tencentcloudScfRequest('UpdateFunctionCode', params)
+        !zipFile && packer && (await packer.clean())
+        uploadSpin.succeed(`[${funcName}] 函数代码更新成功！`)
+    } catch (e) {
+        throw new TcbError(`[${funcName}] 函数代码更新失败： ${e.message}`, {
+            code: e.code
+        })
     }
 }
 
@@ -359,7 +425,8 @@ export async function getFunctionDetail(
     const { functionName, envId } = options
     const res = await tencentcloudScfRequest('GetFunction', {
         FunctionName: functionName,
-        Namespace: envId
+        Namespace: envId,
+        ShowCode: 'TRUE'
     })
 
     const data: Record<string, any> = {}
@@ -451,7 +518,7 @@ export async function getFunctionLog(
         const keyFirstCharUpperCase = key.charAt(0).toUpperCase() + key.slice(1)
         params[keyFirstCharUpperCase] = options[key]
     })
-    
+
     const { Data = [] }: any = await tencentcloudScfRequest(
         'GetFunctionLogs',
         params

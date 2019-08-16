@@ -40,13 +40,68 @@ client
 
 参数：
 
-```
+```js
 {
     alias: string
 }
 ```
 
 响应：void
+
+
+#### env.domain.list(options)
+
+参数：
+
+```js
+{
+    envId: string
+}
+```
+
+响应：
+
+```js
+[
+    { 
+        Id: 'f8f7786b-cbba-4c0e-ba7e-a4139a99401d',
+        Domain: 'abc.com',
+        Status: 'ENABLE',
+        CreateTime: '2019-08-15 17:39:39',
+        UpdateTime: '2019-08-15 17:39:39' 
+    }
+]
+```
+
+#### env.domains.create(options)
+
+参数：
+
+```js
+{
+    envId: string,
+    domains: string[]
+}
+```
+
+响应：void
+
+#### env.domains.delete(options)
+
+```js
+{
+    envId: string,
+    // 域名 Id 列表
+    domainIds: string[]
+}
+```
+
+响应：
+
+```js
+// 删除成功数量
+deleted: number
+```
 
 #### functions.invoke(options)
 

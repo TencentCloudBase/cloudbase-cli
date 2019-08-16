@@ -1,6 +1,7 @@
 import { guid6 } from '../utils'
 import { TcbError } from '../error'
 import { BaseHTTPService } from '../utils'
+export * from './domain'
 
 const tcbService = new BaseHTTPService('tcb', '2018-06-08')
 

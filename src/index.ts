@@ -1,5 +1,5 @@
 import './commands'
-import { listEnvs, createEnv } from './env'
+import { listEnvs, createEnv, getEnvAuthDomains, createEnvDomain, deleteEnvDomain } from './env'
 import {
     createFunction,
     listFunction,
@@ -16,7 +16,12 @@ import { configStore } from './utils/configstore'
 export = class Client {
     env = {
         list: listEnvs,
-        create: createEnv
+        create: createEnv,
+        domain: {
+            list: getEnvAuthDomains,
+            create: createEnvDomain,
+            delete: deleteEnvDomain
+        }
     }
 
     functions = {

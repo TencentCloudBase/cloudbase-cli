@@ -12,6 +12,8 @@ npm install -g @cloudbase/cli
 
 ### 1. 初始化
 
+使用 `tcb init` 创建项目，创建项目时 CLI 工具会成一个 Node 函数模板，供使用参考。
+
 ```shell
 # 此命令会创建一个目录，并写入配置
 tcb init
@@ -34,9 +36,9 @@ TCB 项目文件结构：
 
 ### 2. 编写函数
 
-为了规范使用，所有函数都统一存放在 `functions` 目录下，并以函数名作为文件夹名称。`tcb init` 创建项目时默认会成 Node 函数模板，供使用参考。
+为了规范使用，所有 Node 和 PHP 函数都统一存放在 `functions` 目录下，并以函数名作为文件夹名称，如 `functions/tcb/index.js`。**对于 Java 函数时，则需要将 jar 文件名修改为函数名称，放在 `functions` 目录下即可，如 `functions/tcb.jar`**。
 
-例如，创建一个 app 函数，下面是 `functions/app/index.js` 的内容
+例如，创建一个 Node.js 函数 app，下面是 `functions/app/index.js` 的内容
 
 ```js
 'use strict'
@@ -127,12 +129,12 @@ exports.main = (event, context, callback) => {
                     "config": "0 0 2 1 * * *"
                 }
             ],
-            // 触发云函数时的函数参数
-            "params": {},
             // 函数处理入口，Node 和 PHP 项目可以省略，默认值为 index.main
             // 因 Java 的 handler 配置较为特殊，所以当运行时为 Java 时，handler 不能省略
             // 如：package.Class::mainHandler
-            "handler": "index.main"
+            "handler": "index.main",
+            // functions:invoke 本地触发云函数时的调用参数
+            "params": {},
         }
     ]
 }
@@ -140,20 +142,22 @@ exports.main = (event, context, callback) => {
 
 ### 4. 部署函数
 
-最后，在项目根目录下运行下面的命令，即可部署 app 函数到云端
+最后，在项目根目录下（tcbrc.json 所在目录）运行 `tcb functions:deploy` 命令，即可部署 app 函数到云端
 
-```
+```shell
 tcb functions:deploy app
 ```
 
 ## 所有命令
+
+使用 `tcb -h` 查看所有可用命令
 
 ```bash
 tcb -h
 ```
 
 ```
-Usage:  [options] [command]
+Usage: tcb [options] [command]
 
 Options:
   -V, --version                                                  output the version number
@@ -164,8 +168,12 @@ Commands:
   login [options]                                                登录腾讯云账号
   logout                                                         登出腾讯云账号
   env:list                                                       列出云开发所有环境
-  env:create <alias> <envId>                                     创建新的云环境
+  env:create <alias>                                             创建新的云环境
+  env:domain:list [envId]                                        列出环境的安全域名列表
+  env:domain:create <domain> [envId]                             添加环境安全域名，多个以斜杠 / 分隔
+  env:domain:delete [envId]                                      删除环境的安全域名
   functions:deploy [options] [functionName] [envId]              创建云函数
+  functions:code:update <functionName> [envId]                   创建云函数
   functions:list [options] [envId]                               展示云函数列表
   functions:delete [functionName] [envId]                        删除云函数
   functions:detail [functionName] [envId]                        获取云函数信息
@@ -220,6 +228,12 @@ tcb login --key
 
 `tcb logout` 注销登录
 
+### new
+
+`tcb new` 创建一个包含配置文件 `tcbrc.json` 的云开发项目
+
+![](docs/img/new.png)
+
 ### env:list
 
 `tcb env:list` 列出所有的云开发环境
@@ -240,11 +254,23 @@ tcb login --key
 
 `env:create` 命令创建一个新的云开发环境，需要制定环境的别名 `alias`。
 
-### new
+### env:domain:list
 
-`tcb new` 创建一个包含配置文件 `tcbrc.json` 的云开发项目
+完整命令 `tcb env:domain:list [envId]`
 
-![](docs/img/new.png)
+`env:domain:list` 命令列出环境配置所有的安全域名。
+
+### env:domian:create
+
+完整命令：`tcb env:domain:create <domain> [envId]`
+
+`env:domain:create` 命令用于添加域名到指定的环境，当需要添加多个域名时，需要以 `/` 分隔，如 `abc.com/def.com`。
+
+### env:domain:delete
+
+完整命令：`tcb env:domain:delete [envId]`
+
+`env:domain:delete` 命令用于删除环境配置的安全域名，输入此命令回车运行后，CLI 会拉取环境的所有域名，用户可与 CLI 进行交互，选择需要删除的域名。
 
 ### functions:list
 
@@ -285,13 +311,17 @@ tcb functions:list -l 10
 
 > **注意** `functions:deploy` 命令必须在包含 `tcbrc.json` 配置文件的项目根目录下执行。
 
-`functions:deploy` 会根据 `tcbrc.json` 配置文件部署云函数，`functions:deploy` 命令的参数包含一些可选的选项 options 和可选的函数名称 `functionName`，以及可选的环境 Id `envId`。
+`functions:deploy` 会根据 `tcbrc.json` 配置文件部署云函数，`functions:deploy` 命令的参数包含一些可选的选项 options 和可选的函数名称 `functionName` 以及环境 Id `envId`。
+
+`functions:deploy` 命令会完成以下几项工作：
+
+  1. 上传函数代码。
+  2. 部署函数配置，包括超时时间、网络配置等。
+  3. 部署函数触发器。
 
 **同 `functions:list` 类似，环境 Id 可以列出在命令中，也可以缺省，CLI 会从 `tcbrc.json` 文件中读取。（下文不做再次说明）**
 
-使用 `functions:list` 时，`functionName` 选项是可以省略的。
-
-当 `functionName` 省略时，CLI 会部署配置文件中的全部函数
+使用 `functions:deploy` 时，`functionName` 选项是可以省略的，当 `functionName` 省略时，CLI 会部署配置文件中的全部函数
 
 ```shell
 tcb functions:deploy
@@ -320,6 +350,14 @@ tcb functions:deploy --force
 
 tcb functions:deploy dev --force
 ```
+
+### functions:code:update
+
+完整命令：`tcb functions:code:update <functionName> [envId]`
+
+`functions:code:update` 命令用于更新的函数的代码以及函数的执行入口，除此之外 `functions:code:update` 命令不会修改函数的其他配置。
+
+`functions:code:update` 命令和 `functions:deploy` 命令的主要区别是 `functions:code:update` 命令只会更新函数的代码以及执行入口，不会修改函数的其他配置，而 `functions:deploy` 命令则会修改函数的代码以及所有配置。
 
 ### functions:invoke
 

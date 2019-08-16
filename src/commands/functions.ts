@@ -18,13 +18,10 @@ import {
     batchGetFunctionsDetail,
     batchUpdateFunctionConfig,
     batchInvokeFunctions,
-    invokeFunction
+    invokeFunction,
+    updateFunctionCode
 } from '../function'
-import {
-    resolveTcbrcConfig,
-    getEnvId,
-    printCliTable
-} from '../utils'
+import { resolveTcbrcConfig, getEnvId, printCliTable } from '../utils'
 import { successLog } from '../logger'
 
 // 获取函数配置并校验字段有效性
@@ -132,6 +129,30 @@ program
         }
     })
 
+// 更新云函数代码
+program
+    .command('functions:code:update <functionName> [envId]')
+    .description('创建云函数')
+    .action(async function(name: string, envId: string) {
+        const assignEnvId = await getEnvId(envId)
+        const functions = await getConfigFunctions()
+
+        if (!name) {
+            throw new TcbError('请指定函数名称！')
+        }
+
+        const newFunction = functions.find(item => item.name === name)
+        if (!newFunction || !newFunction.name) {
+            throw new TcbError(`函数 ${name} 配置不存在`)
+        }
+
+        await updateFunctionCode({
+            func: newFunction,
+            root: process.cwd(),
+            envId: assignEnvId
+        })
+    })
+
 // 展示云函数列表
 program
     .command('functions:list [envId]')
@@ -218,7 +239,6 @@ program
 function logDetail(info, name) {
     const ResMap = {
         Status: '状态',
-        CodeInfo: '函数代码',
         CodeSize: '代码大小',
         Description: '描述',
         Environment: '环境变量(key=value)',
@@ -231,7 +251,8 @@ function logDetail(info, name) {
         Runtime: '运行环境',
         Timeout: '超时时间(S)',
         VpcConfig: '网络配置',
-        Triggers: '触发器'
+        Triggers: '触发器',
+        CodeInfo: '函数代码'
     }
 
     const funcInfo = Object.keys(ResMap)
@@ -245,10 +266,11 @@ function logDetail(info, name) {
             }
 
             if (key === 'Triggers') {
-                const data = info[key]
+                let data = info[key]
                     .map(item => `${item.TriggerName}：${item.TriggerDesc}`)
                     .join('\n')
-                return `${ResMap[key]}：\n${data} \n`
+                data = data.length ? `${data}\n` : '无'
+                return `${ResMap[key]}：\n${data}`
             }
 
             if (key === 'VpcConfig') {
@@ -260,6 +282,10 @@ function logDetail(info, name) {
                 } else {
                     return `${ResMap[key]}：无\n`
                 }
+            }
+
+            if (key === 'CodeInfo') {
+                return `${ResMap[key]}：\n${info[key]}`
             }
 
             return `${ResMap[key]}：${info[key]} \n`
