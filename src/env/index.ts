@@ -2,6 +2,7 @@ import { guid6 } from '../utils'
 import { TcbError } from '../error'
 import { CloudService } from '../utils'
 export * from './domain'
+export * from './login'
 
 const tcbService = new CloudService('tcb', '2018-06-08')
 

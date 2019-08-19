@@ -8,7 +8,6 @@ test('列出所有环境：tcb env:list', async () => {
 
 test('创建环境：tcb env:create', async () => {
     await createEnv({
-        alias: 'scf',
-        envId: `scf-${Date.now()}`
+        alias: 'scf'
     })
 })

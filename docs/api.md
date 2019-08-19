@@ -142,7 +142,7 @@ deleted: number
     functionName: string,
     force: boolean,
     // 函数代码 base64 编码形式
-    zipFile: base64String,
+    base64Code: base64String,
     func: {
         // 函数名
         name: 'app',
@@ -242,7 +242,6 @@ deleted: number
     Handler: 'index.main',
     CodeSize: 636,
     Timeout: 5,
-    FunctionVersion: '$LATEST',
     MemorySize: 256,
     Runtime: 'Nodejs8.9',
     FunctionName: 'app',

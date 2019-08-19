@@ -1,336 +1,22 @@
-import fs from 'fs'
-import path from 'path'
-import ora from 'ora'
 import { CloudService } from '../utils'
 import { successLog } from '../logger'
 import {
-    IFunctionTriggerOptions,
-    ICreateFunctionOptions,
     IListFunctionOptions,
     IFunctionLogOptions,
     IUpdateFunctionConfigOptions,
     IFunctionBatchOptions,
     InvokeFunctionOptions
 } from '../types'
-import { FunctionPack } from './function-pack'
 import { TcbError } from '../error'
 import { getVpcs, getSubnets } from './vpc'
+
+export * from './create'
+export * from './trigger'
 
 const scfService = new CloudService('scf', '2018-04-16', {
     Role: 'TCB_QcsRole',
     Stamp: 'MINI_QCBASE'
 })
-
-// 创建函数触发器
-export async function createFunctionTriggers(
-    options: IFunctionTriggerOptions
-): Promise<void> {
-    const { functionName: name, triggers = [], envId } = options
-
-    const parsedTriggers = triggers.map(item => ({
-        TriggerName: item.name,
-        Type: item.type,
-        TriggerDesc: item.config
-    }))
-
-    try {
-        await scfService.request('BatchCreateTrigger', {
-            FunctionName: name,
-            Namespace: envId,
-            Triggers: JSON.stringify(parsedTriggers),
-            Count: parsedTriggers.length
-        })
-        successLog(`[${name}] 创建云函数触发器成功！`)
-    } catch (e) {
-        throw new TcbError(`[${name}] 创建触发器失败：${e.message}`)
-    }
-}
-
-// 批量部署函数触发器
-export async function batchCreateTriggers(
-    options: IFunctionBatchOptions
-): Promise<void> {
-    const { functions, envId } = options
-
-    const promises = functions.map(func =>
-        (async () => {
-            try {
-                await createFunctionTriggers({
-                    functionName: func.name,
-                    triggers: func.triggers,
-                    envId
-                })
-            } catch (e) {
-                throw new TcbError(e.message)
-            }
-        })()
-    )
-
-    await Promise.all(promises)
-}
-
-// 删除函数触发器
-export async function deleteFunctionTrigger(
-    options: IFunctionTriggerOptions
-): Promise<void> {
-    const { functionName, triggerName, envId } = options
-    try {
-        await scfService.request('DeleteTrigger', {
-            FunctionName: functionName,
-            Namespace: envId,
-            TriggerName: triggerName,
-            Type: 'timer'
-        })
-        successLog(`[${functionName}] 删除云函数触发器 ${triggerName} 成功！`)
-    } catch (e) {
-        throw new TcbError(`[${functionName}] 删除触发器失败：${e.message}`)
-    }
-}
-
-export async function batchDeleteTriggers(
-    options: IFunctionBatchOptions
-): Promise<void> {
-    const { functions, envId } = options
-    const promises = functions.map(func =>
-        (async () => {
-            try {
-                func.triggers.forEach(async trigger => {
-                    await deleteFunctionTrigger({
-                        functionName: func.name,
-                        triggerName: trigger.name,
-                        envId
-                    })
-                })
-            } catch (e) {
-                throw new TcbError(e.message)
-            }
-        })()
-    )
-
-    await Promise.all(promises)
-}
-
-function getJavaZipFilePath(funcPath: string, funcName: string) {
-    const jarExist = fs.existsSync(`${funcPath}.jar`)
-    const zipExist = fs.existsSync(`${funcPath}.zip`)
-    if (!jarExist && !zipExist) {
-        throw new TcbError(
-            `${funcName} Java 编译文件不存在，部署终止。Java 仅支持编译打包后的 Zip/Jar 包`
-        )
-    }
-    return jarExist ? `${funcPath}.jar` : `${funcPath}.zip`
-}
-
-// 创建云函数
-export async function createFunction(
-    options: ICreateFunctionOptions
-): Promise<void> {
-    const { func, root = '', envId, force = false, zipFile = '' } = options
-    let base64
-    let packer
-    const funcName = func.name
-
-    // 校验运行时
-    const validRuntime = ['Nodejs8.9', 'Php7', 'Java8']
-    if (func.config.runtime && !validRuntime.includes(func.config.runtime)) {
-        throw new TcbError(
-            `${funcName} 非法的运行环境：${
-                func.config.runtime
-            }，当前支持环境：${validRuntime.join(', ')}`
-        )
-    }
-
-    // CLI 从本地读取
-    if (!zipFile) {
-        let zipFilePath = ''
-        const funcPath = path.join(root, 'functions', funcName)
-        // Java
-        if (func.config.runtime === 'Java8') {
-            zipFilePath = getJavaZipFilePath(funcPath, funcName)
-        } else {
-            // 函数目录
-            if (!fs.existsSync(funcPath)) {
-                throw new TcbError(`${funcName} 函数文件不存在，部署终止`)
-            }
-            const distPath = `${funcPath}/dist`
-            packer = new FunctionPack(funcPath, distPath)
-            // 清除原打包文件
-            await packer.clean()
-            // 生成 zip 文件
-            await packer.build(funcName)
-            zipFilePath = path.join(distPath, 'dist.zip')
-        }
-        // 将 zip 文件转化成 base64
-        base64 = fs.readFileSync(zipFilePath).toString('base64')
-    } else {
-        base64 = zipFile
-    }
-
-    // 转换环境变量
-    const envVariables = Object.keys(func.config.envVariables || {}).map(
-        key => ({
-            Key: key,
-            Value: func.config.envVariables[key]
-        })
-    )
-
-    const params: any = {
-        FunctionName: funcName,
-        Namespace: envId,
-        Code: {
-            ZipFile: base64
-        },
-        // 不可选择
-        MemorySize: 256
-    }
-
-    const { config } = func
-    // 修复参数存在 undefined 字段时，会出现鉴权失败的情况
-    // Environment 为覆盖式修改，不保留已有字段
-    envVariables.length && (params.Environment = { Variables: envVariables })
-    // 处理入口
-    params.Handler = func.handler || 'index.main'
-    // 默认超时时间为 3S
-    params.Timeout = Number(config.timeout) || 3
-    // 默认运行环境 Nodejs8.9
-    params.Runtime = config.runtime || 'Nodejs8.9'
-    // VPC 网络
-    params.VpcConfig = {
-        SubnetId: (config.vpc && config.vpc.subnetId) || '',
-        VpcId: (config.vpc && config.vpc.vpcId) || ''
-    }
-    // Node 安装依赖
-    // func.config.runtime === 'Nodejs8.9' && (params.InstallDependency = true)
-
-    const uploadSpin = ora('云函数上传中').start()
-
-    try {
-        // 创建云函数
-        await scfService.request('CreateFunction', params)
-        !zipFile && packer && (await packer.clean())
-        uploadSpin.succeed(`函数 "${funcName}" 上传成功！`)
-        // 创建函数触发器
-        await createFunctionTriggers({
-            functionName: funcName,
-            triggers: func.triggers,
-            envId
-        })
-        successLog(`[${funcName}] 云函数部署成功!`)
-    } catch (e) {
-        // 已存在同名函数，强制更新
-        if (e.code === 'ResourceInUse.FunctionName' && force) {
-            params.ZipFile = base64
-            delete params.Code
-            await scfService.request('UpdateFunctionCode', params)
-            !zipFile && packer && (await packer.clean())
-            uploadSpin.succeed(`已存在同名函数 "${funcName}"，覆盖成功！`)
-            // 创建函数触发器
-            await createFunctionTriggers({
-                functionName: funcName,
-                triggers: func.triggers,
-                envId
-            })
-            successLog(`[${funcName}] 云函数部署成功!`)
-            return
-        }
-
-        // 不强制覆盖，抛出错误
-        if (e.message && !force) {
-            !zipFile && packer && (await packer.clean())
-            uploadSpin.fail(`[${funcName}] 云函数上传失败！`)
-            throw new TcbError(`[${funcName}] 部署失败： ${e.message}`, {
-                code: e.code
-            })
-        }
-    }
-}
-
-// 更新云函数代码
-export async function updateFunctionCode(options: ICreateFunctionOptions) {
-    const { func, root = '', envId, zipFile = '' } = options
-    let base64
-    let packer
-    const funcName = func.name
-
-    // 校验运行时
-    const validRuntime = ['Nodejs8.9', 'Php7', 'Java8']
-    if (func.config.runtime && !validRuntime.includes(func.config.runtime)) {
-        throw new TcbError(
-            `${funcName} 非法的运行环境：${
-                func.config.runtime
-            }，当前支持环境：${validRuntime.join(', ')}`
-        )
-    }
-
-    // CLI 从本地读取
-    if (!zipFile) {
-        let zipFilePath = ''
-        const funcPath = path.join(root, 'functions', funcName)
-        // Java
-        if (func.config.runtime === 'Java8') {
-            zipFilePath = getJavaZipFilePath(funcPath, funcName)
-        } else {
-            // 函数目录
-            if (!fs.existsSync(funcPath)) {
-                throw new TcbError(`${funcName} 函数文件不存在，部署终止`)
-            }
-            const distPath = `${funcPath}/dist`
-            packer = new FunctionPack(funcPath, distPath)
-            // 清除原打包文件
-            await packer.clean()
-            // 生成 zip 文件
-            await packer.build(funcName)
-            zipFilePath = path.join(distPath, 'dist.zip')
-        }
-        // 将 zip 文件转化成 base64
-        base64 = fs.readFileSync(zipFilePath).toString('base64')
-    } else {
-        base64 = zipFile
-    }
-
-    const params: any = {
-        FunctionName: funcName,
-        Namespace: envId,
-        ZipFile: base64,
-        Handler: func.handler || 'index.main'
-    }
-
-    const uploadSpin = ora('云函数上传中').start()
-
-    try {
-        // 更新云函数代码
-        await scfService.request('UpdateFunctionCode', params)
-        !zipFile && packer && (await packer.clean())
-        uploadSpin.succeed(`[${funcName}] 函数代码更新成功！`)
-    } catch (e) {
-        throw new TcbError(`[${funcName}] 函数代码更新失败： ${e.message}`, {
-            code: e.code
-        })
-    }
-}
-
-// 批量创建云函数
-export async function batchCreateFunctions(
-    options: ICreateFunctionOptions
-): Promise<void> {
-    const { functions, root, envId, force } = options
-    const promises = functions.map(func =>
-        (async () => {
-            try {
-                await createFunction({
-                    func,
-                    root,
-                    envId,
-                    force
-                })
-            } catch (e) {
-                throw new TcbError(e.message)
-            }
-        })()
-    )
-
-    await Promise.all(promises)
-}
 
 // 列出函数
 export async function listFunction(
@@ -345,12 +31,21 @@ export async function listFunction(
     const { Functions = [] } = res
     const data: Record<string, string>[] = []
     Functions.forEach(func => {
-        const { FunctionName, Runtime, AddTime, Description } = func
-        data.push({
+        const {
+            FunctionId,
             FunctionName,
             Runtime,
             AddTime,
-            Description
+            ModTime,
+            Status
+        } = func
+        data.push({
+            FunctionId,
+            FunctionName,
+            Runtime,
+            AddTime,
+            ModTime,
+            Status
         })
     })
 
@@ -364,7 +59,6 @@ export async function deleteFunction({ functionName, envId }): Promise<void> {
             FunctionName: functionName,
             Namespace: envId
         })
-        successLog(`删除函数 [${functionName}] 成功！`)
     } catch (e) {
         throw new TcbError(`[${functionName}] 删除操作失败：${e.message}！`)
     }
@@ -376,6 +70,7 @@ export async function batchDeleteFunctions({ names, envId }): Promise<void> {
         (async () => {
             try {
                 await deleteFunction({ functionName: name, envId })
+                successLog(`[${name}] 函数删除成功！`)
             } catch (e) {
                 throw new TcbError(e.message)
             }
@@ -405,7 +100,6 @@ export async function getFunctionDetail(
         'Description',
         'Environment',
         'FunctionName',
-        'FunctionVersion',
         'Handler',
         'MemorySize',
         'ModTime',
@@ -526,7 +220,7 @@ export async function updateFunctionConfig(
 export async function batchUpdateFunctionConfig(
     options: IFunctionBatchOptions
 ): Promise<void> {
-    const { functions, envId } = options
+    const { functions, envId, log } = options
     const promises = functions.map(func =>
         (async () => {
             try {
@@ -535,6 +229,7 @@ export async function batchUpdateFunctionConfig(
                     config: func.config,
                     envId
                 })
+                log && successLog(`[${func.name}] 更新云函数配置成功！`)
             } catch (e) {
                 throw new TcbError(`${func.name} 更新配置失败：${e.message}`)
             }
@@ -545,12 +240,10 @@ export async function batchUpdateFunctionConfig(
 }
 
 // 调用函数
-export async function invokeFunction(
-    options: InvokeFunctionOptions
-): Promise<any> {
+export async function invokeFunction(options: InvokeFunctionOptions) {
     const { functionName, envId, params = {} } = options
 
-    const _params: any = {
+    const _params = {
         FunctionName: functionName,
         Namespace: envId,
         ClientContext: JSON.stringify(params),
@@ -558,10 +251,7 @@ export async function invokeFunction(
     }
 
     try {
-        const { Result }: any = await scfService.request('Invoke', _params)
-        successLog(`[${functionName}] 调用成功\n响应结果：\n`)
-        // 打印结果
-        console.log(Result)
+        const { Result } = await scfService.request('Invoke', _params)
         return Result
     } catch (e) {
         throw new TcbError(`[${functionName}] 调用失败：\n${e.message}`)
@@ -570,23 +260,28 @@ export async function invokeFunction(
 
 // 批量触发云函数
 export async function batchInvokeFunctions(options: IFunctionBatchOptions) {
-    const { functions, envId } = options
+    const { functions, envId, log = false } = options
 
     const promises = functions.map(func =>
         (async () => {
             try {
-                await invokeFunction({
+                const result = await invokeFunction({
                     functionName: func.name,
                     params: func.params,
                     envId
                 })
+                if (log) {
+                    successLog(`[${func.name}] 调用成功\n响应结果：\n`)
+                    console.log(result)
+                }
+                return result
             } catch (e) {
                 throw new TcbError(`${func.name} 函数调用失败：${e.message}`)
             }
         })()
     )
 
-    await Promise.all(promises)
+    return await Promise.all(promises)
 }
 
 interface ICopyFunctionOptions {

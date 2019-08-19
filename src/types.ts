@@ -96,7 +96,8 @@ export interface ICreateFunctionOptions {
     root?: string
     envId: string
     force?: boolean
-    zipFile?: string
+    base64Code?: string
+    log?: boolean
 }
 
 export interface IListFunctionOptions {
@@ -131,7 +132,8 @@ export interface InvokeFunctionOptions {
 
 export interface IFunctionBatchOptions {
     functions: ICloudFunction[]
-    envId: string
+    envId: string,
+    log?: boolean
 }
 
 export interface IFunctionTriggerOptions {

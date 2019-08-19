@@ -1,3 +1,4 @@
+import ora from 'ora'
 import program from 'commander'
 import inquirer from 'inquirer'
 import chalk from 'chalk'
@@ -24,6 +25,14 @@ import {
 } from '../function'
 import { resolveTcbrcConfig, getEnvId, printCliTable } from '../utils'
 import { successLog } from '../logger'
+
+const StatusMap = {
+    Active: '部署完成',
+    Creating: '创建中',
+    CreateFailed: '创建失败',
+    Updating: '更新中',
+    UpdateFailed: '更新失败'
+}
 
 // 获取函数配置并校验字段有效性
 async function getConfigFunctions() {
@@ -90,7 +99,8 @@ program
                 functions,
                 root: process.cwd(),
                 envId: assignEnvId,
-                force
+                force,
+                log: true
             })
         }
 
@@ -99,6 +109,8 @@ program
             throw new TcbError(`函数 ${name} 配置不存在`)
         }
 
+        const createSpinner = ora('函数部署中...').start()
+
         try {
             await createFunction({
                 func: newFunction,
@@ -106,8 +118,10 @@ program
                 envId: assignEnvId,
                 force
             })
+            createSpinner.succeed(`[${newFunction.name}] 函数部署成功！`)
         } catch (e) {
             // 询问是否覆盖同名函数
+            createSpinner.stop()
             if (e.code === 'ResourceInUse.FunctionName') {
                 const { force } = await inquirer.prompt({
                     type: 'confirm',
@@ -117,12 +131,21 @@ program
                 })
 
                 if (force) {
-                    createFunction({
-                        func: newFunction,
-                        root: process.cwd(),
-                        envId: assignEnvId,
-                        force: true
-                    })
+                    createSpinner.start()
+                    try {
+                        await createFunction({
+                            func: newFunction,
+                            root: process.cwd(),
+                            envId: assignEnvId,
+                            force: true
+                        })
+                        createSpinner.succeed(
+                            `[${newFunction.name}] 函数部署成功！`
+                        )
+                    } catch (e) {
+                        createSpinner.stop()
+                        throw e
+                    }
                     return
                 }
             }
@@ -142,16 +165,23 @@ program
             throw new TcbError('请指定函数名称！')
         }
 
-        const newFunction = functions.find(item => item.name === name)
-        if (!newFunction || !newFunction.name) {
+        const func = functions.find(item => item.name === name)
+        if (!func || !func.name) {
             throw new TcbError(`函数 ${name} 配置不存在`)
         }
 
-        await updateFunctionCode({
-            func: newFunction,
-            root: process.cwd(),
-            envId: assignEnvId
-        })
+        const spinner = ora(`[${func.name}] 函数代码更新中...`).start()
+        try {
+            await updateFunctionCode({
+                func,
+                root: process.cwd(),
+                envId: assignEnvId
+            })
+            spinner.succeed(`[${func.name}] 函数代码更新成功！`)
+        } catch (e) {
+            spinner.stop()
+            throw e
+        }
     })
 
 // 展示云函数列表
@@ -179,11 +209,23 @@ program
             envId: assignEnvId
         })
 
-        const head: string[] = ['Name', 'Runtime', 'AddTime', 'Description']
-        const tableData = data.map(item => {
-            const { FunctionName, Runtime, AddTime, Description } = item
-            return [FunctionName, Runtime, AddTime, Description]
-        })
+        const head: string[] = [
+            'Id',
+            'Name',
+            'Runtime',
+            'AddTime',
+            'ModTime',
+            'Status'
+        ]
+
+        const tableData = data.map(item => [
+            item.FunctionId,
+            item.FunctionName,
+            item.Runtime,
+            item.AddTime,
+            item.ModTime,
+            StatusMap[item.Status]
+        ])
 
         printCliTable(head, tableData)
     })
@@ -235,16 +277,16 @@ program
             functionName: name,
             envId: assignEnvId
         })
+        successLog(`删除函数 [${name}] 成功！`)
     })
 
 function logDetail(info, name) {
     const ResMap = {
         Status: '状态',
-        CodeSize: '代码大小',
+        CodeSize: '代码大小（B）',
         Description: '描述',
         Environment: '环境变量(key=value)',
         FunctionName: '函数名称',
-        FunctionVersion: '函数版本',
         Handler: '执行方法',
         MemorySize: '内存配置(MB)',
         ModTime: '修改时间',
@@ -253,11 +295,14 @@ function logDetail(info, name) {
         Timeout: '超时时间(S)',
         VpcConfig: '网络配置',
         Triggers: '触发器',
-        CodeInfo: '函数代码'
+        CodeInfo: '函数代码（Java 函数以及入口大于 1 M 的函数不会显示）'
     }
 
     const funcInfo = Object.keys(ResMap)
         .map(key => {
+            if (key === 'Status') {
+                return `${ResMap[key]}：${StatusMap[info[key]]} \n`
+            }
             // 将环境变量数组转换成 key=value 的形式
             if (key === 'Environment') {
                 const data = info[key].Variables.map(
@@ -484,9 +529,9 @@ program
         if (isBathUpdate) {
             await batchUpdateFunctionConfig({
                 functions,
-                envId: assignEnvId
+                envId: assignEnvId,
+                log: true
             })
-            successLog('更新云函数配置成功！')
             return
         }
 
@@ -502,7 +547,7 @@ program
             envId: assignEnvId
         })
 
-        successLog('更新云函数配置成功！')
+        successLog(`[${name}] 更新云函数配置成功！`)
     })
 
 // 创建函数触发器
@@ -691,7 +736,8 @@ program
         if (isBatchInvoke) {
             return await batchInvokeFunctions({
                 functions,
-                envId: assignEnvId
+                envId: assignEnvId,
+                log: true
             })
         }
 
@@ -701,11 +747,13 @@ program
             throw new TcbError('未找到相关函数配置，请检查函数名是否正确')
         }
 
-        await invokeFunction({
+        const result = await invokeFunction({
             functionName: name,
             envId: assignEnvId,
             params: params || func.params
         })
+        successLog(`[${name}] 调用成功\n响应结果：\n`)
+        console.log(result)
     })
 
 // 更新云函数代码

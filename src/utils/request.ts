@@ -7,6 +7,7 @@ function isObject(x) {
     return typeof x === 'object' && !Array.isArray(x) && x !== null
 }
 
+// 移除对象中的空值
 function deepRemoveVoid(obj) {
     if (Array.isArray(obj)) {
         return obj.map(deepRemoveVoid)
