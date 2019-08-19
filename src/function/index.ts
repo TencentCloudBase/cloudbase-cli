@@ -1,11 +1,9 @@
 import fs from 'fs'
 import path from 'path'
 import ora from 'ora'
-import { getCredential } from '../utils'
-import tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
+import { CloudService } from '../utils'
 import { successLog } from '../logger'
 import {
-    AuthSecret,
     IFunctionTriggerOptions,
     ICreateFunctionOptions,
     IListFunctionOptions,
@@ -18,41 +16,10 @@ import { FunctionPack } from './function-pack'
 import { TcbError } from '../error'
 import { getVpcs, getSubnets } from './vpc'
 
-async function tencentcloudScfRequest(
-    interfaceName: string,
-    params?: Record<string, any>
-) {
-    const credential: AuthSecret = await getCredential()
-    const { secretId, secretKey, token } = credential
-    const ScfClient = tencentcloud.scf.v20180416.Client
-    const models = tencentcloud.scf.v20180416.Models
-    const { Credential, HttpProfile } = tencentcloud.common
-    let cred = new Credential(secretId, secretKey, token)
-    let client = new ScfClient(cred, 'ap-shanghai', {
-        signMethod: 'TC3-HMAC-SHA256',
-        httpProfile: new HttpProfile()
-    })
-    let req = new models[`${interfaceName}Request`]()
-
-    const _params = {
-        Region: 'ap-shanghai',
-        Role: 'TCB_QcsRole',
-        Stamp: 'MINI_QCBASE',
-        ...params
-    }
-
-    req.deserialize(_params)
-
-    return new Promise((resolve, reject) => {
-        client[interfaceName](req, (err, response) => {
-            if (err) {
-                reject(err)
-                return
-            }
-            resolve(response)
-        })
-    })
-}
+const scfService = new CloudService('scf', '2018-04-16', {
+    Role: 'TCB_QcsRole',
+    Stamp: 'MINI_QCBASE'
+})
 
 // 创建函数触发器
 export async function createFunctionTriggers(
@@ -67,7 +34,7 @@ export async function createFunctionTriggers(
     }))
 
     try {
-        await tencentcloudScfRequest('BatchCreateTrigger', {
+        await scfService.request('BatchCreateTrigger', {
             FunctionName: name,
             Namespace: envId,
             Triggers: JSON.stringify(parsedTriggers),
@@ -108,7 +75,7 @@ export async function deleteFunctionTrigger(
 ): Promise<void> {
     const { functionName, triggerName, envId } = options
     try {
-        await tencentcloudScfRequest('DeleteTrigger', {
+        await scfService.request('DeleteTrigger', {
             FunctionName: functionName,
             Namespace: envId,
             TriggerName: triggerName,
@@ -239,7 +206,7 @@ export async function createFunction(
 
     try {
         // 创建云函数
-        await tencentcloudScfRequest('CreateFunction', params)
+        await scfService.request('CreateFunction', params)
         !zipFile && packer && (await packer.clean())
         uploadSpin.succeed(`函数 "${funcName}" 上传成功！`)
         // 创建函数触发器
@@ -254,7 +221,7 @@ export async function createFunction(
         if (e.code === 'ResourceInUse.FunctionName' && force) {
             params.ZipFile = base64
             delete params.Code
-            await tencentcloudScfRequest('UpdateFunctionCode', params)
+            await scfService.request('UpdateFunctionCode', params)
             !zipFile && packer && (await packer.clean())
             uploadSpin.succeed(`已存在同名函数 "${funcName}"，覆盖成功！`)
             // 创建函数触发器
@@ -332,7 +299,7 @@ export async function updateFunctionCode(options: ICreateFunctionOptions) {
 
     try {
         // 更新云函数代码
-        await tencentcloudScfRequest('UpdateFunctionCode', params)
+        await scfService.request('UpdateFunctionCode', params)
         !zipFile && packer && (await packer.clean())
         uploadSpin.succeed(`[${funcName}] 函数代码更新成功！`)
     } catch (e) {
@@ -370,7 +337,7 @@ export async function listFunction(
     options: IListFunctionOptions
 ): Promise<Record<string, string>[]> {
     const { limit = 20, offset = 0, envId } = options
-    const res: any = await tencentcloudScfRequest('ListFunctions', {
+    const res: any = await scfService.request('ListFunctions', {
         Namespace: envId,
         Limit: limit,
         Offset: offset
@@ -393,7 +360,7 @@ export async function listFunction(
 // 删除函数
 export async function deleteFunction({ functionName, envId }): Promise<void> {
     try {
-        await tencentcloudScfRequest('DeleteFunction', {
+        await scfService.request('DeleteFunction', {
             FunctionName: functionName,
             Namespace: envId
         })
@@ -423,7 +390,7 @@ export async function getFunctionDetail(
     options
 ): Promise<Record<string, string>> {
     const { functionName, envId } = options
-    const res = await tencentcloudScfRequest('GetFunction', {
+    const res = await scfService.request('GetFunction', {
         FunctionName: functionName,
         Namespace: envId,
         ShowCode: 'TRUE'
@@ -519,7 +486,7 @@ export async function getFunctionLog(
         params[keyFirstCharUpperCase] = options[key]
     })
 
-    const { Data = [] }: any = await tencentcloudScfRequest(
+    const { Data = [] }: any = await scfService.request(
         'GetFunctionLogs',
         params
     )
@@ -552,7 +519,7 @@ export async function updateFunctionConfig(
         VpcId: (config.vpc && config.vpc.vpcId) || ''
     }
 
-    await tencentcloudScfRequest('UpdateFunctionConfiguration', params)
+    await scfService.request('UpdateFunctionConfiguration', params)
 }
 
 // 批量更新函数配置
@@ -590,7 +557,7 @@ export async function invokeFunction(
     }
 
     try {
-        const { Result }: any = await tencentcloudScfRequest('Invoke', _params)
+        const { Result }: any = await scfService.request('Invoke', _params)
         successLog(`[${functionName}] 调用成功\n响应结果：\n`)
         // 打印结果
         console.log(Result)
@@ -600,6 +567,7 @@ export async function invokeFunction(
     }
 }
 
+// 批量触发云函数
 export async function batchInvokeFunctions(options: IFunctionBatchOptions) {
     const { functions, envId } = options
 
@@ -618,4 +586,36 @@ export async function batchInvokeFunctions(options: IFunctionBatchOptions) {
     )
 
     await Promise.all(promises)
+}
+
+interface ICopyFunctionOptions {
+    envId: string
+    functionName: string
+    newFunctionName: string
+    targetEnvId: string
+    force?: boolean
+    copyConfig?: boolean
+}
+
+// 复制云函数
+export async function copyFunction(options: ICopyFunctionOptions) {
+    const {
+        envId,
+        functionName,
+        newFunctionName,
+        targetEnvId,
+        force
+    } = options
+
+    if (!envId || !functionName || !newFunctionName) {
+        throw new TcbError('参数缺失')
+    }
+
+    await scfService.request('CopyFunction', {
+        FunctionName: functionName,
+        NewFunctionName: newFunctionName,
+        Namespace: envId,
+        TargetNamespace: targetEnvId || envId,
+        Override: force ? true : false
+    })
 }

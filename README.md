@@ -107,7 +107,7 @@ exports.main = (event, context, callback) => {
                 "envVariables": {
                     "key": "value"
                 },
-                // 网络配置
+                // 私有网络配置，如果不使用私有网络，可不配置
                 "vpc": {
                     // vpc id
                     "vpcId": "vpc-xxx",

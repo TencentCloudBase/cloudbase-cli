@@ -1,6 +1,6 @@
-import { BaseHTTPService } from '../utils'
+import { CloudService } from '../utils'
 
-const vpcService = new BaseHTTPService('vpc', '2017-03-12')
+const vpcService = new CloudService('vpc', '2017-03-12')
 
 // 获取 vpc 信息
 export async function getVpcs() {

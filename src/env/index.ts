@@ -1,9 +1,9 @@
 import { guid6 } from '../utils'
 import { TcbError } from '../error'
-import { BaseHTTPService } from '../utils'
+import { CloudService } from '../utils'
 export * from './domain'
 
-const tcbService = new BaseHTTPService('tcb', '2018-06-08')
+const tcbService = new CloudService('tcb', '2018-06-08')
 
 // 初始化 TCB 服务
 // 当用户没开通 TCB 服务时，需要调用此接口初始化 TCB 服务

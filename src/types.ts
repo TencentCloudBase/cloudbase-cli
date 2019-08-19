@@ -73,7 +73,7 @@ export interface ICloudFunctionConfig {
     timeout?: number
     envVariables?: Record<string, string | number | boolean>
     runtime?: string
-    vpc: IFunctionVPC
+    vpc?: IFunctionVPC
 }
 
 export interface ICloudFunctionTrigger {

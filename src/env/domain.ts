@@ -1,6 +1,6 @@
-import { BaseHTTPService } from '../utils'
+import { CloudService } from '../utils'
 
-const tcbService = new BaseHTTPService('tcb', '2018-06-08')
+const tcbService = new CloudService('tcb', '2018-06-08')
 
 // 拉取安全域名列表
 export async function getEnvAuthDomains({ envId }) {
@@ -11,7 +11,6 @@ export async function getEnvAuthDomains({ envId }) {
         }
     )
 
-    console.log(Domains)
     return Domains
 }
 
@@ -25,7 +24,7 @@ export async function createEnvDomain({ envId, domains }) {
 
 // 删除环境安全域名
 export async function deleteEnvDomain({ envId, domainIds }) {
-    const { Deleted } = await tcbService.request('DeleteAuthDomain', {
+    const { Deleted }: any = await tcbService.request('DeleteAuthDomain', {
         EnvId: envId,
         DomainIds: domainIds
     })

@@ -19,7 +19,8 @@ import {
     batchUpdateFunctionConfig,
     batchInvokeFunctions,
     invokeFunction,
-    updateFunctionCode
+    updateFunctionCode,
+    copyFunction
 } from '../function'
 import { resolveTcbrcConfig, getEnvId, printCliTable } from '../utils'
 import { successLog } from '../logger'
@@ -705,4 +706,36 @@ program
             envId: assignEnvId,
             params: params || func.params
         })
+    })
+
+// 更新云函数代码
+program
+    .command(
+        'functions:copy <functionName> <newFunctionName> [envId] [targentEnvId]'
+    )
+    .option('--force', '如果目标环境下存在同名函数，覆盖原函数')
+    .description('创建云函数')
+    .action(async function(
+        functionName: string,
+        newFunctionName: string,
+        envId?: string,
+        targentEnvId?: string,
+        options?
+    ) {
+        const assignEnvId = await getEnvId(envId)
+        const { force } = options
+
+        if (!functionName || !newFunctionName) {
+            throw new TcbError('请指定函数名称！')
+        }
+
+        await copyFunction({
+            force,
+            newFunctionName,
+            functionName,
+            envId: assignEnvId,
+            targetEnvId: targentEnvId || envId
+        })
+
+        successLog('拷贝函数成功')
     })
