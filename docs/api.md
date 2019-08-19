@@ -28,7 +28,7 @@ client
 ```js
 [ 
     { 
-        envId: 'dev-97eb6c',
+        envId: 'dev-xxx',
         packageName: '基础版',
         source: 'qcloud',
         createTime: '2019-06-20 13:24:51'
@@ -251,7 +251,7 @@ deleted: number
             { Key: '', Value: '' }
         ] 
     },
-    Namespace: 'dev-97eb6c',
+    Namespace: 'dev-xxx',
     Status: 'Active',
     Triggers: [
         {
@@ -348,9 +348,26 @@ deleted: number
 
 ```js
 {
-    envId: 'dev-97eb6c',
+    envId: 'dev-xxx',
     functionName: 'app',
     triggerName: 'myTrigger'
+}
+```
+
+响应：void
+
+
+#### functions.copy(options)
+
+参数
+
+```js
+{
+    envId: 'string',
+    functionName: 'string',
+    newFunctionName: 'string',
+    targetEnvId: 'string',
+    force: false
 }
 ```
 

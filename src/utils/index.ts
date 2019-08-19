@@ -194,7 +194,7 @@ export async function resolveTcbrcConfig() {
 export async function getEnvId(envId: string): Promise<string> {
     const tcbrc = await resolveTcbrcConfig()
     // 命令行 envId 可以覆盖配置文件 envId
-    const assignEnvId = tcbrc.envId || envId
+    const assignEnvId = envId || tcbrc.envId
     if (!assignEnvId) {
         throw new TcbError(
             '未识别到有效的环境 Id 变量，请在项目根目录进行操作或通过 envId 参数指定环境 Id'

@@ -553,7 +553,8 @@ export async function invokeFunction(
     const _params: any = {
         FunctionName: functionName,
         Namespace: envId,
-        ClientContext: JSON.stringify(params)
+        ClientContext: JSON.stringify(params),
+        LogType: 'Tail'
     }
 
     try {
@@ -599,13 +600,7 @@ interface ICopyFunctionOptions {
 
 // 复制云函数
 export async function copyFunction(options: ICopyFunctionOptions) {
-    const {
-        envId,
-        functionName,
-        newFunctionName,
-        targetEnvId,
-        force
-    } = options
+    const { envId, functionName, newFunctionName, targetEnvId, force } = options
 
     if (!envId || !functionName || !newFunctionName) {
         throw new TcbError('参数缺失')

@@ -1,4 +1,4 @@
-# Cloudbase 命令行工具
+# Cloudbase 命令行工具 ![npm (tag)](https://img.shields.io/npm/v/@cloudbase/cli) ![npm (tag)](https://img.shields.io/npm/v/@cloudbase/cli/beta)
 
 Cloudbase 命令行工具。
 
@@ -21,7 +21,7 @@ tcb init
 
 #### 关于 TCB 项目
 
-TCB 项目是和 TCB 环境资源关联的实体，TCB 项目聚合了云函数、数据库、文件存储等服务，你可以在 TCB 项目中编写函数，存储文件，并通过 `cloudbase cli` 快速的操作你的云函数、文件存储、数据库等资源。
+TCB 项目是和 TCB 环境资源关联的实体，TCB 项目聚合了云函数、数据库、文件存储等服务，您可以在 TCB 项目中编写函数，存储文件，并通过 `cloudbase cli` 快速的操作您的云函数、文件存储、数据库等资源。
 
 TCB 项目文件结构：
 
@@ -160,33 +160,34 @@ tcb -h
 Usage: tcb [options] [command]
 
 Options:
-  -V, --version                                                  output the version number
-  -h, --help                                                     output usage information
+  -V, --version                                                                     output the version number
+  -h, --help                                                                        output usage information
 
 Commands:
-  init [options]                                                 创建并初始化一个新的项目
-  login [options]                                                登录腾讯云账号
-  logout                                                         登出腾讯云账号
-  env:list                                                       列出云开发所有环境
-  env:create <alias>                                             创建新的云环境
-  env:domain:list [envId]                                        列出环境的安全域名列表
-  env:domain:create <domain> [envId]                             添加环境安全域名，多个以斜杠 / 分隔
-  env:domain:delete [envId]                                      删除环境的安全域名
-  functions:deploy [options] [functionName] [envId]              创建云函数
-  functions:code:update <functionName> [envId]                   创建云函数
-  functions:list [options] [envId]                               展示云函数列表
-  functions:delete [functionName] [envId]                        删除云函数
-  functions:detail [functionName] [envId]                        获取云函数信息
-  functions:log [options] <functionName> [envId]                 打印云函数日志
-  functions:config:update [functionName] [envId]                 更新云函数配置
-  functions:trigger:create [functionName] [envId]                创建云函数触发器
-  functions:trigger:delete [functionName] [triggerName] [envId]  删除云函数触发器
-  functions:invoke [functionName] [params] [envId]               触发云函数
-  server:deploy [name]                                           部署 node 服务
-  server:log [options] <name>                                    查看日志
-  server:reload <name>                                           重启 node 服务
-  server:stop <name>                                             停止应用
-  server:show                                                    查看状态
+  init [options]                                                                    创建并初始化一个新的项目
+  login [options]                                                                   登录腾讯云账号
+  logout                                                                            登出腾讯云账号
+  env:list                                                                          列出云开发所有环境
+  env:create <alias>                                                                创建新的云环境
+  env:domain:list [envId]                                                           列出环境的安全域名列表
+  env:domain:create <domain> [envId]                                                添加环境安全域名，多个以斜杠 / 分隔
+  env:domain:delete [envId]                                                         删除环境的安全域名
+  functions:deploy [options] [functionName] [envId]                                 创建云函数
+  functions:code:update <functionName> [envId]                                      创建云函数
+  functions:list [options] [envId]                                                  展示云函数列表
+  functions:delete [functionName] [envId]                                           删除云函数
+  functions:detail [functionName] [envId]                                           获取云函数信息
+  functions:log [options] <functionName> [envId]                                    打印云函数日志
+  functions:config:update [functionName] [envId]                                    更新云函数配置
+  functions:trigger:create [functionName] [envId]                                   创建云函数触发器
+  functions:trigger:delete [functionName] [triggerName] [envId]                     删除云函数触发器
+  functions:invoke [functionName] [params] [envId]                                  触发云函数
+  functions:copy [options] <functionName> <newFunctionName> [envId] [targentEnvId]  创建云函数
+  server:deploy [name]                                                              部署 node 服务
+  server:log [options] <name>                                                       查看日志
+  server:reload <name>                                                              重启 node 服务
+  server:stop <name>                                                                停止应用
+  server:show                                                                       查看状态
 ```
 
 ### 编程式使用
@@ -497,3 +498,16 @@ tcb functions:trigger:delete app myTrigger
 ```
 
 ![](docs/img/func-triggerd.png)
+
+### functions:copy
+
+完整命令：`functions:copy [options] <functionName> <newFunctionName> [envId] [targentEnvId]`
+
+`functions:copy` 命令用于复制一个函数。使用 `functions:copy` 命令时需要指定原函数名称，复制后新的函数名称。当前环境 Id 和目标环境环境 Id 是可选的，如果没有指定目标环境 Id，函数会被复制到当前环境中。
+
+`functions:copy` 命令包含了一个可选的选项：
+
+```
+--force 如果目标环境下已有同名函数，则覆盖
+```
+
