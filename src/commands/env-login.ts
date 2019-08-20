@@ -71,7 +71,6 @@ program
         const item = configList.find(item => item.Platform === platform)
 
         if (status === '禁用' && item) {
-            console.log(item)
             await updateLoginConfig({
                 status: status === '启用' ? 'ENABLE' : 'DISABLE',
                 configId: item.Id,

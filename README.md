@@ -172,6 +172,8 @@ Commands:
   env:domain:list [envId]                                                           列出环境的安全域名列表
   env:domain:create <domain> [envId]                                                添加环境安全域名，多个以斜杠 / 分隔
   env:domain:delete [envId]                                                         删除环境的安全域名
+  env:login:list [envId]                                                            列出环境登录配置
+  env:login:config [envId]                                                          配置环境登录方式
   functions:deploy [options] [functionName] [envId]                                 创建云函数
   functions:code:update <functionName> [envId]                                      创建云函数
   functions:list [options] [envId]                                                  展示云函数列表
@@ -272,6 +274,16 @@ tcb login --key
 完整命令：`tcb env:domain:delete [envId]`
 
 `env:domain:delete` 命令用于删除环境配置的安全域名，输入此命令回车运行后，CLI 会拉取环境的所有域名，用户可与 CLI 进行交互，选择需要删除的域名。
+
+### env:login:list
+
+完整命令： `env:login:list [envId]`
+
+`env:login:list` 命令用于列出环境配置的登录方式列表，可以查看环境配置的登录方式，以及相关的状态。
+
+### env:login:config
+
+`env:login:config` 命令用于配置环境的登录方式，如绑定微信公众平台等。
 
 ### functions:list
 

@@ -103,6 +103,62 @@ client
 deleted: number
 ```
 
+#### env.login.list(options)
+
+参数：
+
+```js
+{
+    envId: string
+}
+```
+
+响应：
+
+```js
+[
+    {
+        Id: 'be00aef4-2eb9-4413-a50d-289873bcdb0d',
+        Platform: 'WECHAT-OPEN',
+        PlatformId: 'wx9c4c30a432a38ebc',
+        Status: 'ENABLE',
+        UpdateTime: '2019-08-19 15:26:04',
+        CreateTime: '2019-07-11 15:47:23'
+    }
+]
+```
+
+### env.login.update(options)
+
+参数：
+
+```js
+{
+    configId: '',
+    envId: '',
+    status: 'ENABLE',
+    appId: '',
+    appSecret: ''
+}
+```
+
+响应：void
+
+### env.login.create(options)
+
+参数：
+
+```js
+{
+    envId: '',
+    platform: '',
+    appId: '',
+    appSecret: ''
+}
+```
+
+响应：void
+
 #### functions.invoke(options)
 
 参数：

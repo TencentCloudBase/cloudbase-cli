@@ -1,5 +1,14 @@
 import './commands'
-import { listEnvs, createEnv, getEnvAuthDomains, createEnvDomain, deleteEnvDomain } from './env'
+import {
+    listEnvs,
+    createEnv,
+    getEnvAuthDomains,
+    createEnvDomain,
+    deleteEnvDomain,
+    getLoginConfigList,
+    createLoginConfig,
+    updateLoginConfig
+} from './env'
 import {
     createFunction,
     listFunction,
@@ -21,6 +30,11 @@ export = class Client {
             list: getEnvAuthDomains,
             create: createEnvDomain,
             delete: deleteEnvDomain
+        },
+        login: {
+            list: getLoginConfigList,
+            create: createLoginConfig,
+            update: updateLoginConfig
         }
     }
 
