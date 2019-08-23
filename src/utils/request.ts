@@ -88,4 +88,9 @@ export class CloudService {
             })
         })
     }
+
+    setCredential(secretId: string, secretKey: string, token: string) {
+        const { Credential } = tencentcloud.common
+        this.sdkCredential = new Credential(secretId, secretKey, token)
+    }
 }

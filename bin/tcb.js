@@ -5,14 +5,23 @@ const logSymbols = require('log-symbols')
 const updateNotifier = require('update-notifier')
 const pkg = require('../package.json')
 
+const isBeta = pkg.version.indexOf('-') > -1
+
 // 检查更新
 const ONE_DAY = 86400000
+// Beta 版 1 个小时检查一次，稳定版 1 天检查一次
+const CheckInterval = isBeta ? 3600000 : ONE_DAY
+
 const notifier = updateNotifier({
     pkg,
+    distTag: isBeta ? 'beta': 'latest',
     // 检查更新间隔 1 天
-    updateCheckInterval: ONE_DAY
+    updateCheckInterval: CheckInterval
 })
-notifier.notify()
+
+notifier.notify({
+    isGlobal: true
+})
 
 // 注册命令
 require('../lib')

@@ -2,7 +2,6 @@ import fs from 'fs'
 import path from 'path'
 import archiver from 'archiver'
 import readline from 'readline'
-import tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
 import { refreshTmpToken } from '../auth/auth'
 import { configStore } from './configstore'
 import { IConfig, Credential, AuthSecret, SSH } from '../types'
@@ -44,25 +43,6 @@ export function askForInput(question): Promise<string> {
         rl.question(question, answer => {
             resolve(answer)
             rl.close()
-        })
-    })
-}
-
-export function callCloudApi(secretId, secretKey) {
-    const CvmClient = tencentcloud.cvm.v20170312.Client
-    const models = tencentcloud.cvm.v20170312.Models
-    const Credential = tencentcloud.common.Credential
-    let cred = new Credential(secretId, secretKey)
-    let client = new CvmClient(cred, 'ap-shanghai')
-    let req = new models.DescribeZonesRequest()
-
-    return new Promise((resolve, reject) => {
-        client.DescribeZones(req, function(err, response) {
-            if (err) {
-                reject(err)
-                return
-            }
-            resolve(response)
         })
     })
 }
@@ -148,33 +128,6 @@ export async function getSSH(): Promise<SSH> {
 // 获取 tcb 存储在本地的配置
 export function getTcbConfig(): Promise<IConfig> {
     return configStore.all()
-}
-
-export function parseCommandArgs(
-    args: string[]
-): Record<string, string | string[]> {
-    const parsed = {}
-
-    args.forEach(arg => {
-        const parts = arg.split('=')
-        const key = parts[0].toLowerCase()
-        if (parts.length !== 2) {
-            throw new TcbError(`参数 ${arg} 异常，必需为 key=val 形式`)
-        }
-
-        const val = parts[1]
-        // 可用做判断，不能赋值
-        const source = parsed[key]
-        if (!source) {
-            parsed[key] = val
-        } else if (Array.isArray(source)) {
-            parsed[key].push(val)
-        } else {
-            parsed[key] = [parsed[key], val]
-        }
-    })
-
-    return parsed
 }
 
 // 找到 tcbrc 配置文件

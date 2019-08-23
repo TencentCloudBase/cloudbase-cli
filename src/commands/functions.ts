@@ -284,7 +284,6 @@ function logDetail(info, name) {
     const ResMap = {
         Status: '状态',
         CodeSize: '代码大小（B）',
-        Description: '描述',
         Environment: '环境变量(key=value)',
         FunctionName: '函数名称',
         Handler: '执行方法',
@@ -602,6 +601,7 @@ program
             triggers,
             envId: assignEnvId
         })
+        successLog(`[${name}] 创建云函数触发器成功！`)
     })
 
 // 删除函数触发器

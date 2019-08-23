@@ -1,34 +1,21 @@
-import tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
 import ora from 'ora'
 import Logger from '../logger'
 import { getAuthTokenFromWeb, refreshTmpToken } from './auth'
-import { askForInput, getCredentialConfig } from '../utils'
+import { askForInput, getCredentialConfig, CloudService } from '../utils'
 import { ConfigItems } from '../constant'
 import { configStore } from '../utils/configstore'
 import { Credential } from '../types'
 import { TcbError } from '../error'
 
+const tcbService = new CloudService('tcb', '2018-06-08')
+
 const logger = new Logger('Login')
 
-// 调用 SCF 接口，检查密钥是否有效
+// 调用 env:list 接口，检查密钥是否有效
 async function checkAuth(credential: Credential) {
     const { tmpSecretId, tmpSecretKey, tmpToken } = credential
-    const ScfClient = tencentcloud.scf.v20180416.Client
-    const models = tencentcloud.scf.v20180416.Models
-    const Credential = tencentcloud.common.Credential
-    let cred = new Credential(tmpSecretId, tmpSecretKey, tmpToken)
-    let client = new ScfClient(cred, 'ap-shanghai')
-    let req = new models.ListFunctionsRequest()
-
-    return new Promise((resolve, reject) => {
-        client.ListFunctions(req, (err, response) => {
-            if (err) {
-                reject(err)
-                return
-            }
-            resolve(response)
-        })
-    })
+    tcbService.setCredential(tmpSecretId, tmpSecretKey, tmpToken)
+    return await tcbService.request('DescribeEnvs')
 }
 
 // 打开腾讯云 TCB 控制台，通过获取临时密钥登录，临时密钥可续期，最长时间为 1 个月

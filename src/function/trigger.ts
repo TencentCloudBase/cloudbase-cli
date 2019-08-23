@@ -1,9 +1,6 @@
 import { CloudService } from '../utils'
 import { successLog } from '../logger'
-import {
-    IFunctionTriggerOptions,
-    IFunctionBatchOptions
-} from '../types'
+import { IFunctionTriggerOptions, IFunctionBatchOptions } from '../types'
 import { TcbError } from '../error'
 
 const scfService = new CloudService('scf', '2018-04-16', {
@@ -15,24 +12,30 @@ const scfService = new CloudService('scf', '2018-04-16', {
 export async function createFunctionTriggers(
     options: IFunctionTriggerOptions
 ): Promise<void> {
-    const { functionName: name, triggers = [], envId } = options
+    const { functionName, triggers = [], envId } = options
 
-    const parsedTriggers = triggers.map(item => ({
-        TriggerName: item.name,
-        Type: item.type,
-        TriggerDesc: item.config
-    }))
+    const parsedTriggers = triggers.map(item => {
+        if (item.type !== 'timer') {
+            throw new TcbError(
+                `不支持的触发器类型 [${item.type}]，目前仅支持定时触发器（timer）！`
+            )
+        }
+        return {
+            TriggerName: item.name,
+            Type: item.type,
+            TriggerDesc: item.config
+        }
+    })
 
     try {
         await scfService.request('BatchCreateTrigger', {
-            FunctionName: name,
+            FunctionName: functionName,
             Namespace: envId,
             Triggers: JSON.stringify(parsedTriggers),
             Count: parsedTriggers.length
         })
-        // successLog(`[${name}] 创建云函数触发器成功！`)
     } catch (e) {
-        throw new TcbError(`[${name}] 创建触发器失败：${e.message}`)
+        throw new TcbError(`[${functionName}] 创建触发器失败：${e.message}`)
     }
 }
 
@@ -50,6 +53,7 @@ export async function batchCreateTriggers(
                     triggers: func.triggers,
                     envId
                 })
+                successLog(`[${func.name}] 创建云函数触发器成功！`)
             } catch (e) {
                 throw new TcbError(e.message)
             }

@@ -3,22 +3,39 @@ import ora from 'ora'
 import { listEnvs, createEnv, getEnvInfo } from '../env'
 import { printCliTable } from '../utils'
 import { TcbError } from '../error'
-import { successLog } from '../logger'
+import { successLog, warnLog } from '../logger'
 
 program
     .command('env:list')
     .description('列出云开发所有环境')
     .action(async function() {
         const data = await listEnvs()
-        const head = ['EnvId', 'PackageName', 'Source', 'CreateTime', 'Status']
+        const head = [
+            'EnvId',
+            'Alias',
+            'PackageName',
+            'Source',
+            'CreateTime',
+            'Status'
+        ]
         const tableData = data.map(item => [
-            item.envId,
-            item.packageName,
-            item.source,
-            item.createTime,
-            item.status === 'NORMAL' ? '正常' : '不可用'
+            item.EnvId,
+            item.Alias,
+            item.PackageName,
+            item.Source === 'miniapp' ? '小程序' : '云开发',
+            item.CreateTime,
+            item.Status === 'NORMAL' ? '正常' : '不可用'
         ])
         printCliTable(head, tableData)
+        // 不可用环境警告
+        const unavalibleEnv = data.find(item => item.Status === 'UNAVAILABLE')
+        if (unavalibleEnv) {
+            warnLog(
+                `您的环境中存在不可用的环境：[${
+                    unavalibleEnv.EnvId
+                }]，请留意！`
+            )
+        }
     })
 
 async function checkEnvAvailability(envId: string) {
@@ -71,4 +88,3 @@ program
             initSpinner.fail(e.message)
         }
     })
-    

@@ -97,7 +97,6 @@ export async function getFunctionDetail(
         'Status',
         'CodeInfo',
         'CodeSize',
-        'Description',
         'Environment',
         'FunctionName',
         'Handler',
@@ -207,6 +206,8 @@ export async function updateFunctionConfig(
     envVariables.length && (params.Environment = { Variables: envVariables })
     // 不设默认超时时间，防止覆盖已有配置
     config.timeout && (params.Timeout = config.timeout)
+    // 运行时
+    config.runtime && (params.Runtime = config.runtime)
     // VPC 网络
     params.VpcConfig = {
         SubnetId: (config.vpc && config.vpc.subnetId) || '',

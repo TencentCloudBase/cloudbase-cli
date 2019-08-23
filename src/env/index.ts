@@ -48,16 +48,13 @@ export async function getEnvInfo(envId: string) {
 export async function listEnvs() {
     const res: any = await tcbService.request('DescribeEnvs')
     const { EnvList = [] } = res
-    const data: Record<string, string>[] = []
-    EnvList.forEach(env => {
-        const { EnvId, PackageName, Source, CreateTime, Status } = env
-        data.push({
-            envId: EnvId,
-            packageName: PackageName,
-            source: Source,
-            status: Status,
-            createTime: CreateTime
-        })
+    return EnvList
+}
+
+// 修改环境信息
+export async function updateEnvInfo({ envId, alias }) {
+    await tcbService.request('ModifyEnv', {
+        EnvId: envId,
+        Alias: alias
     })
-    return data
 }
