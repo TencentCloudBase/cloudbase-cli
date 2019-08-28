@@ -15,7 +15,7 @@ const CheckInterval = isBeta ? 3600000 : ONE_DAY
 
 const notifier = updateNotifier({
     pkg,
-    distTag: isBeta ? 'beta': 'latest',
+    distTag: isBeta ? 'beta' : 'latest',
     // 检查更新间隔 1 天
     updateCheckInterval: CheckInterval
 })
@@ -35,24 +35,26 @@ program.action(cmd => {
     console.log(`使用 ${chalk.bold('tcb -h')} 查看所有命令~`)
 })
 
+program.on('--help', function() {
+    const tips = `\nTips:
+
+${chalk.gray('–')} 登录
+
+  ${chalk.cyan('$ tcb login')}
+
+${chalk.gray('–')} 列出环境列表
+
+  ${chalk.cyan('$ tcb env:list')}
+
+${chalk.gray('–')} 部署云函数
+
+  ${chalk.cyan('$ tcb functions:deploy')}`
+    console.log(tips)
+})
+
 // 当没有输入任何命令时，显示帮助信息
 if (process.argv.length < 3) {
     program.outputHelp()
-    const tips = `\nTips:
-
-    ${chalk.gray('–')} 登录
-  
-      ${chalk.cyan('$ tcb login')}
-  
-    ${chalk.gray('–')} 列出环境列表
-  
-      ${chalk.cyan('$ tcb env:list')}
-  
-    ${chalk.gray('–')} 部署云函数
-  
-      ${chalk.cyan('$ tcb functions:deploy')}`
-
-    console.log(tips)
 }
 
 program.parse(process.argv)
