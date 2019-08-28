@@ -93,7 +93,7 @@ export interface ICloudFunction {
 export interface ICreateFunctionOptions {
     func?: ICloudFunction
     functions?: ICloudFunction[]
-    root?: string
+    functionRootPath?: string
     envId: string
     force?: boolean
     base64Code?: string

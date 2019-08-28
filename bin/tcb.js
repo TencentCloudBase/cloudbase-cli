@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+const ora = require('ora')
 const program = require('commander')
 const chalk = require('chalk')
 const logSymbols = require('log-symbols')
@@ -57,6 +58,7 @@ if (process.argv.length < 3) {
 program.parse(process.argv)
 
 function errorHandler(err) {
+    ora.stop()
     const stackIngoreErrors = ['TencentCloudSDKHttpException', 'TcbError']
     // 忽略自定义错误的错误栈
     if (err.stack && !stackIngoreErrors.includes(err.name)) {

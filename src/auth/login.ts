@@ -1,15 +1,10 @@
-import ora from 'ora'
-import Logger from '../logger'
 import { getAuthTokenFromWeb, refreshTmpToken } from './auth'
-import { askForInput, getCredentialConfig, CloudService } from '../utils'
+import { getCredentialConfig, CloudService } from '../utils'
 import { ConfigItems } from '../constant'
 import { configStore } from '../utils/configstore'
 import { Credential } from '../types'
-import { TcbError } from '../error'
 
 const tcbService = new CloudService('tcb', '2018-06-08')
-
-const logger = new Logger('Login')
 
 // 调用 env:list 接口，检查密钥是否有效
 async function checkAuth(credential: Credential) {
@@ -18,13 +13,40 @@ async function checkAuth(credential: Credential) {
     return await tcbService.request('DescribeEnvs')
 }
 
+// 登录返回 code 与信息
+const LoginRes = {
+    SUCCESS: {
+        code: 'SUCCESS',
+        msg: '登录成功！'
+    },
+    INVALID_TOKEN: {
+        code: 'INVALID_TOKEN',
+        msg: '无效的身份信息！'
+    },
+    CHECK_LOGIN_FAILED: {
+        code: 'CHECK_LOGIN_FAILED',
+        msg: '检查登录态失败'
+    },
+    INVALID_PARAM(msg) {
+        return {
+            code: 'INVALID_PARAM',
+            msg: `参数无效：${msg}`
+        }
+    },
+    UNKNOWN_ERROR(msg) {
+        return {
+            code: 'UNKNOWN_ERROR',
+            msg: `未知错误：${msg}`
+        }
+    }
+}
+
 // 打开腾讯云 TCB 控制台，通过获取临时密钥登录，临时密钥可续期，最长时间为 1 个月
-export async function authLogin() {
+export async function loginWithToken() {
     const tcbrc: Credential = getCredentialConfig()
     // 已有永久密钥
     if (tcbrc.secretId && tcbrc.secretKey) {
-        logger.log('您已登录，无需再次登录！')
-        return
+        return LoginRes.SUCCESS
     }
     // 如果存在临时密钥，校验临时密钥是否有效，是否需要续期
     const tmpExpired = Number(tcbrc.tmpExpired) || 0
@@ -32,87 +54,71 @@ export async function authLogin() {
     const now = Date.now()
 
     if (now < tmpExpired) {
-        logger.log('您已登录，无需再次登录！')
-        return
+        return LoginRes.SUCCESS
     }
 
     let credential
-    const authSpinner = ora('获取授权中')
 
     try {
         if (now < refreshExpired) {
             // 临时 token 过期，自动续期
-            authSpinner.start()
             credential = await refreshTmpToken(tcbrc)
         } else {
-            authSpinner.start()
             // 通过腾讯云-云开发控制台获取授权
             credential = await getAuthTokenFromWeb()
         }
-        authSpinner.succeed('获取授权成功')
-    } catch (error) {
-        authSpinner.fail(`获取授权失败 ${error}`)
-        throw new TcbError(error)
+    } catch (e) {
+        return LoginRes.UNKNOWN_ERROR(e.message)
     }
 
     if (!credential.refreshToken || !credential.uin) {
-        logger.error('授权信息无效')
-        return
+        return LoginRes.INVALID_TOKEN
     }
-
-    const scfCheckSpinner = ora('验证密匙权限').start()
 
     try {
         await checkAuth(credential)
-        scfCheckSpinner.succeed('密钥权限验证成功')
     } catch (e) {
-        throw new TcbError(e.message)
+        return LoginRes.UNKNOWN_ERROR(e.message)
     }
 
     configStore.set(ConfigItems.credentail, credential)
-
-    logger.success('登录成功！')
+    return LoginRes.SUCCESS
 }
 
 // 使用永久密钥登录
-export async function login() {
+export async function loginWithKey(secretId?: string, secretKey?: string) {
     const tcbrc: Credential = await getCredentialConfig()
     // 已有永久密钥
     if (tcbrc.secretId && tcbrc.secretKey) {
-        logger.log('您已登录，无需再次登录！')
-        return
+        return LoginRes.SUCCESS
     }
-
-    const secretId: string = (await askForInput(
-        '请输入腾讯云 SecretID：'
-    )) as string
-    const secretKey: string = (await askForInput(
-        '请输入腾讯云 SecretKey：'
-    )) as string
-
-    const skey: string = (await askForInput(
-        '请输入腾讯云 SKey：'
-    )) as string
 
     if (!secretId || !secretKey) {
-        logger.error('SecretID 或 SecretKey 不能为空')
-        return
+        return LoginRes.INVALID_PARAM('SecretID 或 SecretKey 不能为空')
     }
 
-    const cloudSpinner = ora('正在验证腾讯云密钥...').start()
     try {
         await checkAuth({ tmpSecretId: secretId, tmpSecretKey: secretKey })
-        cloudSpinner.succeed('腾讯云密钥验证成功')
     } catch (e) {
-        cloudSpinner.fail(
-            '腾讯云密钥验证失败，请检查密钥是否正确或本机网络代理有问题'
-        )
-        return
+        return LoginRes.CHECK_LOGIN_FAILED
     }
 
     configStore.set(ConfigItems.credentail, { secretId, secretKey })
 
-    logger.success('登录成功！')
+    return LoginRes.SUCCESS
+}
 
-    return skey
+interface ILoginOptios {
+    key: boolean
+    secretId?: string
+    secretKey?: string
+}
+
+export async function login(options?: ILoginOptios) {
+    if (options && options.key) {
+        const { secretId, secretKey } = options
+        return await loginWithKey(secretId, secretKey)
+    } else {
+        return await loginWithToken()
+    }
 }

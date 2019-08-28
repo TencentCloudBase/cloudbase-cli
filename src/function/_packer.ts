@@ -30,7 +30,7 @@ export class FunctionPacker {
     constructor(root: string, name: string) {
         this.name = name
         this.root = root
-        this.funcPath = path.join(root, 'functions', name)
+        this.funcPath = path.join(root, name)
     }
 
     validPath(path: string) {

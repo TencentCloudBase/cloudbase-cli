@@ -14,7 +14,13 @@ const scfService = new CloudService('scf', '2018-04-16', {
 export async function createFunction(
     options: ICreateFunctionOptions
 ): Promise<void> {
-    const { func, root = '', envId, force = false, base64Code = '' } = options
+    const {
+        func,
+        functionRootPath = '',
+        envId,
+        force = false,
+        base64Code = ''
+    } = options
     let base64
     let packer: FunctionPacker
     const funcName = func.name
@@ -31,7 +37,7 @@ export async function createFunction(
 
     // CLI 从本地读取
     if (!base64Code) {
-        packer = new FunctionPacker(root, funcName)
+        packer = new FunctionPacker(functionRootPath, funcName)
         const type: CodeType =
             func.config.runtime === 'Java8' ? CodeType.JavaFile : CodeType.File
         base64 = await packer.build(type)
@@ -119,7 +125,13 @@ export async function createFunction(
 export async function batchCreateFunctions(
     options: ICreateFunctionOptions
 ): Promise<void> {
-    const { functions, root, envId, force, log = false } = options
+    const {
+        functions,
+        functionRootPath = '',
+        envId,
+        force,
+        log = false
+    } = options
     const promises = functions.map(func =>
         (async () => {
             const spinner = ora(`[${func.name}] 函数部署中...`)
@@ -127,7 +139,7 @@ export async function batchCreateFunctions(
                 log && spinner.start()
                 await createFunction({
                     func,
-                    root,
+                    functionRootPath,
                     envId,
                     force
                 })
@@ -144,7 +156,7 @@ export async function batchCreateFunctions(
 
 // 更新云函数代码
 export async function updateFunctionCode(options: ICreateFunctionOptions) {
-    const { func, root = '', envId, base64Code = '' } = options
+    const { func, functionRootPath = '', envId, base64Code = '' } = options
     let base64
     let packer
     const funcName = func.name
@@ -161,7 +173,7 @@ export async function updateFunctionCode(options: ICreateFunctionOptions) {
 
     // CLI 从本地读取
     if (!base64Code) {
-        packer = new FunctionPacker(root, funcName)
+        packer = new FunctionPacker(functionRootPath, funcName)
         const type: CodeType =
             func.config.runtime === 'Java8' ? CodeType.JavaFile : CodeType.File
         base64 = await packer.build(type)

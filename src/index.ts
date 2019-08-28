@@ -1,4 +1,5 @@
 import './commands'
+import { login } from './auth'
 import {
     listEnvs,
     createEnv,
@@ -23,6 +24,7 @@ import {
 import { configStore } from './utils/configstore'
 
 export = class Client {
+    login = login
     env = {
         list: listEnvs,
         create: createEnv,

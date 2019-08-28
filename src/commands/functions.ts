@@ -1,4 +1,5 @@
 import ora from 'ora'
+import path from 'path'
 import program from 'commander'
 import inquirer from 'inquirer'
 import chalk from 'chalk'
@@ -74,6 +75,7 @@ program
     .description('创建云函数')
     .action(async function(name: string, envId: string, options) {
         const assignEnvId = await getEnvId(envId)
+        const config = await resolveTcbrcConfig()
         const functions = await getConfigFunctions()
 
         const { force } = options
@@ -97,7 +99,7 @@ program
         if (isBatchCreating) {
             return await batchCreateFunctions({
                 functions,
-                root: process.cwd(),
+                functionRootPath: path.join(process.cwd(), config.functionRoot),
                 envId: assignEnvId,
                 force,
                 log: true
@@ -114,7 +116,7 @@ program
         try {
             await createFunction({
                 func: newFunction,
-                root: process.cwd(),
+                functionRootPath: path.join(process.cwd(), config.functionRoot),
                 envId: assignEnvId,
                 force
             })
@@ -135,7 +137,10 @@ program
                     try {
                         await createFunction({
                             func: newFunction,
-                            root: process.cwd(),
+                            functionRootPath: path.join(
+                                process.cwd(),
+                                config.functionRoot
+                            ),
                             envId: assignEnvId,
                             force: true
                         })
@@ -159,6 +164,7 @@ program
     .description('创建云函数')
     .action(async function(name: string, envId: string) {
         const assignEnvId = await getEnvId(envId)
+        const config = await resolveTcbrcConfig()
         const functions = await getConfigFunctions()
 
         if (!name) {
@@ -174,7 +180,7 @@ program
         try {
             await updateFunctionCode({
                 func,
-                root: process.cwd(),
+                functionRootPath: path.join(process.cwd(), config.functionRoot),
                 envId: assignEnvId
             })
             spinner.succeed(`[${func.name}] 函数代码更新成功！`)
@@ -321,9 +327,7 @@ function logDetail(info, name) {
             if (key === 'VpcConfig') {
                 const { vpc, subnet }: any = info[key]
                 if (vpc && subnet) {
-                    return `${ResMap[key]}：${vpc.VpcId}(${vpc.VpcName} | ${
-                        subnet.CidrBlock
-                    }) / ${subnet.SubnetId}(${subnet.SubnetName})\n`
+                    return `${ResMap[key]}：${vpc.VpcId}(${vpc.VpcName} | ${subnet.CidrBlock}) / ${subnet.SubnetId}(${subnet.SubnetName})\n`
                 } else {
                     return `${ResMap[key]}：无\n`
                 }
