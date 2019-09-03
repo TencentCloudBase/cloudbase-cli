@@ -1,4 +1,4 @@
-# CloudBase 命令行工具 ![npm (tag)](https://img.shields.io/npm/v/@cloudbase/cli) ![npm (tag)](https://img.shields.io/npm/v/@cloudbase/cli/beta)
+# CloudBase 命令行工具 ![npm (tag)](https://img.shields.io/npm/v/@cloudbase/cli)
 
 CloudBase CLI 是一个开源的命令行界面交互工具，用于帮助用户快速、方便的部署项目，管理 TCB 资源。
 
@@ -24,7 +24,7 @@ yarn global add @cloudbase/cli
 
 ## 文档
 
-请访问[教程与文档](https://tencentCloudBase.github.io/cli/)了解详细的使用方法。
+请访问[教程与文档](https://tencentcloudbase.github.io/2019-09-03-cli/)了解详细的使用方法。
 
 ## 意见反馈
 
