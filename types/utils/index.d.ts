@@ -1,0 +1,13 @@
+import { IConfig, Credential, AuthSecret, SSH } from '../types';
+export { printCliTable } from './cli-table';
+export { guid6 } from './uuid';
+export * from './request';
+export declare function zipDir(dirPath: any, outputPath: any): Promise<unknown>;
+export declare function askForInput(question: any): Promise<string>;
+export declare function getCredentialConfig(): Credential;
+export declare function getCredential(): Promise<AuthSecret>;
+export declare function getSSHConfig(): SSH;
+export declare function getSSH(): Promise<SSH>;
+export declare function getCloudBaseConfig(): Promise<IConfig>;
+export declare function resolveCloudBaseConfig(): Promise<any>;
+export declare function getEnvId(envId: string): Promise<string>;

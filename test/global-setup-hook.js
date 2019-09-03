@@ -1,6 +1,6 @@
 const Client = require('../lib')
 
-// 本地使用 tcb login 登录
+// 本地使用 login 登录
 const client = new Client()
 
 module.exports = async () => {

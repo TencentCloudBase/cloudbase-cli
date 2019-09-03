@@ -14,7 +14,13 @@ program
     .description('创建并初始化一个新的项目')
     .action(async function(cmd) {
         const load = ora('拉取环境列表').start()
-        const envData = (await listEnvs()) || []
+        let envData = []
+        try {
+            envData = (await listEnvs()) || []
+        } catch (e) {
+            load.stop()
+            throw e
+        }
         load.succeed('获取环境列表成功')
         const envs: string[] = envData.map(
             item => `${item.EnvId}:${item.PackageName}`
@@ -37,7 +43,7 @@ program
             type: 'input',
             name: 'name',
             message: '请输入项目名称',
-            default: 'tcb-demo'
+            default: 'cloudbase-demo'
         })
 
         // 模板目录
@@ -76,7 +82,11 @@ program
         )
 
         // 写入 envId
-        const configFilePath = path.join(projectPath, 'tcbrc.json')
+        const configFileJSONPath = path.join(projectPath, 'cloudbaserc.json')
+        const configFileJSPath = path.join(projectPath, 'cloudbaserc.js')
+        const configFilePath = [configFileJSPath, configFileJSONPath].find(
+            item => fs.existsSync(item)
+        )
         const configContent = fs.readFileSync(configFilePath).toString()
 
         fs.writeFileSync(

@@ -41,7 +41,7 @@ export class FunctionPacker {
 
     async getFileCode() {
         this.validPath(this.funcPath)
-        this.tmpPath = path.join(this.root, '.tcb_tmp')
+        this.tmpPath = path.join(this.root, '.cloudbase_tmp')
         // 临时构建文件
         this.funcDistPath = path.join(this.tmpPath, this.name)
         // 清除原打包文件

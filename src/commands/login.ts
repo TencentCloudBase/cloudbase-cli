@@ -99,13 +99,13 @@ program
             const envs = await listEnvs()
             if (!envs.length) {
                 warnLog(
-                    '你还没有可用的环境，请使用 tcb env:create alias 创建环境'
+                    '你还没有可用的环境，请使用 cloudbase env:create alias 创建环境'
                 )
             }
         } catch (e) {
             // 用户不存在
             if (e.code === 'ResourceNotFound.UserNotExists') {
-                const initSpin = ora('初始化 TCB 服务').start()
+                const initSpin = ora('初始化云开发服务').start()
                 await initTcb(skey)
                 initSpin.succeed('初始化成功！')
             } else {

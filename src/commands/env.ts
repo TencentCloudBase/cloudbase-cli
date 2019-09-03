@@ -31,9 +31,7 @@ program
         const unavalibleEnv = data.find(item => item.Status === 'UNAVAILABLE')
         if (unavalibleEnv) {
             warnLog(
-                `您的环境中存在不可用的环境：[${
-                    unavalibleEnv.EnvId
-                }]，请留意！`
+                `您的环境中存在不可用的环境：[${unavalibleEnv.EnvId}]，请留意！`
             )
         }
     })
@@ -54,7 +52,7 @@ async function checkEnvAvailability(envId: string) {
             if (retry > MAX_TRY) {
                 reject(
                     new TcbError(
-                        '环境初始化查询超时，请稍后通过 tcb env:list 查看环境状态'
+                        '环境初始化查询超时，请稍后通过 cloudbase env:list 查看环境状态'
                     )
                 )
             }

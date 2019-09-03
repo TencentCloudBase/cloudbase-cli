@@ -6,8 +6,8 @@ export * from './login'
 
 const tcbService = new CloudService('tcb', '2018-06-08')
 
-// 初始化 TCB 服务
-// 当用户没开通 TCB 服务时，需要调用此接口初始化 TCB 服务
+// 初始化云开发服务
+// 当用户没开通云开发服务时，需要调用此接口初始化云开发服务
 export async function initTcb(skey: string) {
     const res: any = await tcbService.request('InitTcb', {
         Skey: skey

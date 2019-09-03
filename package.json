@@ -14,7 +14,8 @@
     "url": "https://github.com/TencentCloudBase/cloud-base-cli.git"
   },
   "bin": {
-    "tcb": "./bin/tcb.js"
+    "tcb": "./bin/tcb.js",
+    "cloudbase": "./bin/cloudbase.js"
   },
   "author": "",
   "license": "ISC",

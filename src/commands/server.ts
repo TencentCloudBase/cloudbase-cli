@@ -1,7 +1,7 @@
 import program from 'commander'
 import { NodeController } from '../server/node/controller'
 import { TcbError } from '../error'
-import { getCredential, resolveTcbrcConfig, getSSH, getEnvId } from '../utils'
+import { getCredential, resolveCloudBaseConfig, getSSH, getEnvId } from '../utils'
 import { ServerConfig, ServerLanguageType } from '../types'
 
 function checkServers(servers) {
@@ -23,7 +23,7 @@ function checkServers(servers) {
 async function getServers(
     name: string
 ): Promise<{ name: string; path: string; type: ServerLanguageType }[]> {
-    const config = await resolveTcbrcConfig()
+    const config = await resolveCloudBaseConfig()
     if (!config.servers || !Array.isArray(config.servers)) {
         throw new Error('服务配置错误')
     }

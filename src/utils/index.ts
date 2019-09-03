@@ -88,7 +88,7 @@ export async function getCredential(): Promise<AuthSecret> {
     }
 
     // 无有效身份信息，报错
-    throw new TcbError('无有效身份信息，请使用 tcb login 登录')
+    throw new TcbError('无有效身份信息，请使用 cloudbase login 登录')
 }
 
 export function getSSHConfig(): SSH {
@@ -125,29 +125,41 @@ export async function getSSH(): Promise<SSH> {
     return sshConfig
 }
 
-// 获取 tcb 存储在本地的配置
-export function getTcbConfig(): Promise<IConfig> {
+// 获取 cloudbase 存储在本地的配置
+export function getCloudBaseConfig(): Promise<IConfig> {
     return configStore.all()
 }
 
-// 找到 tcbrc 配置文件
-export async function resolveTcbrcConfig() {
+// 找到 cloudbase 配置文件
+export async function resolveCloudBaseConfig() {
     const tcbrcPath = path.join(process.cwd(), 'tcbrc.json')
-    if (!fs.existsSync(tcbrcPath)) {
+    if (fs.existsSync(tcbrcPath)) {
+        throw new TcbError(
+            'tcrbrc.josn 配置文件已废弃，请使用 cloudbaserc.json 或 cloudbaserc.js 配置文件！'
+        )
+    }
+    // 支持 JS 和 JSON 配置语法
+    const cloudbaseJSONPath = path.join(process.cwd(), 'cloudbaserc.json')
+    const cloudbaseJSPath = path.join(process.cwd(), 'cloudbaserc.js')
+
+    const cloudbasePath = [cloudbaseJSPath, cloudbaseJSONPath].find(item =>
+        fs.existsSync(item)
+    )
+    if (!cloudbasePath || !fs.existsSync(cloudbasePath)) {
         return {}
     }
-    const tcbrc = await import(tcbrcPath)
-    if (!tcbrc.envId) {
+    const cloudbaseConfig = await import(cloudbasePath)
+    if (!cloudbaseConfig.envId) {
         throw new TcbError('配置文件无效，配置文件必须包含含环境 Id')
     }
-    return tcbrc
+    return cloudbaseConfig
 }
 
 // 从命令行和配置文件中获取 envId
 export async function getEnvId(envId: string): Promise<string> {
-    const tcbrc = await resolveTcbrcConfig()
+    const cloudbaseConfig = await resolveCloudBaseConfig()
     // 命令行 envId 可以覆盖配置文件 envId
-    const assignEnvId = envId || tcbrc.envId
+    const assignEnvId = envId || cloudbaseConfig.envId
     if (!assignEnvId) {
         throw new TcbError(
             '未识别到有效的环境 Id 变量，请在项目根目录进行操作或通过 envId 参数指定环境 Id'

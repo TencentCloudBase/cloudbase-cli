@@ -1,6 +1,6 @@
 # CloudBase 命令行工具 ![npm (tag)](https://img.shields.io/npm/v/@cloudbase/cli)
 
-CloudBase CLI 是一个开源的命令行界面交互工具，用于帮助用户快速、方便的部署项目，管理 TCB 资源。
+CloudBase CLI 是一个开源的命令行界面交互工具，用于帮助用户快速、方便的部署项目，管理云开发资源。
 
 ## 安装 CloudBase CLI
 
@@ -16,7 +16,7 @@ npm install -g @cloudbase/cli
 yarn global add @cloudbase/cli
 ```
 
-安装完成后，你可以使用 `tcb -V` 验证是否安装成功，如果输出了类似下面的版本号，则表明 CloudBase CLI 被成功安装到您的计算机中。
+安装完成后，你可以使用 `cloudbase -V` 验证是否安装成功，如果输出了类似下面的版本号，则表明 CloudBase CLI 被成功安装到您的计算机中。
 
 ```text
 0.1.5

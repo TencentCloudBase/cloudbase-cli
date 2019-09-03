@@ -24,7 +24,7 @@ import {
     updateFunctionCode,
     copyFunction
 } from '../function'
-import { resolveTcbrcConfig, getEnvId, printCliTable } from '../utils'
+import { resolveCloudBaseConfig, getEnvId, printCliTable } from '../utils'
 import { successLog } from '../logger'
 
 const StatusMap = {
@@ -37,7 +37,7 @@ const StatusMap = {
 
 // 获取函数配置并校验字段有效性
 async function getConfigFunctions() {
-    const config = await resolveTcbrcConfig()
+    const config = await resolveCloudBaseConfig()
     if (
         !config.functions ||
         !Array.isArray(config.functions) ||
@@ -75,7 +75,7 @@ program
     .description('创建云函数')
     .action(async function(name: string, envId: string, options) {
         const assignEnvId = await getEnvId(envId)
-        const config = await resolveTcbrcConfig()
+        const config = await resolveCloudBaseConfig()
         const functions = await getConfigFunctions()
 
         const { force } = options
@@ -164,7 +164,7 @@ program
     .description('创建云函数')
     .action(async function(name: string, envId: string) {
         const assignEnvId = await getEnvId(envId)
-        const config = await resolveTcbrcConfig()
+        const config = await resolveCloudBaseConfig()
         const functions = await getConfigFunctions()
 
         if (!name) {
@@ -760,13 +760,13 @@ program
         console.log(result)
     })
 
-// 更新云函数代码
+// 拷贝云函数
 program
     .command(
         'functions:copy <functionName> <newFunctionName> [envId] [targentEnvId]'
     )
     .option('--force', '如果目标环境下存在同名函数，覆盖原函数')
-    .description('创建云函数')
+    .description('拷贝云函数')
     .action(async function(
         functionName: string,
         newFunctionName: string,
