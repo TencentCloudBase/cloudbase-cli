@@ -17,7 +17,7 @@ program
         const envData = (await listEnvs()) || []
         load.succeed('获取环境列表成功')
         const envs: string[] = envData.map(
-            item => `${item.envId}:${item.packageName}`
+            item => `${item.EnvId}:${item.PackageName}`
         )
 
         if (!envs.length) {
