@@ -4,7 +4,7 @@ import fse from 'fs-extra'
 import path from 'path'
 import inquirer from 'inquirer'
 import program from 'commander'
-import { TcbError } from '../error'
+import { CloudBaseError } from '../error'
 import { successLog } from '../logger'
 import { listEnvs } from '../env'
 
@@ -27,7 +27,7 @@ program
         )
 
         if (!envs.length) {
-            throw new TcbError(
+            throw new CloudBaseError(
                 '没有可以使用的环境，请先开通云开发环境（https://console.cloud.tencent.com/tcb）'
             )
         }
@@ -64,7 +64,7 @@ program
             })
             // 不覆盖，操作终止
             if (!cover) {
-                throw new TcbError('操作终止！')
+                throw new CloudBaseError('操作终止！')
             } else {
                 // 覆盖操作不会删除不冲突的文件夹或文件
                 // 删除原有文件夹，防止生成的项目包含用户原有文件

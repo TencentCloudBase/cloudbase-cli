@@ -6,7 +6,7 @@ import { refreshTmpToken } from '../auth/auth'
 import { configStore } from './configstore'
 import { IConfig, Credential, AuthSecret, SSH } from '../types'
 import { ConfigItems } from '../constant'
-import { TcbError } from '../error'
+import { CloudBaseError } from '../error'
 
 export { printCliTable } from './cli-table'
 export { guid6 } from './uuid'
@@ -88,7 +88,7 @@ export async function getCredential(): Promise<AuthSecret> {
     }
 
     // 无有效身份信息，报错
-    throw new TcbError('无有效身份信息，请使用 cloudbase login 登录')
+    throw new CloudBaseError('无有效身份信息，请使用 cloudbase login 登录')
 }
 
 export function getSSHConfig(): SSH {
@@ -134,7 +134,7 @@ export function getCloudBaseConfig(): Promise<IConfig> {
 export async function resolveCloudBaseConfig() {
     const tcbrcPath = path.join(process.cwd(), 'tcbrc.json')
     if (fs.existsSync(tcbrcPath)) {
-        throw new TcbError(
+        throw new CloudBaseError(
             'tcrbrc.josn 配置文件已废弃，请使用 cloudbaserc.json 或 cloudbaserc.js 配置文件！'
         )
     }
@@ -150,7 +150,7 @@ export async function resolveCloudBaseConfig() {
     }
     const cloudbaseConfig = await import(cloudbasePath)
     if (!cloudbaseConfig.envId) {
-        throw new TcbError('配置文件无效，配置文件必须包含含环境 Id')
+        throw new CloudBaseError('配置文件无效，配置文件必须包含含环境 Id')
     }
     return cloudbaseConfig
 }
@@ -161,7 +161,7 @@ export async function getEnvId(envId: string): Promise<string> {
     // 命令行 envId 可以覆盖配置文件 envId
     const assignEnvId = envId || cloudbaseConfig.envId
     if (!assignEnvId) {
-        throw new TcbError(
+        throw new CloudBaseError(
             '未识别到有效的环境 Id 变量，请在项目根目录进行操作或通过 envId 参数指定环境 Id'
         )
     }

@@ -3,7 +3,7 @@ import inquirer from 'inquirer'
 import ora from 'ora'
 import { login } from '../auth'
 import { listEnvs, initTcb } from '../env'
-import { TcbError } from '../error'
+import { CloudBaseError } from '../error'
 import { getCredentialConfig } from '../utils'
 import { Credential } from '../types'
 import { warnLog } from '../logger'
@@ -62,7 +62,7 @@ program
             }
 
             if (!secretId || !secretKey) {
-                throw new TcbError('SecretID 或 SecretKey 不能为空')
+                throw new CloudBaseError('SecretID 或 SecretKey 不能为空')
             }
 
             const cloudSpinner = ora('正在验证腾讯云密钥...').start()

@@ -1,5 +1,5 @@
 import { guid6 } from '../utils'
-import { TcbError } from '../error'
+import { CloudBaseError } from '../error'
 import { CloudService } from '../utils'
 export * from './domain'
 export * from './login'
@@ -31,7 +31,7 @@ export async function createEnv({ alias }) {
         res.EnvId = params.EnvId
         return res
     } catch (e) {
-        throw new TcbError(`创建环境失败：${e.message}`)
+        throw new CloudBaseError(`创建环境失败：${e.message}`)
     }
 }
 

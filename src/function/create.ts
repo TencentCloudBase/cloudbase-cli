@@ -1,6 +1,6 @@
 import ora from 'ora'
 import { CloudService } from '../utils'
-import { TcbError } from '../error'
+import { CloudBaseError } from '../error'
 import { ICreateFunctionOptions } from '../types'
 import { createFunctionTriggers } from './trigger'
 import { FunctionPacker, CodeType } from './_packer'
@@ -28,7 +28,7 @@ export async function createFunction(
     // 校验运行时
     const validRuntime = ['Nodejs8.9', 'Php7', 'Java8']
     if (func.config.runtime && !validRuntime.includes(func.config.runtime)) {
-        throw new TcbError(
+        throw new CloudBaseError(
             `${funcName} Invalid runtime value：${
                 func.config.runtime
             }. Now only support: ${validRuntime.join(', ')}`
@@ -43,7 +43,7 @@ export async function createFunction(
         base64 = await packer.build(type)
 
         if (!base64) {
-            throw new TcbError('函数不存在！')
+            throw new CloudBaseError('函数不存在！')
         }
     } else {
         base64 = base64Code
@@ -114,7 +114,7 @@ export async function createFunction(
 
         // 不强制覆盖，抛出错误
         if (e.message && !force) {
-            throw new TcbError(`[${funcName}] 部署失败：\n ${e.message}`, {
+            throw new CloudBaseError(`[${funcName}] 部署失败：\n ${e.message}`, {
                 code: e.code
             })
         }
@@ -146,7 +146,7 @@ export async function batchCreateFunctions(
                 log && spinner.succeed(`[${func.name}] 函数部署成功`)
             } catch (e) {
                 log && spinner.fail(`[${func.name}] 函数部署失败`)
-                throw new TcbError(e.message)
+                throw new CloudBaseError(e.message)
             }
         })()
     )
@@ -164,7 +164,7 @@ export async function updateFunctionCode(options: ICreateFunctionOptions) {
     // 校验运行时
     const validRuntime = ['Nodejs8.9', 'Php7', 'Java8']
     if (func.config.runtime && !validRuntime.includes(func.config.runtime)) {
-        throw new TcbError(
+        throw new CloudBaseError(
             `${funcName} 非法的运行环境：${
                 func.config.runtime
             }，当前支持环境：${validRuntime.join(', ')}`
@@ -179,7 +179,7 @@ export async function updateFunctionCode(options: ICreateFunctionOptions) {
         base64 = await packer.build(type)
 
         if (!base64) {
-            throw new TcbError('函数不存在！')
+            throw new CloudBaseError('函数不存在！')
         }
     } else {
         base64 = base64Code
@@ -196,7 +196,7 @@ export async function updateFunctionCode(options: ICreateFunctionOptions) {
         // 更新云函数代码
         await scfService.request('UpdateFunctionCode', params)
     } catch (e) {
-        throw new TcbError(`[${funcName}] 函数代码更新失败： ${e.message}`, {
+        throw new CloudBaseError(`[${funcName}] 函数代码更新失败： ${e.message}`, {
             code: e.code
         })
     }

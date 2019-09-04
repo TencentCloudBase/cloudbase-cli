@@ -2,7 +2,7 @@ import program from 'commander'
 import ora from 'ora'
 import { listEnvs, createEnv, getEnvInfo } from '../env'
 import { printCliTable } from '../utils'
-import { TcbError } from '../error'
+import { CloudBaseError } from '../error'
 import { successLog, warnLog } from '../logger'
 
 program
@@ -51,7 +51,7 @@ async function checkEnvAvailability(envId: string) {
             }
             if (retry > MAX_TRY) {
                 reject(
-                    new TcbError(
+                    new CloudBaseError(
                         '环境初始化查询超时，请稍后通过 cloudbase env:list 查看环境状态'
                     )
                 )
@@ -65,7 +65,7 @@ program
     .description('创建新的云环境')
     .action(async function(alias: string) {
         if (!alias) {
-            throw new TcbError('环境名称不能为空！')
+            throw new CloudBaseError('环境名称不能为空！')
         }
 
         const res = await createEnv({

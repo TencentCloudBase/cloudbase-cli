@@ -4,10 +4,10 @@ interface Options {
     code?: string | number;
     requestId?: string;
 }
-export declare class TcbError extends Error {
+export declare class CloudBaseError extends Error {
     readonly exit: number;
     readonly message: string;
-    readonly name = "TcbError";
+    readonly name = "CloudBaseError";
     readonly original: Error | undefined;
     readonly code: string | number;
     readonly requestId: string;

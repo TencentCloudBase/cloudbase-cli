@@ -1,7 +1,7 @@
 import { CloudService } from '../utils'
 import { successLog } from '../logger'
 import { IFunctionTriggerOptions, IFunctionBatchOptions } from '../types'
-import { TcbError } from '../error'
+import { CloudBaseError } from '../error'
 
 const scfService = new CloudService('scf', '2018-04-16', {
     Role: 'TCB_QcsRole',
@@ -16,7 +16,7 @@ export async function createFunctionTriggers(
 
     const parsedTriggers = triggers.map(item => {
         if (item.type !== 'timer') {
-            throw new TcbError(
+            throw new CloudBaseError(
                 `不支持的触发器类型 [${item.type}]，目前仅支持定时触发器（timer）！`
             )
         }
@@ -35,7 +35,7 @@ export async function createFunctionTriggers(
             Count: parsedTriggers.length
         })
     } catch (e) {
-        throw new TcbError(`[${functionName}] 创建触发器失败：${e.message}`)
+        throw new CloudBaseError(`[${functionName}] 创建触发器失败：${e.message}`)
     }
 }
 
@@ -55,7 +55,7 @@ export async function batchCreateTriggers(
                 })
                 successLog(`[${func.name}] 创建云函数触发器成功！`)
             } catch (e) {
-                throw new TcbError(e.message)
+                throw new CloudBaseError(e.message)
             }
         })()
     )
@@ -77,7 +77,7 @@ export async function deleteFunctionTrigger(
         })
         successLog(`[${functionName}] 删除云函数触发器 ${triggerName} 成功！`)
     } catch (e) {
-        throw new TcbError(`[${functionName}] 删除触发器失败：${e.message}`)
+        throw new CloudBaseError(`[${functionName}] 删除触发器失败：${e.message}`)
     }
 }
 
@@ -96,7 +96,7 @@ export async function batchDeleteTriggers(
                     })
                 })
             } catch (e) {
-                throw new TcbError(e.message)
+                throw new CloudBaseError(e.message)
             }
         })()
     )

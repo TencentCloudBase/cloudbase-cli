@@ -2,7 +2,7 @@ import program from 'commander'
 import ora from 'ora'
 import inquirer from 'inquirer'
 import { printCliTable, getEnvId } from '../utils'
-import { TcbError } from '../error'
+import { CloudBaseError } from '../error'
 import { successLog } from '../logger'
 import { getEnvAuthDomains, createEnvDomain, deleteEnvDomain } from '../env'
 
@@ -45,7 +45,7 @@ program
         })
 
         if (!confirm) {
-            throw new TcbError('操作终止！')
+            throw new CloudBaseError('操作终止！')
         }
 
         // 检查域名是否已经添加，重复添加会报错
@@ -60,7 +60,7 @@ program
             }
         })
         if (exitDomains.length) {
-            throw new TcbError(`域名 [${exitDomains.join(', ')}] 已存在！`)
+            throw new CloudBaseError(`域名 [${exitDomains.join(', ')}] 已存在！`)
         }
 
         await createEnvDomain({
@@ -108,7 +108,7 @@ program
         })
 
         if (!confirm) {
-            throw new TcbError('操作终止！')
+            throw new CloudBaseError('操作终止！')
         }
 
         const domainIds = domains

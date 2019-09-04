@@ -59,7 +59,7 @@ if (process.argv.length < 3) {
 program.parse(process.argv)
 
 function errorHandler(err) {
-    const stackIngoreErrors = ['TencentCloudSDKHttpException', 'TcbError']
+    const stackIngoreErrors = ['TencentCloudSDKHttpException', 'CloudBaseError']
     // 忽略自定义错误的错误栈
     if (err.stack && !stackIngoreErrors.includes(err.name)) {
         console.log(err.stack)

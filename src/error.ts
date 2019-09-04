@@ -5,10 +5,10 @@ interface Options {
     requestId?: string
 }
 
-export class TcbError extends Error {
+export class CloudBaseError extends Error {
     readonly exit: number
     readonly message: string
-    readonly name = 'TcbError'
+    readonly name = 'CloudBaseError'
     readonly original: Error | undefined
     readonly code: string | number
     readonly requestId: string

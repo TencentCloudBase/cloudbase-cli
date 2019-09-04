@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import { CloudService } from '../utils'
-import { TcbError } from '../error'
+import { CloudBaseError } from '../error'
 
 const publicRsaKey = `
 -----BEGIN PUBLIC KEY-----
@@ -40,7 +40,7 @@ export async function getLoginConfigList({ envId }) {
 export async function createLoginConfig({ envId, platform, appId, appSecret }) {
     const validPlatform = ['WECHAT-OPEN', 'WECHAT-PUBLIC']
     if (!validPlatform.includes(platform)) {
-        throw new TcbError(
+        throw new CloudBaseError(
             `Invalid platform value: ${platform}. Now only support 'WECHAT-OPEN', 'WECHAT-PUBLIC'`
         )
     }
@@ -65,7 +65,7 @@ export async function updateLoginConfig({
 }) {
     const validStatus = ['ENABLE', 'DISABLE']
     if (!validStatus.includes(status)) {
-        throw new TcbError(
+        throw new CloudBaseError(
             `Invalid status value: ${status}. Only support 'ENABLE', 'DISABLE'`
         )
     }

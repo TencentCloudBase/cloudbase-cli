@@ -1,5 +1,5 @@
-import { TcbError } from './error';
-export declare type TExportFunctionVoid = () => Promise<void | TcbError>;
+import { CloudBaseError } from './error';
+export declare type TExportFunctionVoid = () => Promise<void | CloudBaseError>;
 export interface PermanentCredential {
     secretId?: string;
     secretKey?: string;

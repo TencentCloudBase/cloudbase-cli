@@ -1,6 +1,6 @@
 import program from 'commander'
 import { NodeController } from '../server/node/controller'
-import { TcbError } from '../error'
+import { CloudBaseError } from '../error'
 import { getCredential, resolveCloudBaseConfig, getSSH, getEnvId } from '../utils'
 import { ServerConfig, ServerLanguageType } from '../types'
 
@@ -8,13 +8,13 @@ function checkServers(servers) {
     const names = {}
     servers.forEach((server: ServerConfig) => {
         if (!server.name) {
-            throw new TcbError('Every server must have a name.')
+            throw new CloudBaseError('Every server must have a name.')
         } else if (!server.path) {
-            throw new TcbError('未指定发布目录')
+            throw new CloudBaseError('未指定发布目录')
         } else if (server.type != ServerLanguageType.node) {
-            throw new TcbError(`Unsupported deploy type: "${server.type}"`)
+            throw new CloudBaseError(`Unsupported deploy type: "${server.type}"`)
         } else if (names[server.name]) {
-            throw new TcbError(`Duplicated deploy name: "${server.name}"`)
+            throw new CloudBaseError(`Duplicated deploy name: "${server.name}"`)
         }
         names[server.name] = true
     })
@@ -45,7 +45,7 @@ program
 
         servers.forEach(async server => {
             if (!server.path) {
-                throw new TcbError('未指定发布目录')
+                throw new CloudBaseError('未指定发布目录')
             }
             await new NodeController({
                 envId,

@@ -3,7 +3,7 @@ import path from 'path'
 import program from 'commander'
 import inquirer from 'inquirer'
 import chalk from 'chalk'
-import { TcbError } from '../error'
+import { CloudBaseError } from '../error'
 import {
     listFunction,
     deleteFunction,
@@ -43,25 +43,25 @@ async function getConfigFunctions() {
         !Array.isArray(config.functions) ||
         !config.functions.length
     ) {
-        throw new TcbError('函数配置不存在')
+        throw new CloudBaseError('函数配置不存在')
     }
 
     const { functions } = config
 
     functions.forEach(func => {
         if (!func.name) {
-            throw new TcbError('云函数名称不能为空')
+            throw new CloudBaseError('云函数名称不能为空')
         }
         // timeout 可能为 0
         if (typeof func.config.timeout !== 'undefined') {
             const timeout = Number(func.config.timeout)
 
             if (!Number.isInteger(timeout)) {
-                throw new TcbError('超时时间必需为整数')
+                throw new CloudBaseError('超时时间必需为整数')
             }
 
             if (timeout < 1 || timeout > 20) {
-                throw new TcbError('超时时间有效值为： 1~20S')
+                throw new CloudBaseError('超时时间有效值为： 1~20S')
             }
         }
     })
@@ -92,7 +92,7 @@ program
             isBatchCreating = isBatch
             // 用户不部署全部函数，报错
             if (!isBatchCreating) {
-                throw new TcbError('请指定部署函数名称！')
+                throw new CloudBaseError('请指定部署函数名称！')
             }
         }
 
@@ -108,7 +108,7 @@ program
 
         const newFunction = functions.find(item => item.name === name)
         if (!newFunction || !newFunction.name) {
-            throw new TcbError(`函数 ${name} 配置不存在`)
+            throw new CloudBaseError(`函数 ${name} 配置不存在`)
         }
 
         const createSpinner = ora('函数部署中...').start()
@@ -168,12 +168,12 @@ program
         const functions = await getConfigFunctions()
 
         if (!name) {
-            throw new TcbError('请指定函数名称！')
+            throw new CloudBaseError('请指定函数名称！')
         }
 
         const func = functions.find(item => item.name === name)
         if (!func || !func.name) {
-            throw new TcbError(`函数 ${name} 配置不存在`)
+            throw new CloudBaseError(`函数 ${name} 配置不存在`)
         }
 
         const spinner = ora(`[${func.name}] 函数代码更新中...`).start()
@@ -201,11 +201,11 @@ program
         limit = Number(limit)
         offset = Number(offset)
         if (!Number.isInteger(limit) || !Number.isInteger(offset)) {
-            throw new TcbError('limit 和 offset 必须为整数')
+            throw new CloudBaseError('limit 和 offset 必须为整数')
         }
 
         if (limit < 0 || offset < 0) {
-            throw new TcbError('limit 和 offset 必须为大于 0 的整数')
+            throw new CloudBaseError('limit 和 offset 必须为大于 0 的整数')
         }
 
         const assignEnvId = await getEnvId(envId)
@@ -266,7 +266,7 @@ program
             }
 
             if (!isBatchDelete) {
-                throw new TcbError('请指定需要删除的云函数名称！')
+                throw new CloudBaseError('请指定需要删除的云函数名称！')
             }
         }
 
@@ -416,7 +416,7 @@ program
         } = options
 
         if (!name) {
-            throw new TcbError('云函数名称不能为空')
+            throw new CloudBaseError('云函数名称不能为空')
         }
 
         // 2019-05-16 20:59:59 时间类型的长度
@@ -427,11 +427,11 @@ program
             typeof endTime !== 'undefined' &&
             (startTime.length !== TimeLength || endTime.length !== TimeLength)
         ) {
-            throw new TcbError('时间格式错误，必须为 2019-05-16 20:59:59 类型')
+            throw new CloudBaseError('时间格式错误，必须为 2019-05-16 20:59:59 类型')
         }
 
         if (new Date(endTime).getTime() < new Date(startTime).getTime()) {
-            throw new TcbError('开始时间不能晚于结束时间')
+            throw new CloudBaseError('开始时间不能晚于结束时间')
         }
 
         const OneDay = 86400000
@@ -439,7 +439,7 @@ program
             new Date(endTime).getTime() - new Date(startTime).getTime() >
             OneDay
         ) {
-            throw new TcbError('endTime 与 startTime 只能相差一天之内')
+            throw new CloudBaseError('endTime 与 startTime 只能相差一天之内')
         }
 
         let params: any = {
@@ -523,7 +523,7 @@ program
             isBathUpdate = isBatch
 
             if (!isBathUpdate) {
-                throw new TcbError('请指定云函数名称！')
+                throw new CloudBaseError('请指定云函数名称！')
             }
         }
 
@@ -541,7 +541,7 @@ program
         const functionItem = functions.find(item => item.name === name)
 
         if (!functionItem) {
-            throw new TcbError('未找到相关函数配置，请检查函数名是否正确')
+            throw new CloudBaseError('未找到相关函数配置，请检查函数名是否正确')
         }
 
         await updateFunctionConfig({
@@ -575,7 +575,7 @@ program
             isBatchCreateTrigger = isBatch
 
             if (!isBatchCreateTrigger) {
-                throw new TcbError('请指定云函数名称！')
+                throw new CloudBaseError('请指定云函数名称！')
             }
         }
 
@@ -591,13 +591,13 @@ program
         const functionItem = functions.find(item => item.name === name)
 
         if (!functionItem) {
-            throw new TcbError('未找到相关函数配置，请检查函数名是否正确')
+            throw new CloudBaseError('未找到相关函数配置，请检查函数名是否正确')
         }
 
         const { triggers } = functionItem
 
         if (!triggers || !triggers.length) {
-            throw new TcbError('触发器配置不能为空')
+            throw new CloudBaseError('触发器配置不能为空')
         }
 
         await createFunctionTriggers({
@@ -645,7 +645,7 @@ program
             }
 
             if (!isBtachDeleteTriggers) {
-                throw new TcbError('请指定云函数名称以及触发器名称！')
+                throw new CloudBaseError('请指定云函数名称以及触发器名称！')
             }
         }
 
@@ -669,7 +669,7 @@ program
             isBatchDeleteFunctionTriggers = isBatch
 
             if (!isBatchDeleteFunctionTriggers) {
-                throw new TcbError('请指定云函数名称以及触发器名称！')
+                throw new CloudBaseError('请指定云函数名称以及触发器名称！')
             }
         }
 
@@ -683,7 +683,7 @@ program
         }
 
         if (!triggerName) {
-            throw new TcbError('触发器名称不能为空')
+            throw new CloudBaseError('触发器名称不能为空')
         }
 
         // 删除指定函数的单个触发器
@@ -719,7 +719,7 @@ program
             isBatchInvoke = isBatch
 
             if (!isBatchInvoke) {
-                throw new TcbError('请指定云函数名称！')
+                throw new CloudBaseError('请指定云函数名称！')
             }
         }
 
@@ -729,7 +729,7 @@ program
                 params = JSON.parse(jsonStringParams)
             } catch (e) {
                 console.log(e)
-                throw new TcbError(
+                throw new CloudBaseError(
                     'jsonStringParams 参数不是正确的 JSON 字符串'
                 )
             }
@@ -748,7 +748,7 @@ program
         const func = functions.find(item => item.name === name)
 
         if (!func) {
-            throw new TcbError('未找到相关函数配置，请检查函数名是否正确')
+            throw new CloudBaseError('未找到相关函数配置，请检查函数名是否正确')
         }
 
         const result = await invokeFunction({
@@ -778,7 +778,7 @@ program
         const { force } = options
 
         if (!functionName || !newFunctionName) {
-            throw new TcbError('请指定函数名称！')
+            throw new CloudBaseError('请指定函数名称！')
         }
 
         await copyFunction({

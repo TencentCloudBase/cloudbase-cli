@@ -1,6 +1,6 @@
-import { TcbError } from './error'
+import { CloudBaseError } from './error'
 
-export type TExportFunctionVoid = () => Promise<void | TcbError>
+export type TExportFunctionVoid = () => Promise<void | CloudBaseError>
 
 export interface PermanentCredential {
     secretId?: string

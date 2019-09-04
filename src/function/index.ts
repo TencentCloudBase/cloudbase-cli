@@ -7,7 +7,7 @@ import {
     IFunctionBatchOptions,
     InvokeFunctionOptions
 } from '../types'
-import { TcbError } from '../error'
+import { CloudBaseError } from '../error'
 import { getVpcs, getSubnets } from './vpc'
 
 export * from './create'
@@ -60,7 +60,7 @@ export async function deleteFunction({ functionName, envId }): Promise<void> {
             Namespace: envId
         })
     } catch (e) {
-        throw new TcbError(`[${functionName}] 删除操作失败：${e.message}！`)
+        throw new CloudBaseError(`[${functionName}] 删除操作失败：${e.message}！`)
     }
 }
 
@@ -72,7 +72,7 @@ export async function batchDeleteFunctions({ names, envId }): Promise<void> {
                 await deleteFunction({ functionName: name, envId })
                 successLog(`[${name}] 函数删除成功！`)
             } catch (e) {
-                throw new TcbError(e.message)
+                throw new CloudBaseError(e.message)
             }
         })()
     )
@@ -153,7 +153,7 @@ export async function batchGetFunctionsDetail({
                 })
                 data.push(info)
             } catch (e) {
-                throw new TcbError(`${name} 获取信息失败：${e.message}`)
+                throw new CloudBaseError(`${name} 获取信息失败：${e.message}`)
             }
         })()
     )
@@ -232,7 +232,7 @@ export async function batchUpdateFunctionConfig(
                 })
                 log && successLog(`[${func.name}] 更新云函数配置成功！`)
             } catch (e) {
-                throw new TcbError(`${func.name} 更新配置失败：${e.message}`)
+                throw new CloudBaseError(`${func.name} 更新配置失败：${e.message}`)
             }
         })()
     )
@@ -255,7 +255,7 @@ export async function invokeFunction(options: InvokeFunctionOptions) {
         const { Result } = await scfService.request('Invoke', _params)
         return Result
     } catch (e) {
-        throw new TcbError(`[${functionName}] 调用失败：\n${e.message}`)
+        throw new CloudBaseError(`[${functionName}] 调用失败：\n${e.message}`)
     }
 }
 
@@ -277,7 +277,7 @@ export async function batchInvokeFunctions(options: IFunctionBatchOptions) {
                 }
                 return result
             } catch (e) {
-                throw new TcbError(`${func.name} 函数调用失败：${e.message}`)
+                throw new CloudBaseError(`${func.name} 函数调用失败：${e.message}`)
             }
         })()
     )
@@ -299,7 +299,7 @@ export async function copyFunction(options: ICopyFunctionOptions) {
     const { envId, functionName, newFunctionName, targetEnvId, force } = options
 
     if (!envId || !functionName || !newFunctionName) {
-        throw new TcbError('参数缺失')
+        throw new CloudBaseError('参数缺失')
     }
 
     await scfService.request('CopyFunction', {

@@ -1,5 +1,5 @@
 import tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
-import { TcbError } from '../error'
+import { CloudBaseError } from '../error'
 import { getCredential } from './index'
 import { AuthSecret } from '../types'
 
@@ -40,7 +40,7 @@ export class CloudService {
         // 将 2018-08-06 转换成 v20180806 形式
         this.version = `v${version.split('-').join('')}`
         if (!tencentcloud[service][this.version]) {
-            throw new TcbError('CloudService: Service Not Found')
+            throw new CloudBaseError('CloudService: Service Not Found')
         }
         this.baseParams = baseParams || {}
     }

@@ -3,7 +3,7 @@ import path from 'path'
 import del from 'del'
 import makeDir from 'make-dir'
 import { zipDir } from '../utils'
-import { TcbError } from '../error'
+import { CloudBaseError } from '../error'
 
 export enum CodeType {
     File,
@@ -35,7 +35,7 @@ export class FunctionPacker {
 
     validPath(path: string) {
         if (!fs.existsSync(path)) {
-            throw new TcbError('file not exist')
+            throw new CloudBaseError('file not exist')
         }
     }
 
