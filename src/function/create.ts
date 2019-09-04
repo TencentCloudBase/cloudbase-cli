@@ -114,7 +114,7 @@ export async function createFunction(
 
         // 不强制覆盖，抛出错误
         if (e.message && !force) {
-            throw new CloudBaseError(`[${funcName}] 部署失败：\n ${e.message}`, {
+            throw new CloudBaseError(`[${funcName}] 部署失败：\n${e.message}`, {
                 code: e.code
             })
         }
