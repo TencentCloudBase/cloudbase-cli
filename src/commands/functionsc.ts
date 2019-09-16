@@ -427,7 +427,9 @@ program
             typeof endTime !== 'undefined' &&
             (startTime.length !== TimeLength || endTime.length !== TimeLength)
         ) {
-            throw new CloudBaseError('时间格式错误，必须为 2019-05-16 20:59:59 类型')
+            throw new CloudBaseError(
+                '时间格式错误，必须为 2019-05-16 20:59:59 类型'
+            )
         }
 
         if (new Date(endTime).getTime() < new Date(startTime).getTime()) {
@@ -791,3 +793,4 @@ program
 
         successLog('拷贝函数成功')
     })
+

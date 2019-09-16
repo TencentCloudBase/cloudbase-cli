@@ -1,16 +1,17 @@
 import program from 'commander'
 import ora from 'ora'
 import inquirer from 'inquirer'
-import { printCliTable, getEnvId } from '../utils'
-import { CloudBaseError } from '../error'
-import { successLog } from '../logger'
-import { getEnvAuthDomains, createEnvDomain, deleteEnvDomain } from '../env'
+import { printCliTable, getEnvId } from '../../utils'
+import { CloudBaseError } from '../../error'
+import { successLog } from '../../logger'
+import { getEnvAuthDomains, createEnvDomain, deleteEnvDomain } from '../../env'
 
 program
     .command('env:domain:list [envId]')
     .description('列出环境的安全域名列表')
-    .action(async function(envId?: string) {
-        const assignEnvId = await getEnvId(envId)
+    .action(async function(envId?: string, options?: any) {
+        const { configFile } = options.parent
+        const assignEnvId = await getEnvId(envId, configFile)
         const domains = await getEnvAuthDomains({
             envId: assignEnvId
         })
@@ -32,8 +33,9 @@ program
 program
     .command('env:domain:create <domain> [envId]')
     .description('添加环境安全域名，多个以斜杠 / 分隔')
-    .action(async function(domain: string, envId?: string) {
-        const assignEnvId = await getEnvId(envId)
+    .action(async function(domain: string, envId?: string, options?: any) {
+        const { configFile } = options.parent
+        const assignEnvId = await getEnvId(envId, configFile)
 
         const domains = domain.split('/')
 
@@ -60,7 +62,9 @@ program
             }
         })
         if (exitDomains.length) {
-            throw new CloudBaseError(`域名 [${exitDomains.join(', ')}] 已存在！`)
+            throw new CloudBaseError(
+                `域名 [${exitDomains.join(', ')}] 已存在！`
+            )
         }
 
         await createEnvDomain({
@@ -74,8 +78,9 @@ program
 program
     .command('env:domain:delete [envId]')
     .description('删除环境的安全域名')
-    .action(async function(envId?: string) {
-        const assignEnvId = await getEnvId(envId)
+    .action(async function(envId?: string, options?: any) {
+        const { configFile } = options.parent
+        const assignEnvId = await getEnvId(envId, configFile)
 
         const loadSpinner = ora('拉取环境安全域名中...').start()
 
@@ -117,7 +122,7 @@ program
 
         const deleted = await deleteEnvDomain({
             domainIds,
-            envId: assignEnvId,
+            envId: assignEnvId
         })
 
         successLog(`成功删除了 ${deleted} 个域名！`)

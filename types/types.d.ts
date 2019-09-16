@@ -31,6 +31,12 @@ export interface IConfig {
     credential?: Credential;
     ssh?: SSH;
 }
+export interface CloudBaseConfig {
+    envId: string;
+    functionRoot: string;
+    functions: ICloudFunction[];
+    servers?: ServerConfig[];
+}
 export interface IGetCredential {
     secretId?: string;
     secretKey?: string;
@@ -116,4 +122,15 @@ export interface IFunctionTriggerOptions {
     triggers?: ICloudFunctionTrigger[];
     triggerName?: string;
     envId: string;
+}
+export interface ILoginOptios {
+    key: boolean;
+    secretId?: string;
+    secretKey?: string;
+}
+export interface FunctionContext {
+    name: string;
+    envId: string;
+    config: CloudBaseConfig;
+    functions: ICloudFunction[];
 }

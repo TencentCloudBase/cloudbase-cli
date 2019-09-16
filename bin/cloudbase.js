@@ -26,7 +26,12 @@ notifier.notify({
 // 注册命令
 require('../lib')
 
-program.version(pkg.version)
+program.option(
+    '--config-file <path>',
+    '设置配置文件，默认为 ./cloudbaserc.js 或 .cloudbaserc.json'
+)
+
+program.version(pkg.version, '-V, --version', '输出当前 CloudBase CLI 版本')
 
 // 处理无效命令
 program.action(cmd => {
@@ -34,6 +39,8 @@ program.action(cmd => {
     console.log(`使用 ${chalk.bold('cloudbase -h')} 查看所有命令~`)
 })
 
+// 修改 help 提示信息
+program._helpDescription = '输出帮助信息'
 program.on('--help', function() {
     const tips = `\nTips:
 

@@ -39,6 +39,13 @@ export interface IConfig {
     ssh?: SSH
 }
 
+export interface CloudBaseConfig {
+    envId: string
+    functionRoot: string
+    functions: ICloudFunction[]
+    servers?: ServerConfig[]
+}
+
 export interface IGetCredential {
     secretId?: string
     secretKey?: string
@@ -132,7 +139,7 @@ export interface InvokeFunctionOptions {
 
 export interface IFunctionBatchOptions {
     functions: ICloudFunction[]
-    envId: string,
+    envId: string
     log?: boolean
 }
 
@@ -141,4 +148,21 @@ export interface IFunctionTriggerOptions {
     triggers?: ICloudFunctionTrigger[]
     triggerName?: string
     envId: string
+}
+
+export interface ILoginOptios {
+    key: boolean
+    secretId?: string
+    secretKey?: string
+}
+
+export interface FunctionContext {
+    // 函数名称
+    name: string
+    // 环境 id
+    envId: string
+    // 整体配置
+    config: CloudBaseConfig
+    // 配置文件中所有的函数
+    functions: ICloudFunction[]
 }

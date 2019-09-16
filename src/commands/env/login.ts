@@ -1,18 +1,19 @@
 import program from 'commander'
 import inquirer from 'inquirer'
-import { printCliTable, getEnvId } from '../utils'
-import { successLog } from '../logger'
+import { printCliTable, getEnvId } from '../../utils'
+import { successLog } from '../../logger'
 import {
     getLoginConfigList,
     updateLoginConfig,
     createLoginConfig
-} from '../env'
+} from '../../env'
 
 program
     .command('env:login:list [envId]')
     .description('列出环境登录配置')
-    .action(async function(envId?: string) {
-        const assignEnvId = await getEnvId(envId)
+    .action(async function(envId?: string, options?: any) {
+        const { configFile } = options.parent
+        const assignEnvId = await getEnvId(envId, configFile)
 
         const configList = await getLoginConfigList({
             envId: assignEnvId
@@ -38,8 +39,9 @@ program
 program
     .command('env:login:config [envId]')
     .description('配置环境登录方式')
-    .action(async function(envId?: string) {
-        const assignEnvId = await getEnvId(envId)
+    .action(async function(envId?: string, options?: any) {
+        const { configFile } = options.parent
+        const assignEnvId = await getEnvId(envId, configFile)
 
         const configList = await getLoginConfigList({
             envId: assignEnvId

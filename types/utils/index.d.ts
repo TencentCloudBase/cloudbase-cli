@@ -1,4 +1,4 @@
-import { IConfig, Credential, AuthSecret, SSH } from '../types';
+import { IConfig, Credential, AuthSecret, SSH, CloudBaseConfig } from '../types';
 export { printCliTable } from './cli-table';
 export { guid6 } from './uuid';
 export * from './request';
@@ -9,5 +9,5 @@ export declare function getCredential(): Promise<AuthSecret>;
 export declare function getSSHConfig(): SSH;
 export declare function getSSH(): Promise<SSH>;
 export declare function getCloudBaseConfig(): Promise<IConfig>;
-export declare function resolveCloudBaseConfig(): Promise<any>;
-export declare function getEnvId(envId: string): Promise<string>;
+export declare function resolveCloudBaseConfig(configPath?: string): Promise<CloudBaseConfig>;
+export declare function getEnvId(envId?: string, configPath?: string): Promise<string>;
