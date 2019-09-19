@@ -9,19 +9,23 @@ import { Credential } from '../types'
 import { warnLog } from '../logger'
 
 async function checkLogin() {
-    const tcbrc: Credential = getCredentialConfig()
+    const credential: Credential = getCredentialConfig()
     // 已有永久密钥
-    if (tcbrc.secretId && tcbrc.secretKey) {
+    if (credential.secretId && credential.secretKey) {
         return true
     }
 
-    // 如果存在临时密钥，校验临时密钥是否有效，是否需要续期
-    const tmpExpired = Number(tcbrc.tmpExpired) || 0
-    const now = Date.now()
-
-    if (now < tmpExpired) {
-        return true
+    // 存在临时密钥信息
+    if (credential.refreshToken) {
+        // 临时密钥在有效期内，可以直接使用
+        if (Date.now() < Number(credential.tmpExpired)) {
+            return true
+        } else if (Date.now() < Number(credential.expired)) {
+            // 临时密钥超过两小时有效期，但在 1 个月 refresh 有效期内，刷新临时密钥
+            return true
+        }
     }
+
     return false
 }
 
@@ -34,8 +38,12 @@ program
     .action(async function(options) {
         const checkSpin = ora('检验登录状态').start()
         const hasLogin = await checkLogin()
-        checkSpin.succeed('您已登录，无需再次登录！')
-        if (hasLogin) return
+        if (hasLogin) {
+            checkSpin.succeed('您已登录，无需再次登录！')
+            return
+        } else {
+            checkSpin.stop()
+        }
         // 兼容临时密钥和永久密钥登录
         let skey
         if (options.key || options.skey) {

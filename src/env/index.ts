@@ -48,7 +48,6 @@ export async function getEnvInfo(envId: string) {
 export async function listEnvs() {
     const res: any = await tcbService.request('DescribeEnvs')
     const { EnvList = [] } = res
-    console.log(res.EnvList[0].Functions)
     return EnvList
 }
 

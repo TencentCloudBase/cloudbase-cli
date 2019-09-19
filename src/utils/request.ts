@@ -74,8 +74,6 @@ export class CloudService {
             ...params
         }
 
-        // console.log(_params)
-
         req.deserialize(_params)
 
         return new Promise((resolve, reject) => {

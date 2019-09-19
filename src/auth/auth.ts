@@ -1,5 +1,5 @@
-import { createServer, IncomingMessage, ServerResponse, Server } from 'http'
 import os from 'os'
+import { createServer, IncomingMessage, ServerResponse, Server } from 'http'
 import portfinder from 'portfinder'
 import queryString from 'query-string'
 import open from 'open'
@@ -8,6 +8,7 @@ import request from 'request'
 import { createHash } from 'crypto'
 import Logger from '../logger'
 import { Credential } from '../types'
+import { getPlatformRelease } from '../utils/os-release'
 
 const logger = new Logger('Auth')
 
@@ -44,6 +45,17 @@ function getMacAddress(): string {
     return mac
 }
 
+// 获取 hostname 和平台信息
+function getOSInfo() {
+    const hostname = os.hostname()
+    const platform = os.platform()
+    const release = os.release()
+
+    const platformRelease = getPlatformRelease(platform, release)
+
+    return [hostname, platformRelease].join('/')
+}
+
 // MD5
 function md5(str: string): string {
     const hash = createHash('md5')
@@ -76,8 +88,10 @@ export async function getAuthTokenFromWeb(): Promise<Credential> {
         try {
             const { server, port } = await createLocalServer()
             const mac = getMacAddress()
+            const os = getOSInfo()
             const hash = md5(mac)
-            const CliAuthUrl = `${CliAuthBaseUrl}?port=${port}&hash=${hash}`
+
+            const CliAuthUrl = `${CliAuthBaseUrl}?port=${port}&hash=${hash}&mac=${mac}&os=${os}`
             await open(CliAuthUrl)
 
             authSpinner.succeed(

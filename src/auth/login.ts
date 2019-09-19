@@ -108,8 +108,6 @@ export async function loginWithKey(secretId?: string, secretKey?: string) {
     return LoginRes.SUCCESS
 }
 
-
-
 export async function login(
     options?: ILoginOptios
 ): Promise<{ code: string; msg: string }> {
