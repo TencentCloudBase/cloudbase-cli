@@ -42,7 +42,7 @@
     "ora": "^3.4.0",
     "portfinder": "^1.0.20",
     "query-string": "^6.8.1",
-    "request": "^2.88.0",
+    "tar-fs": "^2.0.0",
     "update-notifier": "^3.0.1"
   },
   "devDependencies": {

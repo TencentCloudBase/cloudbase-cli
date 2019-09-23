@@ -10,7 +10,9 @@ import { CloudBaseError } from '../error'
 
 export { printCliTable } from './cli-table'
 export { guid6 } from './uuid'
-export * from './request'
+export * from './qcloud-request'
+export * from './http-request'
+export * from './output'
 
 export async function zipDir(dirPath, outputPath) {
     return new Promise((resolve, reject) => {
@@ -143,7 +145,7 @@ export async function resolveCloudBaseConfig(
     const tcbrcPath = path.resolve('tcbrc.json')
     if (fs.existsSync(tcbrcPath)) {
         throw new CloudBaseError(
-            'tcrbrc.josn 配置文件已废弃，请使用 cloudbaserc.json 或 cloudbaserc.js 配置文件！'
+            'tcbrc.json 配置文件已废弃，请使用 cloudbaserc.json 或 cloudbaserc.js 配置文件！'
         )
     }
     // 支持 JS 和 JSON 配置语法

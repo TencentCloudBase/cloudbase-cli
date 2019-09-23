@@ -73,6 +73,7 @@ function errorHandler(err) {
     }
     // 3 空格，兼容中文字符编码长度问题
     console.log(logSymbols.error + ' ' + err.message)
+    process.emit('tcbExit')
 }
 
 process.on('uncaughtException', errorHandler)

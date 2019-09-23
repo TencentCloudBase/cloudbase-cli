@@ -150,7 +150,7 @@ export interface IFunctionTriggerOptions {
     envId: string
 }
 
-export interface ILoginOptios {
+export interface ILoginOptions {
     key: boolean
     secretId?: string
     secretKey?: string

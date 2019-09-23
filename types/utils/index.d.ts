@@ -1,7 +1,9 @@
 import { IConfig, Credential, AuthSecret, SSH, CloudBaseConfig } from '../types';
 export { printCliTable } from './cli-table';
 export { guid6 } from './uuid';
-export * from './request';
+export * from './qcloud-request';
+export * from './http-request';
+export * from './output';
 export declare function zipDir(dirPath: any, outputPath: any): Promise<unknown>;
 export declare function askForInput(question: any): Promise<string>;
 export declare function getCredentialConfig(): Credential;

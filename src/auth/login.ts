@@ -2,7 +2,7 @@ import { getAuthTokenFromWeb, refreshTmpToken } from './auth'
 import { getCredentialConfig, CloudService } from '../utils'
 import { ConfigItems } from '../constant'
 import { configStore } from '../utils/configstore'
-import { Credential, ILoginOptios } from '../types'
+import { Credential, ILoginOptions } from '../types'
 
 const tcbService = new CloudService('tcb', '2018-06-08')
 
@@ -109,7 +109,7 @@ export async function loginWithKey(secretId?: string, secretKey?: string) {
 }
 
 export async function login(
-    options?: ILoginOptios
+    options?: ILoginOptions
 ): Promise<{ code: string; msg: string }> {
     if (options && options.key) {
         const { secretId, secretKey } = options

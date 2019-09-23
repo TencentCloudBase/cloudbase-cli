@@ -123,7 +123,7 @@ export interface IFunctionTriggerOptions {
     triggerName?: string;
     envId: string;
 }
-export interface ILoginOptios {
+export interface ILoginOptions {
     key: boolean;
     secretId?: string;
     secretKey?: string;

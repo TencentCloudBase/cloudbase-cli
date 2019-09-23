@@ -1,14 +1,14 @@
 import os from 'os'
-import { createServer, IncomingMessage, ServerResponse, Server } from 'http'
+import http, { Server, IncomingMessage, ServerResponse } from 'http'
+import crypto from 'crypto'
 import portfinder from 'portfinder'
 import queryString from 'query-string'
 import open from 'open'
 import ora from 'ora'
-import request from 'request'
-import { createHash } from 'crypto'
 import Logger from '../logger'
 import { Credential } from '../types'
 import { getPlatformRelease } from '../utils/os-release'
+import { fetch } from '../utils'
 
 const logger = new Logger('Auth')
 
@@ -58,14 +58,14 @@ function getOSInfo() {
 
 // MD5
 function md5(str: string): string {
-    const hash = createHash('md5')
+    const hash = crypto.createHash('md5')
     hash.update(str)
     return hash.digest('hex')
 }
 
 async function createLocalServer(): Promise<ServerRes> {
     return new Promise(async (resolve, reject) => {
-        const server = createServer()
+        const server = http.createServer()
         try {
             const port = await getPort()
             server.listen(port, () => {
@@ -138,25 +138,16 @@ export async function refreshTmpToken(
     const hash = md5(mac)
     metaData.hash = hash
 
-    return new Promise((resolve, reject) => {
-        request(
-            {
-                url: refreshTokenUrl,
-                method: 'POST',
-                json: metaData
-            },
-            (err, res) => {
-                if (err) {
-                    reject(err)
-                    return
-                }
-                if (res.body.code !== 0) {
-                    reject(new Error(res.body.message))
-                    return
-                }
-                const { data: credential } = res.body
-                resolve(credential)
-            }
-        )
+    const res = await fetch(refreshTokenUrl, {
+        method: 'POST',
+        body: JSON.stringify(metaData),
+        headers: { 'Content-Type': 'application/json' }
     })
+
+    if (res.code !== 0) {
+        throw new Error(res.message)
+    }
+
+    const { data: credential } = res
+    return credential
 }

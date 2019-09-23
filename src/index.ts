@@ -22,11 +22,11 @@ import {
     invokeFunction
 } from './function'
 import { configStore } from './utils/configstore'
-import { ILoginOptios } from './types'
+import { ILoginOptions } from './types'
 
 export = class CloudBase {
     login: (
-        options: ILoginOptios
+        options: ILoginOptions
     ) => Promise<{ code: string; msg: string }> = login
     env = {
         list: listEnvs,

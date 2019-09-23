@@ -13,6 +13,15 @@ import { getVpcs, getSubnets } from './vpc'
 export * from './create'
 export * from './trigger'
 
+interface ICopyFunctionOptions {
+    envId: string
+    functionName: string
+    newFunctionName: string
+    targetEnvId: string
+    force?: boolean
+    copyConfig?: boolean
+}
+
 const scfService = new CloudService('scf', '2018-04-16', {
     Role: 'TCB_QcsRole',
     Stamp: 'MINI_QCBASE'
@@ -283,15 +292,6 @@ export async function batchInvokeFunctions(options: IFunctionBatchOptions) {
     )
 
     return await Promise.all(promises)
-}
-
-interface ICopyFunctionOptions {
-    envId: string
-    functionName: string
-    newFunctionName: string
-    targetEnvId: string
-    force?: boolean
-    copyConfig?: boolean
 }
 
 // 复制云函数

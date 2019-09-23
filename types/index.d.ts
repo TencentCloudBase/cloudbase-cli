@@ -1,10 +1,10 @@
 import './commands';
 import { listEnvs, createEnv, getEnvAuthDomains, createEnvDomain, deleteEnvDomain, getLoginConfigList, createLoginConfig, updateLoginConfig } from './env';
 import { createFunction, listFunction, deleteFunction, getFunctionDetail, getFunctionLog, updateFunctionConfig, createFunctionTriggers, deleteFunctionTrigger, invokeFunction } from './function';
-import { ILoginOptios } from './types';
+import { ILoginOptions } from './types';
 declare const _default: {
     new (secretId: any, secretKey: any): {
-        login: (options: ILoginOptios) => Promise<{
+        login: (options: ILoginOptions) => Promise<{
             code: string;
             msg: string;
         }>;
