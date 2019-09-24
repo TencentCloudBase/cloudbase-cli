@@ -1,5 +1,4 @@
 const fetch = require('node-fetch');
-const request = require('request');
 const HttpsProxyAgent = require('https-proxy-agent');
 
 module.exports = (url, options) => {
