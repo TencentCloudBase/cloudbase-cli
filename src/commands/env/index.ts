@@ -31,10 +31,10 @@ program
         ])
         printCliTable(head, tableData)
         // 不可用环境警告
-        const unavalibleEnv = data.find(item => item.Status === 'UNAVAILABLE')
-        if (unavalibleEnv) {
+        const unavailableEnv = data.find(item => item.Status === 'UNAVAILABLE')
+        if (unavailableEnv) {
             warnLog(
-                `您的环境中存在不可用的环境：[${unavalibleEnv.EnvId}]，请留意！`
+                `您的环境中存在不可用的环境：[${unavailableEnv.EnvId}]，请留意！`
             )
         }
     })

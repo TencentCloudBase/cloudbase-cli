@@ -13,6 +13,7 @@ export { guid6 } from './uuid'
 export * from './qcloud-request'
 export * from './http-request'
 export * from './output'
+export * from './time'
 
 export async function zipDir(dirPath, outputPath) {
     return new Promise((resolve, reject) => {
