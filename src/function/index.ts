@@ -19,7 +19,8 @@ interface ICopyFunctionOptions {
     newFunctionName: string
     targetEnvId: string
     force?: boolean
-    copyConfig?: boolean
+    copyConfig?: boolean,
+    codeSecret?: string
 }
 
 const scfService = new CloudService('scf', '2018-04-16', {
@@ -93,11 +94,12 @@ export async function batchDeleteFunctions({ names, envId }): Promise<void> {
 export async function getFunctionDetail(
     options
 ): Promise<Record<string, string>> {
-    const { functionName, envId } = options
+    const { functionName, envId, codeSecret } = options
     const res = await scfService.request('GetFunction', {
         FunctionName: functionName,
         Namespace: envId,
-        ShowCode: 'TRUE'
+        ShowCode: 'TRUE',
+        CodeSecret: codeSecret
     })
 
     const data: Record<string, any> = {}
@@ -150,7 +152,8 @@ export async function getFunctionDetail(
 // 批量获取函数信息
 export async function batchGetFunctionsDetail({
     names,
-    envId
+    envId,
+    codeSecret
 }): Promise<Record<string, string>[]> {
     const data: Record<string, string>[] = []
     const promises = names.map(name =>
@@ -158,7 +161,8 @@ export async function batchGetFunctionsDetail({
             try {
                 const info = await getFunctionDetail({
                     name,
-                    envId
+                    envId,
+                    codeSecret
                 })
                 data.push(info)
             } catch (e) {
@@ -296,7 +300,7 @@ export async function batchInvokeFunctions(options: IFunctionBatchOptions) {
 
 // 复制云函数
 export async function copyFunction(options: ICopyFunctionOptions) {
-    const { envId, functionName, newFunctionName, targetEnvId, force } = options
+    const { envId, functionName, newFunctionName, targetEnvId, force, codeSecret } = options
 
     if (!envId || !functionName || !newFunctionName) {
         throw new CloudBaseError('参数缺失')
@@ -307,6 +311,7 @@ export async function copyFunction(options: ICopyFunctionOptions) {
         NewFunctionName: newFunctionName,
         Namespace: envId,
         TargetNamespace: targetEnvId || envId,
-        Override: force ? true : false
+        Override: force ? true : false,
+        CodeSecret: codeSecret
     })
 }

@@ -2480,6 +2480,8 @@ class CopyFunctionRequest extends  AbstractModel {
 
         this.Override = ''
         this.CopyConfiguration = ''
+
+        this.CodeSecret = null;
     }
 
     /**
@@ -2496,7 +2498,8 @@ class CopyFunctionRequest extends  AbstractModel {
         this.Description = 'Description' in params ? params.Description : null;
         this.TargetRegion = 'TargetRegion' in params ? params.TargetRegion : null;
         this.CopyConfiguration = 'CopyConfiguration' in params ? params.CopyConfiguration : null
-        this.Override = 'Override' in params ? params.Override : null
+        this.Override = 'Override' in params ? params.Override : null;
+        this.CodeSecret = 'CodeSecret' in  params ? params.CodeSecret : null;
     }
 }
 

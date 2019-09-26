@@ -8,6 +8,7 @@ interface ICopyFunctionOptions {
     targetEnvId: string;
     force?: boolean;
     copyConfig?: boolean;
+    codeSecret?: string;
 }
 export declare function listFunction(options: IListFunctionOptions): Promise<Record<string, string>[]>;
 export declare function deleteFunction({ functionName, envId }: {
@@ -19,9 +20,10 @@ export declare function batchDeleteFunctions({ names, envId }: {
     envId: any;
 }): Promise<void>;
 export declare function getFunctionDetail(options: any): Promise<Record<string, string>>;
-export declare function batchGetFunctionsDetail({ names, envId }: {
+export declare function batchGetFunctionsDetail({ names, envId, codeSecret }: {
     names: any;
     envId: any;
+    codeSecret: any;
 }): Promise<Record<string, string>[]>;
 export declare function getFunctionLog(options: IFunctionLogOptions): Promise<Record<string, string>[]>;
 export declare function updateFunctionConfig(options: IUpdateFunctionConfigOptions): Promise<void>;

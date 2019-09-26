@@ -104,7 +104,8 @@ export interface ICreateFunctionOptions {
     envId: string
     force?: boolean
     base64Code?: string
-    log?: boolean
+    log?: boolean,
+    codeSecret?: string
 }
 
 export interface IListFunctionOptions {
