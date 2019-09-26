@@ -2231,6 +2231,8 @@ class UpdateFunctionCodeRequest extends  AbstractModel {
          */
         this.InstallDependency = null;
 
+
+        this.CodeSecret = null;
     }
 
     /**
@@ -2250,7 +2252,7 @@ class UpdateFunctionCodeRequest extends  AbstractModel {
         this.InlineZipFile = 'InlineZipFile' in params ? params.InlineZipFile : null;
         this.TempCosObjectName = 'TempCosObjectName' in params ? params.TempCosObjectName : null;
         this.InstallDependency = 'InstallDependency' in params ? params.InstallDependency : null;
-
+        this.CodeSecret = 'CodeSecret' in params ? params.CodeSecret : null;
     }
 }
 
@@ -3500,6 +3502,8 @@ class CreateFunctionRequest extends  AbstractModel {
          */
         this.ClsTopicId = null;
 
+
+        this.CodeSecret = null;
     }
 
     /**
@@ -3540,7 +3544,7 @@ class CreateFunctionRequest extends  AbstractModel {
         this.InstallDependency = 'InstallDependency' in params ? params.InstallDependency : null;
         this.ClsLogsetId = 'ClsLogsetId' in params ? params.ClsLogsetId : null;
         this.ClsTopicId = 'ClsTopicId' in params ? params.ClsTopicId : null;
-
+        this.CodeSecret = 'CodeSecret' in  params ? params.CodeSecret : null;
     }
 }
 
@@ -4561,6 +4565,7 @@ class GetFunctionRequest extends  AbstractModel {
          */
         this.ShowCode = null;
 
+        this.CodeSecret = null;
     }
 
     /**
@@ -4574,7 +4579,7 @@ class GetFunctionRequest extends  AbstractModel {
         this.Qualifier = 'Qualifier' in params ? params.Qualifier : null;
         this.Namespace = 'Namespace' in params ? params.Namespace : null;
         this.ShowCode = 'ShowCode' in params ? params.ShowCode : null;
-
+        this.CodeSecret = 'CodeSecret' in  params ? params.CodeSecret : null;
     }
 }
 
