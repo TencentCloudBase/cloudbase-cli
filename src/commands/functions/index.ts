@@ -63,6 +63,10 @@ const commands = [
         cmd: 'functions:deploy [functionName] [envId]',
         options: [
             {
+                flags: '--code-secret <codeSecret>',
+                desc: '传入此参数将保护代码，格式为 36 位大小字母和数字'
+            },
+            {
                 flags: '--force',
                 desc: '如果存在同名函数，上传后覆盖同名函数'
             }
@@ -86,12 +90,17 @@ const commands = [
     },
     {
         cmd: 'functions:detail [functionName] [envId]',
-        options: [],
+        options: [
+            {
+                flags: '--code-secret <codeSecret>',
+                desc: '代码加密的函数的 CodeSecret'
+            }
+        ],
         desc: '获取云函数信息',
         handler: async (name: string, envId: string, options) => {
             const { configFile } = options.parent
             const ctx = await getFunctionContext(name, envId, configFile)
-            await detail(ctx)
+            await detail(ctx, options)
         }
     },
     {
@@ -111,12 +120,17 @@ const commands = [
     },
     {
         cmd: 'functions:code:update <functionName> [envId]',
-        options: [],
+        options: [
+            {
+                flags: '--code-secret <codeSecret>',
+                desc: '传入此参数将保护代码，格式为 36 位大小字母和数字'
+            }
+        ],
         desc: '更新云函数代码',
         handler: async (name: string, envId: string, options) => {
             const { configFile } = options.parent
             const ctx = await getFunctionContext(name, envId, configFile)
-            await codeUpdate(ctx)
+            await codeUpdate(ctx, options)
         }
     },
     {
@@ -133,6 +147,10 @@ const commands = [
         cmd:
             'functions:copy <functionName> <newFunctionName> [envId] [targentEnvId]',
         options: [
+            {
+                flags: '--code-secret <codeSecret>',
+                desc: '代码加密的函数的 CodeSecret'
+            },
             {
                 flags: '--force',
                 desc: '如果目标环境下存在同名函数，覆盖原函数'
@@ -227,13 +245,6 @@ const commands = [
     }
 ]
 
-// const commonOptions = [
-//     {
-//         flags: '--config-file <path>',
-//         desc: '指定配置文件'
-//     }
-// ]
-
 // 注册命令
 commands.forEach(item => {
     let instance = program.command(item.cmd)
@@ -241,9 +252,7 @@ commands.forEach(item => {
     item.options.forEach(option => {
         instance = instance.option(option.flags, option.desc)
     })
-    // commonOptions.forEach(option => {
-    //     instance = instance.option(option.flags, option.desc)
-    // })
+
     instance.description(item.desc)
     instance.action(item.handler)
 })

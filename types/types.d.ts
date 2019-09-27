@@ -85,6 +85,7 @@ export interface ICreateFunctionOptions {
     force?: boolean;
     base64Code?: string;
     log?: boolean;
+    codeSecret?: string;
 }
 export interface IListFunctionOptions {
     limit?: number;

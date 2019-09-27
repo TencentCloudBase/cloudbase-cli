@@ -68,15 +68,18 @@ function logDetail(info, name) {
     console.log(chalk.green(`函数 [${name}] 信息：`) + '\n\n' + funcInfo)
 }
 
-export async function detail(ctx: FunctionContext) {
+export async function detail(ctx: FunctionContext, options) {
     const { envId, name, functions } = ctx
+
+    const { codeSecret } = options
 
     // 不指定云函数名称，获取配置文件中的所有函数信息
     if (!name) {
         const names = functions.map(item => item.name)
         const data = await batchGetFunctionsDetail({
             names,
-            envId
+            envId,
+            codeSecret
         })
         data.forEach(info => logDetail(info, name))
         return
@@ -84,7 +87,8 @@ export async function detail(ctx: FunctionContext) {
 
     const data = await getFunctionDetail({
         envId,
-        functionName: name
+        functionName: name,
+        codeSecret
     })
     logDetail(data, name)
 }

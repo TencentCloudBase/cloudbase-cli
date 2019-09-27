@@ -4,8 +4,10 @@ import { FunctionContext } from '../../types'
 import { CloudBaseError } from '../../error'
 import { updateFunctionCode } from '../../function'
 
-export async function codeUpdate(ctx: FunctionContext) {
+export async function codeUpdate(ctx: FunctionContext, options) {
     const { name, envId, config, functions } = ctx
+
+    const { codeSecret } = options
 
     if (!name) {
         throw new CloudBaseError('请指定函数名称！')
@@ -21,6 +23,7 @@ export async function codeUpdate(ctx: FunctionContext) {
         await updateFunctionCode({
             func,
             envId,
+            codeSecret,
             functionRootPath: path.join(process.cwd(), config.functionRoot)
         })
         spinner.succeed(`[${func.name}] 函数代码更新成功！`)

@@ -19,11 +19,19 @@ export async function createFunction(
         functionRootPath = '',
         envId,
         force = false,
-        base64Code = ''
+        base64Code = '',
+        codeSecret
     } = options
     let base64
     let packer: FunctionPacker
     const funcName = func.name
+
+    // 校验 CodeSecret 格式
+    if (codeSecret && !/^[A-Za-z0-9+=/]{1,160}$/.test(codeSecret)) {
+        throw new CloudBaseError(
+            'CodeSecret 格式错误，格式为 1-160 位大小字母，数字+=/'
+        )
+    }
 
     // 校验运行时
     const validRuntime = ['Nodejs8.9', 'Php7', 'Java8']
@@ -63,6 +71,8 @@ export async function createFunction(
         Code: {
             ZipFile: base64
         },
+        // 代码加密
+        CodeSecret: codeSecret,
         // 不可选择
         MemorySize: 256
     }
@@ -130,6 +140,7 @@ export async function batchCreateFunctions(
         functionRootPath = '',
         envId,
         force,
+        codeSecret,
         log = false
     } = options
     const promises = functions.map(func =>
@@ -139,9 +150,10 @@ export async function batchCreateFunctions(
                 log && spinner.start()
                 await createFunction({
                     func,
-                    functionRootPath,
                     envId,
-                    force
+                    force,
+                    codeSecret,
+                    functionRootPath
                 })
                 log && spinner.succeed(`[${func.name}] 函数部署成功`)
             } catch (e) {
@@ -156,10 +168,23 @@ export async function batchCreateFunctions(
 
 // 更新云函数代码
 export async function updateFunctionCode(options: ICreateFunctionOptions) {
-    const { func, functionRootPath = '', envId, base64Code = '' } = options
+    const {
+        func,
+        functionRootPath = '',
+        envId,
+        base64Code = '',
+        codeSecret
+    } = options
     let base64
     let packer
     const funcName = func.name
+
+    // 校验 CodeSecret 格式
+    if (codeSecret && !/^[A-Za-z0-9+=/]{1,160}$/.test(codeSecret)) {
+        throw new CloudBaseError(
+            'CodeSecret 格式错误，格式为 1-160 位大小字母，数字+=/'
+        )
+    }
 
     // 校验运行时
     const validRuntime = ['Nodejs8.9', 'Php7', 'Java8']
@@ -189,6 +214,7 @@ export async function updateFunctionCode(options: ICreateFunctionOptions) {
         FunctionName: funcName,
         Namespace: envId,
         ZipFile: base64,
+        CodeSecret: codeSecret,
         Handler: func.handler || 'index.main'
     }
 
@@ -196,8 +222,11 @@ export async function updateFunctionCode(options: ICreateFunctionOptions) {
         // 更新云函数代码
         await scfService.request('UpdateFunctionCode', params)
     } catch (e) {
-        throw new CloudBaseError(`[${funcName}] 函数代码更新失败： ${e.message}`, {
-            code: e.code
-        })
+        throw new CloudBaseError(
+            `[${funcName}] 函数代码更新失败： ${e.message}`,
+            {
+                code: e.code
+            }
+        )
     }
 }

@@ -8,7 +8,7 @@ import { FunctionContext } from '../../types'
 export async function deploy(ctx: FunctionContext, commandOptions) {
     const { name, envId, config, functions } = ctx
 
-    const { force } = commandOptions
+    const { force, codeSecret } = commandOptions
 
     let isBatchCreating = false
 
@@ -32,6 +32,7 @@ export async function deploy(ctx: FunctionContext, commandOptions) {
             force,
             functions,
             log: true,
+            codeSecret,
             functionRootPath: path.join(process.cwd(), config.functionRoot)
         })
     }
@@ -48,6 +49,7 @@ export async function deploy(ctx: FunctionContext, commandOptions) {
             force,
             envId,
             func: newFunction,
+            codeSecret,
             functionRootPath: path.join(process.cwd(), config.functionRoot)
         })
         createSpinner.succeed(`[${newFunction.name}] 函数部署成功！`)
@@ -69,6 +71,7 @@ export async function deploy(ctx: FunctionContext, commandOptions) {
                         envId,
                         force: true,
                         func: newFunction,
+                        codeSecret,
                         functionRootPath: path.join(
                             process.cwd(),
                             config.functionRoot

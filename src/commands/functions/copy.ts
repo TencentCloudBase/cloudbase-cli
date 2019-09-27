@@ -5,7 +5,7 @@ import { CloudBaseError } from '../../error'
 export async function copy(ctx, newFunctionName, targentEnvId, options) {
     const { name, envId } = ctx
 
-    const { force } = options
+    const { force, codeSecret } = options
 
     if (!name || !newFunctionName) {
         throw new CloudBaseError('请指定函数名称！')
@@ -14,6 +14,7 @@ export async function copy(ctx, newFunctionName, targentEnvId, options) {
     await copyFunction({
         force,
         envId,
+        codeSecret,
         newFunctionName,
         functionName: name,
         targetEnvId: targentEnvId || envId
