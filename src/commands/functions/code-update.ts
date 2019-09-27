@@ -3,9 +3,16 @@ import path from 'path'
 import { FunctionContext } from '../../types'
 import { CloudBaseError } from '../../error'
 import { updateFunctionCode } from '../../function'
+import { getEnvInfo } from '../../env'
 
 export async function codeUpdate(ctx: FunctionContext, options) {
     const { name, envId, config, functions } = ctx
+
+    const envInfo = await getEnvInfo(envId)
+
+    if (envInfo.Source === 'miniapp') {
+        throw new CloudBaseError('无法更新小程序云函数代码！')
+    }
 
     const { codeSecret } = options
 

@@ -4,9 +4,16 @@ import { FunctionContext } from '../../types'
 import { CloudBaseError } from '../../error'
 import { deleteFunction, batchDeleteFunctions } from '../../function'
 import { successLog } from '../../logger'
+import { getEnvInfo } from '../../env'
 
 export async function deleteFunc(ctx: FunctionContext) {
     const { name, envId, functions } = ctx
+
+    const envInfo = await getEnvInfo(envId)
+
+    if (envInfo.Source === 'miniapp') {
+        throw new CloudBaseError('无法删除小程序云函数！')
+    }
 
     let isBatchDelete = false
 

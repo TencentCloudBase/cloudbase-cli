@@ -4,9 +4,16 @@ import inquirer from 'inquirer'
 import { CloudBaseError } from '../../error'
 import { batchCreateFunctions, createFunction } from '../../function'
 import { FunctionContext } from '../../types'
+import { getEnvInfo } from '../../env'
 
 export async function deploy(ctx: FunctionContext, commandOptions) {
     const { name, envId, config, functions } = ctx
+
+    const envInfo = await getEnvInfo(envId)
+
+    if (envInfo.Source === 'miniapp') {
+        throw new CloudBaseError('无法部署小程序云函数！')
+    }
 
     const { force, codeSecret } = commandOptions
 
