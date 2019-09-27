@@ -38,14 +38,15 @@ program
         }
 
         const isDir = fs.statSync(resolveLocalPath).isDirectory()
-        let cancelLoading = loading('上传文件中')
+        const fileText = isDir ? '文件夹' : '文件'
+        let cancelLoading = loading(`上传${fileText}中`)
         if (isDir) {
             await storageService.uploadDirectory(resolveLocalPath, cloudPath)
         } else {
             await storageService.uploadFile(resolveLocalPath, cloudPath)
         }
         cancelLoading()
-        successLog('上传文件成功！')
+        successLog(`上传${fileText}成功！`)
     })
 
 program
@@ -64,11 +65,13 @@ program
         const resolveLocalPath = path.resolve(localPath)
 
         const { dir } = options
+        const fileText = dir ? '文件夹' : '文件'
+
         if (dir && !fs.existsSync(resolveLocalPath)) {
             throw new CloudBaseError('存储文件夹不存在！')
         }
 
-        let cancelLoading = loading('下载文件中')
+        const cancelLoading = loading(`下载${fileText}中`)
 
         if (dir) {
             await storageService.downloadDirectory(cloudPath, resolveLocalPath)
@@ -77,7 +80,7 @@ program
         }
 
         cancelLoading()
-        successLog('下载文件成功！')
+        successLog(`下载${fileText}成功！`)
     })
 
 program
@@ -90,6 +93,8 @@ program
         const storageService = await getStorageService(assignEnvId)
 
         const { dir } = options
+        const fileText = dir ? '文件夹' : '文件'
+        const cancelLoading = loading(`删除${fileText}中`)
 
         if (dir) {
             await storageService.deleteDirectory(cloudPath)
@@ -97,7 +102,8 @@ program
             await storageService.deleteFile([cloudPath])
         }
 
-        successLog('删除文件成功！')
+        cancelLoading()
+        successLog(`删除${fileText}成功！`)
     })
 
 program
@@ -167,7 +173,7 @@ program
 
         const acl = await storageService.getStorageAcl()
 
-        console.log(acl)
+        console.log(`权限类型：${acl}`)
     })
 
 program
@@ -189,4 +195,5 @@ program
         const storageService = await getStorageService(assignEnvId)
 
         await storageService.setStorageAcl(acl)
+        successLog('设置存储权限成功！')
     })
