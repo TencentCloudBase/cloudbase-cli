@@ -209,9 +209,13 @@ export async function updateFunctionConfig(
         Value: config.envVariables[key]
     }))
 
+    // 当不存在 L5 配置时，不修改 L5 状态，否则根据 true/false 进行修改
+    const l5Enable = typeof config.l5 === 'undefined' ? null : (config.l5 ? 'TRUE' : 'FALSE')
+
     const params: any = {
         FunctionName: functionName,
-        Namespace: envId
+        Namespace: envId,
+        L5Enable: l5Enable
     }
 
     // 修复参数存在 undefined 字段时，会出现鉴权失败的情况

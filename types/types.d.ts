@@ -64,6 +64,7 @@ export interface ICloudFunctionConfig {
     envVariables?: Record<string, string | number | boolean>;
     runtime?: string;
     vpc?: IFunctionVPC;
+    l5?: boolean;
 }
 export interface ICloudFunctionTrigger {
     name: string;

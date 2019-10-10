@@ -74,7 +74,9 @@ export async function createFunction(
         // 代码加密
         CodeSecret: codeSecret,
         // 不可选择
-        MemorySize: 256
+        MemorySize: 256,
+        // 是否开启 L5
+        L5Enable: func.config && func.config.l5 ? 'TRUE' : null
     }
 
     const { config } = func

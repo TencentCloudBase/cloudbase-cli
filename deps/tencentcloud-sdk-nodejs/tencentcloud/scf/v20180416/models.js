@@ -2762,6 +2762,7 @@ class UpdateFunctionConfigurationRequest extends  AbstractModel {
          */
         this.ClsTopicId = null;
 
+        this.L5Enable = null;
     }
 
     /**
@@ -2794,7 +2795,7 @@ class UpdateFunctionConfigurationRequest extends  AbstractModel {
         this.InstallDependency = 'InstallDependency' in params ? params.InstallDependency : null;
         this.ClsLogsetId = 'ClsLogsetId' in params ? params.ClsLogsetId : null;
         this.ClsTopicId = 'ClsTopicId' in params ? params.ClsTopicId : null;
-
+        this.L5Enable = 'L5Enable' in params ? params.L5Enable : null;
     }
 }
 
@@ -3507,6 +3508,8 @@ class CreateFunctionRequest extends  AbstractModel {
 
 
         this.CodeSecret = null;
+
+        this.L5Enable = null;
     }
 
     /**
@@ -3548,6 +3551,7 @@ class CreateFunctionRequest extends  AbstractModel {
         this.ClsLogsetId = 'ClsLogsetId' in params ? params.ClsLogsetId : null;
         this.ClsTopicId = 'ClsTopicId' in params ? params.ClsTopicId : null;
         this.CodeSecret = 'CodeSecret' in  params ? params.CodeSecret : null;
+        this.L5Enable = 'L5Enable' in params ? params.L5Enable : null;
     }
 }
 

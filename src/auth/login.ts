@@ -1,4 +1,4 @@
-import { getAuthTokenFromWeb, refreshTmpToken } from './auth'
+import { getAuthTokenFromWeb } from './auth'
 import { getCredentialConfig, CloudService } from '../utils'
 import { ConfigItems } from '../constant'
 import { configStore } from '../utils/configstore'
@@ -46,27 +46,34 @@ export async function loginWithToken() {
     const tcbrc: Credential = getCredentialConfig()
     // 已有永久密钥
     if (tcbrc.secretId && tcbrc.secretKey) {
-        return LoginRes.SUCCESS
+        try {
+            const { secretId, secretKey } = tcbrc
+            await checkAuth({
+                tmpSecretId: secretId,
+                tmpSecretKey: secretKey
+            })
+            return LoginRes.SUCCESS
+        } catch (e) {
+            // 删除无效的 secret
+            configStore.delete('secretId')
+            configStore.delete('secretKey')
+        }
     }
-    // 如果存在临时密钥，校验临时密钥是否有效，是否需要续期
-    const tmpExpired = Number(tcbrc.tmpExpired) || 0
-    let refreshExpired = Number(tcbrc.expired) || 0
-    const now = Date.now()
 
-    if (now < tmpExpired) {
-        return LoginRes.SUCCESS
+    // 校验临时密钥
+    if (tcbrc.refreshToken) {
+        try {
+            await checkAuth(tcbrc)
+            return LoginRes.SUCCESS
+        } catch (e) {
+            // 忽略错误，继续进行
+        }
     }
 
     let credential
 
     try {
-        if (now < refreshExpired) {
-            // 临时 token 过期，自动续期
-            credential = await refreshTmpToken(tcbrc)
-        } else {
-            // 通过腾讯云-云开发控制台获取授权
-            credential = await getAuthTokenFromWeb()
-        }
+        credential = await getAuthTokenFromWeb()
     } catch (e) {
         return LoginRes.UNKNOWN_ERROR(e.message)
     }
@@ -90,7 +97,16 @@ export async function loginWithKey(secretId?: string, secretKey?: string) {
     const tcbrc: Credential = await getCredentialConfig()
     // 已有永久密钥
     if (tcbrc.secretId && tcbrc.secretKey) {
-        return LoginRes.SUCCESS
+        try {
+            const { secretId, secretKey } = tcbrc
+            await checkAuth({
+                tmpSecretId: secretId,
+                tmpSecretKey: secretKey
+            })
+            return LoginRes.SUCCESS
+        } catch (e) {
+            // 忽略错误
+        }
     }
 
     if (!secretId || !secretKey) {

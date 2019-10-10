@@ -132,7 +132,7 @@ export async function getAuthTokenFromWeb(): Promise<Credential> {
 
 // 临时密钥过期后，进行续期
 export async function refreshTmpToken(
-    metaData: Credential
+    metaData: Credential & { isLogout?: boolean }
 ): Promise<Credential> {
     const mac = getMacAddress()
     const hash = md5(mac)

@@ -15,14 +15,13 @@ async function checkLogin() {
         return true
     }
 
-    // 存在临时密钥信息
+    // 尝试获取环境列表，判断是否登录
     if (credential.refreshToken) {
-        // 临时密钥在有效期内，可以直接使用
-        if (Date.now() < Number(credential.tmpExpired)) {
+        try {
+            await listEnvs()
             return true
-        } else if (Date.now() < Number(credential.expired)) {
-            // 临时密钥超过两小时有效期，但在 1 个月 refresh 有效期内，刷新临时密钥
-            return true
+        } catch (error) {
+            return false
         }
     }
 
