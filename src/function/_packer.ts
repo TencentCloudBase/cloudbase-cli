@@ -26,10 +26,13 @@ export class FunctionPacker {
     funcDistPath: string
     // 临时目录
     tmpPath: string
+    // 忽略文件模式
+    ignore: string | string[]
 
-    constructor(root: string, name: string) {
+    constructor(root: string, name: string, ignore: string | string[]) {
         this.name = name
         this.root = root
+        this.ignore = ignore
         this.funcPath = path.join(root, name)
     }
 
@@ -46,10 +49,12 @@ export class FunctionPacker {
         this.funcDistPath = path.join(this.tmpPath, this.name)
         // 清除原打包文件
         this.clean()
-        // 生成 zip 文件
+        // 生成存放 zip 文件的文件夹
         await makeDir(this.funcDistPath)
         const zipPath = path.resolve(this.funcDistPath, 'dist.zip')
-        await zipDir(this.funcPath, zipPath)
+        // 生成 zip 文件
+
+        await zipDir(this.funcPath, zipPath,  this.ignore)
         // 将 zip 文件转换成 base64
         const base64 = fs.readFileSync(zipPath).toString('base64')
         // 清除打包文件

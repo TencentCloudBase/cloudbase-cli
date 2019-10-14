@@ -82,6 +82,7 @@ export interface ICloudFunctionConfig {
     runtime?: string
     vpc?: IFunctionVPC
     l5?: boolean
+    installDependency: boolean
 }
 
 export interface ICloudFunctionTrigger {
@@ -96,6 +97,7 @@ export interface ICloudFunction {
     triggers: ICloudFunctionTrigger[]
     params?: Record<string, string>
     handler?: string
+    ignore?: string | string[]
 }
 
 export interface ICreateFunctionOptions {

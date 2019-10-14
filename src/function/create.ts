@@ -45,7 +45,7 @@ export async function createFunction(
 
     // CLI 从本地读取
     if (!base64Code) {
-        packer = new FunctionPacker(functionRootPath, funcName)
+        packer = new FunctionPacker(functionRootPath, funcName, func.ignore)
         const type: CodeType =
             func.config.runtime === 'Java8' ? CodeType.JavaFile : CodeType.File
         base64 = await packer.build(type)
@@ -94,8 +94,11 @@ export async function createFunction(
         SubnetId: (config.vpc && config.vpc.subnetId) || '',
         VpcId: (config.vpc && config.vpc.vpcId) || ''
     }
-    // Node 安装依赖
-    // func.config.runtime === 'Nodejs8.9' && (params.InstallDependency = true)
+    // 是否安装依赖
+    params.InstallDependency =
+        typeof config.installDependency === 'undefined'
+            ? null
+            : config.installDependency ? 'TRUE' : 'FALSE'
 
     try {
         // 创建云函数
@@ -200,7 +203,7 @@ export async function updateFunctionCode(options: ICreateFunctionOptions) {
 
     // CLI 从本地读取
     if (!base64Code) {
-        packer = new FunctionPacker(functionRootPath, funcName)
+        packer = new FunctionPacker(functionRootPath, funcName, func.ignore)
         const type: CodeType =
             func.config.runtime === 'Java8' ? CodeType.JavaFile : CodeType.File
         base64 = await packer.build(type)
@@ -212,12 +215,18 @@ export async function updateFunctionCode(options: ICreateFunctionOptions) {
         base64 = base64Code
     }
 
+    const installDependency =
+        typeof func.config.installDependency === 'undefined'
+            ? null
+            : func.config.installDependency ? 'TRUE' : 'FALSE'
+
     const params: any = {
         FunctionName: funcName,
         Namespace: envId,
         ZipFile: base64,
         CodeSecret: codeSecret,
-        Handler: func.handler || 'index.main'
+        Handler: func.handler || 'index.main',
+        InstallDependency: installDependency
     }
 
     try {

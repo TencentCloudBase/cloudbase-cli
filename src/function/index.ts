@@ -19,7 +19,7 @@ interface ICopyFunctionOptions {
     newFunctionName: string
     targetEnvId: string
     force?: boolean
-    copyConfig?: boolean,
+    copyConfig?: boolean
     codeSecret?: string
 }
 
@@ -70,7 +70,9 @@ export async function deleteFunction({ functionName, envId }): Promise<void> {
             Namespace: envId
         })
     } catch (e) {
-        throw new CloudBaseError(`[${functionName}] 删除操作失败：${e.message}！`)
+        throw new CloudBaseError(
+            `[${functionName}] 删除操作失败：${e.message}！`
+        )
     }
 }
 
@@ -210,7 +212,8 @@ export async function updateFunctionConfig(
     }))
 
     // 当不存在 L5 配置时，不修改 L5 状态，否则根据 true/false 进行修改
-    const l5Enable = typeof config.l5 === 'undefined' ? null : (config.l5 ? 'TRUE' : 'FALSE')
+    const l5Enable =
+        typeof config.l5 === 'undefined' ? null : config.l5 ? 'TRUE' : 'FALSE'
 
     const params: any = {
         FunctionName: functionName,
@@ -231,6 +234,12 @@ export async function updateFunctionConfig(
         VpcId: (config.vpc && config.vpc.vpcId) || ''
     }
 
+    // 自动安装依赖
+    params.InstallDependency =
+        typeof config.installDependency === 'undefined'
+            ? null
+            : config.installDependency ? 'TRUE' : 'FALSE'
+
     await scfService.request('UpdateFunctionConfiguration', params)
 }
 
@@ -249,7 +258,9 @@ export async function batchUpdateFunctionConfig(
                 })
                 log && successLog(`[${func.name}] 更新云函数配置成功！`)
             } catch (e) {
-                throw new CloudBaseError(`${func.name} 更新配置失败：${e.message}`)
+                throw new CloudBaseError(
+                    `${func.name} 更新配置失败：${e.message}`
+                )
             }
         })()
     )
@@ -294,7 +305,9 @@ export async function batchInvokeFunctions(options: IFunctionBatchOptions) {
                 }
                 return result
             } catch (e) {
-                throw new CloudBaseError(`${func.name} 函数调用失败：${e.message}`)
+                throw new CloudBaseError(
+                    `${func.name} 函数调用失败：${e.message}`
+                )
             }
         })()
     )
@@ -304,7 +317,14 @@ export async function batchInvokeFunctions(options: IFunctionBatchOptions) {
 
 // 复制云函数
 export async function copyFunction(options: ICopyFunctionOptions) {
-    const { envId, functionName, newFunctionName, targetEnvId, force, codeSecret } = options
+    const {
+        envId,
+        functionName,
+        newFunctionName,
+        targetEnvId,
+        force,
+        codeSecret
+    } = options
 
     if (!envId || !functionName || !newFunctionName) {
         throw new CloudBaseError('参数缺失')

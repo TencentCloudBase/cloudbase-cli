@@ -4,7 +4,7 @@ export { guid6 } from './uuid';
 export * from './qcloud-request';
 export * from './http-request';
 export * from './output';
-export declare function zipDir(dirPath: any, outputPath: any): Promise<unknown>;
+export declare function zipDir(dirPath: string, outputPath: string, ignore?: string | string[]): Promise<unknown>;
 export declare function askForInput(question: any): Promise<string>;
 export declare function getCredentialConfig(): Credential;
 export declare function getCredential(): Promise<AuthSecret>;
