@@ -1,6 +1,6 @@
-import ora from 'ora'
 import path from 'path'
 import inquirer from 'inquirer'
+import { loading } from '../../utils'
 import { CloudBaseError } from '../../error'
 import { batchCreateFunctions, createFunction } from '../../function'
 import { FunctionContext } from '../../types'
@@ -70,7 +70,7 @@ export async function deploy(ctx: FunctionContext, commandOptions) {
         }
     }
 
-    const createSpinner = ora('函数部署中...').start()
+    loading.start('函数部署中...')
 
     try {
         await createFunction({
@@ -80,10 +80,10 @@ export async function deploy(ctx: FunctionContext, commandOptions) {
             codeSecret,
             functionRootPath: path.join(process.cwd(), config.functionRoot)
         })
-        createSpinner.succeed(`[${newFunction.name}] 函数部署成功！`)
+        loading.succeed(`[${newFunction.name}] 函数部署成功！`)
     } catch (e) {
         // 询问是否覆盖同名函数
-        createSpinner.stop()
+        loading.stop()
         if (e.code === 'ResourceInUse.FunctionName') {
             const { force } = await inquirer.prompt({
                 type: 'confirm',
@@ -93,7 +93,7 @@ export async function deploy(ctx: FunctionContext, commandOptions) {
             })
 
             if (force) {
-                createSpinner.start()
+                loading.start('函数部署中...')
                 try {
                     await createFunction({
                         envId,
@@ -105,11 +105,9 @@ export async function deploy(ctx: FunctionContext, commandOptions) {
                             config.functionRoot
                         )
                     })
-                    createSpinner.succeed(
-                        `[${newFunction.name}] 函数部署成功！`
-                    )
+                    loading.succeed(`[${newFunction.name}] 函数部署成功！`)
                 } catch (e) {
-                    createSpinner.stop()
+                    loading.stop()
                     throw e
                 }
                 return

@@ -1,10 +1,9 @@
 import program from 'commander'
 import inquirer from 'inquirer'
-import ora from 'ora'
 import { login } from '../auth'
 import { listEnvs, initTcb } from '../env'
 import { CloudBaseError } from '../error'
-import { getCredentialConfig } from '../utils'
+import { getCredentialConfig, loading } from '../utils'
 import { Credential } from '../types'
 import { warnLog } from '../logger'
 
@@ -35,13 +34,13 @@ program
     .option('--skey', '使用永久密钥 + skey 登录')
     .description('登录腾讯云账号')
     .action(async function(options) {
-        const checkSpin = ora('检验登录状态').start()
+        loading.start('检验登录状态')
         const hasLogin = await checkLogin()
         if (hasLogin) {
-            checkSpin.succeed('您已登录，无需再次登录！')
+            loading.succeed('您已登录，无需再次登录！')
             return
         } else {
-            checkSpin.stop()
+            loading.stop()
         }
         // 兼容临时密钥和永久密钥登录
         let skey
@@ -72,7 +71,7 @@ program
                 throw new CloudBaseError('SecretID 或 SecretKey 不能为空')
             }
 
-            const cloudSpinner = ora('正在验证腾讯云密钥...').start()
+            loading.start('正在验证腾讯云密钥...')
 
             const res = await login({
                 key: true,
@@ -81,22 +80,22 @@ program
             })
 
             if (res.code === 'SUCCESS') {
-                cloudSpinner.succeed('登录成功！')
+                loading.succeed('登录成功！')
             } else {
-                cloudSpinner.fail(
+                loading.fail(
                     '腾讯云密钥验证失败，请检查密钥是否正确或终端网络是否可用！'
                 )
                 return
             }
         } else {
             // 使用临时密钥登录-支持自动续期
-            const authSpinner = ora('获取授权中！')
+            loading.start('获取授权中！')
             const res = await login()
 
             if (res.code === 'SUCCESS') {
-                authSpinner.succeed('登录成功！')
+                loading.succeed('登录成功！')
             } else {
-                authSpinner.fail(res.msg)
+                loading.fail(res.msg)
                 return
             }
         }
@@ -112,9 +111,9 @@ program
         } catch (e) {
             // 用户不存在
             if (e.code === 'ResourceNotFound.UserNotExists') {
-                const initSpin = ora('初始化云开发服务').start()
+                loading.start('初始化云开发服务')
                 await initTcb(skey)
-                initSpin.succeed('初始化成功！')
+                loading.succeed('初始化成功！')
             } else {
                 throw e
             }

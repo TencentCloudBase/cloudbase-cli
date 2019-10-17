@@ -1,9 +1,8 @@
 import program from 'commander'
-import ora from 'ora'
-import { listEnvs, createEnv, getEnvInfo } from '../../env'
-import { printCliTable } from '../../utils'
+import { listEnvs, createEnv, getEnvInfo, updateEnvInfo } from '../../env'
+import { printCliTable, loading, getEnvId } from '../../utils'
 import { CloudBaseError } from '../../error'
-import { successLog, warnLog } from '../../logger'
+import { warnLog, successLog } from '../../logger'
 
 import './domain'
 import './login'
@@ -71,21 +70,44 @@ program
             throw new CloudBaseError('环境名称不能为空！')
         }
 
+        loading.start('创建环境中')
+
         const res = await createEnv({
             alias
         })
 
+        loading.succeed('创建环境成功！')
+        loading.start('环境初始化中')
+
         if (res.Status === 'NORMAL') {
-            successLog('创建环境成功！')
+            loading.start('环境初始化成功')
             return
         }
 
         // 检查环境是否初始化成功
-        const initSpinner = ora('环境初始化中...').start()
         try {
             await checkEnvAvailability(res.EnvId)
-            initSpinner.succeed('环境初始化成功')
+            loading.succeed('环境初始化成功')
         } catch (e) {
-            initSpinner.fail(e.message)
+            loading.fail(e.message)
         }
+    })
+
+program
+    .command('env:rename <name> [envId]')
+    .description('重命名环境')
+    .action(async function(name: string, envId: string, options) {
+        if (!name) {
+            throw new CloudBaseError('环境名称不能为空！')
+        }
+
+        const { configFile } = options.parent
+        const assignEnvId = await getEnvId(envId, configFile)
+
+        await updateEnvInfo({
+            envId: assignEnvId,
+            alias: name
+        })
+
+        successLog('更新环境名成功 ！')
     })

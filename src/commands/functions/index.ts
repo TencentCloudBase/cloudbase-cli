@@ -28,8 +28,6 @@ async function getFunctionContext(
         )
     }
 
-    // TODO: 限制小程序环境的函数操作
-
     let { functions } = cloudBaseConfig
 
     const ctx: FunctionContext = {

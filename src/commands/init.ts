@@ -48,17 +48,17 @@ program
     .option('--server', '创建 node 项目')
     .description('创建并初始化一个新的项目')
     .action(async function(cmd) {
-        let cancelLoading = loading('拉取环境列表')
+        loading.start('拉取环境列表')
         let envData = []
         try {
             envData = (await listEnvs()) || []
         } catch (e) {
-            cancelLoading()
+            loading.stop()
             throw e
         }
-        cancelLoading()
+        loading.stop()
         const envs: string[] = envData
-            .map(item => `${item.EnvId}:${item.PackageName}`)
+            .map(item => `${item.Alias} - [${item.EnvId}:${item.PackageName}]`)
             .sort()
 
         if (!envs.length) {
@@ -88,11 +88,11 @@ program
             choices: ['PHP', 'Java', 'Node']
         })
 
-        cancelLoading = loading('拉取云开发模板列表中')
+        loading.start('拉取云开发模板列表中')
 
         const templateList = await fetch(listUrl)
 
-        cancelLoading()
+        loading.stop()
 
         const templates = templateList.filter(item => item.lang === lang)
 
@@ -127,7 +127,7 @@ program
             }
         }
 
-        cancelLoading = loading('下载文件中')
+        loading.start('下载文件中')
 
         if (cmd.server) {
             await copyServerTemplate(projectPath)
@@ -140,7 +140,7 @@ program
             await extractTemplate(projectPath, selectedTemplate.path)
         }
 
-        cancelLoading()
+        loading.stop()
 
         // 写入 envId
         const configFileJSONPath = path.join(projectPath, 'cloudbaserc.json')
@@ -163,5 +163,7 @@ program
 
         successLog(`创建项目 ${projectName} 成功！\n`)
 
-        console.log('🎉 欢迎贡献你的模板 👉 https://github.com/TencentCloudBase/cloudbase-examples')
+        console.log(
+            '🎉 欢迎贡献你的模板 👉 https://github.com/TencentCloudBase/cloudbase-examples'
+        )
     })

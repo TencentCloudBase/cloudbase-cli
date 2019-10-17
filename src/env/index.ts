@@ -1,4 +1,4 @@
-import { guid6 } from '../utils'
+import { random } from '../utils'
 import { CloudBaseError } from '../error'
 import { CloudService } from '../utils'
 export * from './domain'
@@ -19,7 +19,7 @@ export async function initTcb(skey: string) {
 export async function createEnv({ alias }) {
     const params = {
         Alias: alias,
-        EnvId: `${alias}-${guid6()}`,
+        EnvId: `${alias}-${random()}`,
         Source: 'qcloud'
     }
 

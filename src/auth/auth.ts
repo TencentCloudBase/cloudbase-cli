@@ -4,11 +4,10 @@ import crypto from 'crypto'
 import portfinder from 'portfinder'
 import queryString from 'query-string'
 import open from 'open'
-import ora from 'ora'
 import Logger from '../logger'
 import { Credential } from '../types'
 import { getPlatformRelease } from '../utils/os-release'
-import { fetch } from '../utils'
+import { fetch, loading } from '../utils'
 
 const logger = new Logger('Auth')
 
@@ -83,7 +82,7 @@ async function createLocalServer(): Promise<ServerRes> {
 // 打开云开发控制台，获取授权
 export async function getAuthTokenFromWeb(): Promise<Credential> {
     return new Promise(async (resolve, reject) => {
-        const authSpinner = ora('正在打开腾讯云获取授权').start()
+        loading.start('正在打开腾讯云获取授权')
 
         try {
             const { server, port } = await createLocalServer()
@@ -94,7 +93,7 @@ export async function getAuthTokenFromWeb(): Promise<Credential> {
             const CliAuthUrl = `${CliAuthBaseUrl}?port=${port}&hash=${hash}&mac=${mac}&os=${os}`
             await open(CliAuthUrl)
 
-            authSpinner.succeed(
+            loading.succeed(
                 '已打开云开发 CLI 授权页面，请在云开发 CLI 授权页面同意授权！'
             )
 
@@ -124,7 +123,7 @@ export async function getAuthTokenFromWeb(): Promise<Credential> {
             )
         } catch (err) {
             logger.error(err.message)
-            authSpinner.fail('获取授权失败！')
+            loading.fail('获取授权失败！')
             reject(err)
         }
     })

@@ -1,7 +1,6 @@
 import program from 'commander'
-import ora from 'ora'
 import inquirer from 'inquirer'
-import { printCliTable, getEnvId } from '../../utils'
+import { printCliTable, getEnvId, loading } from '../../utils'
 import { CloudBaseError } from '../../error'
 import { successLog } from '../../logger'
 import { getEnvAuthDomains, createEnvDomain, deleteEnvDomain } from '../../env'
@@ -82,18 +81,18 @@ program
         const { configFile } = options.parent
         const assignEnvId = await getEnvId(envId, configFile)
 
-        const loadSpinner = ora('拉取环境安全域名中...').start()
+        loading.start('拉取环境安全域名中')
 
         const domains = await getEnvAuthDomains({
             envId: assignEnvId
         })
 
         if (domains.length === 0) {
-            loadSpinner.fail('域名安全为空！')
+            loading.fail('域名安全为空！')
             return
         }
 
-        loadSpinner.succeed('拉取环境安全域名成功！')
+        loading.succeed('拉取环境安全域名成功！')
 
         const domainList = domains.map(item => item.Domain)
 

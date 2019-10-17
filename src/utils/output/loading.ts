@@ -1,31 +1,38 @@
 import ora from 'ora'
 
-export function loading(msg: string, timeout: number = 300) {
-    let spinner: ReturnType<typeof ora>
-    let running = false
-    let stopped = false
+/**
+ * 一般场景，不会出现混乱的情况，直接使用 start 方法
+ * 批量操作场景时，每个操作使用 init 返回 ora 实例，用于区分每个操作的结果
+ */
+class Loading {
+    private spinner: ReturnType<typeof ora>
 
-    // 300ms 后执行
-    setTimeout(() => {
-        if (stopped) {
-            return null
-        }
-
-        spinner = ora(msg)
-        spinner.start()
-        running = true
-    }, timeout)
-
-    const cancel = () => {
-        stopped = true
-        if (running) {
-            spinner.stop()
-            running = false
-        }
-        process.removeListener('tcbExit', cancel)
+    constructor() {
+        // @ts-ignore
+        process.on('tcbExit', this.stop)
     }
 
-    // @ts-ignore
-    process.on('tcbExit', cancel)
-    return cancel
+    init(): ReturnType<typeof ora> {
+        this.spinner = ora()
+        return this.spinner
+    }
+
+    start(text: string) {
+        this.init()
+        this.spinner.start(text)
+    }
+
+    stop() {
+        this.spinner && this.spinner.stop()
+    }
+
+    succeed(text: string) {
+        this.spinner && this.spinner.succeed(text)
+    }
+
+    fail(text: string) {
+        this.spinner && this.spinner.fail(text)
+    }
 }
+
+export const loading = new Loading()

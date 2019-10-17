@@ -1,9 +1,7 @@
-import ora from 'ora'
-import { CloudService } from '../utils'
+import { CloudService, FunctionPacker, CodeType, loading } from '../utils'
 import { CloudBaseError } from '../error'
 import { ICreateFunctionOptions } from '../types'
 import { createFunctionTriggers } from './trigger'
-import { FunctionPacker, CodeType } from './_packer'
 
 const scfService = new CloudService('scf', '2018-04-16', {
     Role: 'TCB_QcsRole',
@@ -98,7 +96,9 @@ export async function createFunction(
     params.InstallDependency =
         typeof config.installDependency === 'undefined'
             ? null
-            : config.installDependency ? 'TRUE' : 'FALSE'
+            : config.installDependency
+            ? 'TRUE'
+            : 'FALSE'
 
     try {
         // 创建云函数
@@ -150,9 +150,10 @@ export async function batchCreateFunctions(
     } = options
     const promises = functions.map(func =>
         (async () => {
-            const spinner = ora(`[${func.name}] 函数部署中...`)
+            const spinner = loading.init()
+            // console.log('开始')
             try {
-                log && spinner.start()
+                log && spinner.start(`[${func.name}] 函数部署中...`)
                 await createFunction({
                     func,
                     envId,
@@ -218,7 +219,9 @@ export async function updateFunctionCode(options: ICreateFunctionOptions) {
     const installDependency =
         typeof func.config.installDependency === 'undefined'
             ? null
-            : func.config.installDependency ? 'TRUE' : 'FALSE'
+            : func.config.installDependency
+            ? 'TRUE'
+            : 'FALSE'
 
     const params: any = {
         FunctionName: funcName,

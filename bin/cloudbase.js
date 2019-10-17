@@ -1,11 +1,18 @@
 #!/usr/bin/env node
-const program = require('commander')
 const chalk = require('chalk')
+const Sentry = require('@sentry/node')
+const program = require('commander')
 const logSymbols = require('log-symbols')
 const updateNotifier = require('update-notifier')
 const pkg = require('../package.json')
 
 const isBeta = pkg.version.indexOf('-') > -1
+
+// Sentry 错误上报
+Sentry.init({
+    release: pkg.version,
+    dsn: 'https://fff0077d06624655ad70d1ee25df419e@report.url.cn/sentry/1782'
+})
 
 // 检查更新
 const ONE_DAY = 86400000

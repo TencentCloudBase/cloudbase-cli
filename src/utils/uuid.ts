@@ -1,8 +1,13 @@
-// 环境 uuid
-export function guid6() {
-    return Math.floor((1 + Math.random()) * 0x1000000)
-        .toString(16)
-        .substring(1)
+import crypto from 'crypto'
+
+export function random(len: number = 8) {
+    if (!Number.isInteger(len)) {
+        throw new Error('len must be an integer')
+    }
+    return crypto
+        .randomBytes(len)
+        .toString('hex')
+        .substring(0, len)
 }
 
 export function uuidv4() {

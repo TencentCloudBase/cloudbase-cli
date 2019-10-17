@@ -20,6 +20,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@sentry/node": "^5.5.0",
     "@zeit/ncc": "^0.13.0",
     "archiver": "^3.0.0",
     "arg": "^4.1.1",
@@ -28,6 +29,7 @@
     "commander": "^3.0.1",
     "configstore": "^5.0.0",
     "del": "^3.0.0",
+    "dot-prop": "^5.1.0",
     "form-data": "^2.5.0",
     "fs-extra": "^7.0.1",
     "get-stream": "^5.1.0",
@@ -43,7 +45,9 @@
     "portfinder": "^1.0.20",
     "query-string": "^6.8.1",
     "tar-fs": "^2.0.0",
-    "update-notifier": "^3.0.1"
+    "update-notifier": "^3.0.1",
+    "write-file-atomic": "^3.0.1",
+    "xdg-basedir": "^4.0.0"
   },
   "devDependencies": {
     "@types/configstore": "^4.0.0",
