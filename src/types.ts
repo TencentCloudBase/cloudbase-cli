@@ -94,7 +94,7 @@ export interface ICloudFunctionTrigger {
 export interface ICloudFunction {
     name: string
     config: ICloudFunctionConfig
-    triggers: ICloudFunctionTrigger[]
+    triggers?: ICloudFunctionTrigger[]
     params?: Record<string, string>
     handler?: string
     ignore?: string | string[]
@@ -168,5 +168,5 @@ export interface FunctionContext {
     // 整体配置
     config: CloudBaseConfig
     // 配置文件中所有的函数
-    functions: ICloudFunction[]
+    functions?: ICloudFunction[]
 }
