@@ -1,3 +1,4 @@
 export default {
-    functionRoot: './'
+    functionRoot: './functions',
+    functions: []
 }

@@ -46,14 +46,12 @@ export async function invoke(ctx: FunctionContext, jsonStringParams: string) {
 
     const func = functions.find(item => item.name === name)
 
-    if (!func) {
-        throw new CloudBaseError('未找到相关函数配置，请检查函数名是否正确')
-    }
+    const configParams = func && func.params ? func.params : undefined
 
     const result = await invokeFunction({
         envId,
         functionName: name,
-        params: params || func.params
+        params: params || configParams
     })
     successLog(`[${name}] 调用成功\n响应结果：\n`)
     console.log(result)
