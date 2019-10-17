@@ -75,7 +75,7 @@ export interface ICloudFunctionTrigger {
 export interface ICloudFunction {
     name: string;
     config: ICloudFunctionConfig;
-    triggers: ICloudFunctionTrigger[];
+    triggers?: ICloudFunctionTrigger[];
     params?: Record<string, string>;
     handler?: string;
     ignore?: string | string[];
@@ -136,5 +136,5 @@ export interface FunctionContext {
     name: string;
     envId: string;
     config: CloudBaseConfig;
-    functions: ICloudFunction[];
+    functions?: ICloudFunction[];
 }

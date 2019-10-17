@@ -7,6 +7,7 @@ import { configStore } from './configstore'
 import { IConfig, Credential, AuthSecret, SSH, CloudBaseConfig } from '../types'
 import { ConfigItems } from '../constant'
 import { CloudBaseError } from '../error'
+import defaultCloudbaseConfig from './default-cloudbase-config'
 
 export { printCliTable } from './cli-table'
 export { guid6 } from './uuid'
@@ -180,7 +181,11 @@ export async function resolveCloudBaseConfig(
     if (!cloudbaseConfig.envId) {
         throw new CloudBaseError('配置文件无效，配置文件必须包含含环境 Id')
     }
-    return cloudbaseConfig
+    
+    return {
+        ...defaultCloudbaseConfig,
+        ...cloudbaseConfig
+    }
 }
 
 // 从命令行和配置文件中获取 envId

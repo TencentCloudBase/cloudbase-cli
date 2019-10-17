@@ -44,9 +44,30 @@ export async function deploy(ctx: FunctionContext, commandOptions) {
         })
     }
 
-    const newFunction = functions.find(item => item.name === name)
+    let newFunction
+    if (functions && functions.length > 0) {
+        newFunction = functions.find(item => item.name === name)
+    }
     if (!newFunction || !newFunction.name) {
-        throw new CloudBaseError(`函数 ${name} 配置不存在`)
+        const { useDefaultFunctionDeployOptions } = await inquirer.prompt({
+            type: 'confirm',
+            name: 'useDefaultFunctionDeployOptions',
+            message: '未找到函数发布配置，使用默认配置？',
+            default: false
+        })
+
+        if (useDefaultFunctionDeployOptions) {
+            newFunction = {
+                name,
+                config: {
+                    runtime: 'Nodejs8.9',
+                    installDependency: true
+                },
+                handler: 'index.main'
+            }
+        } else {
+            throw new CloudBaseError(`函数 ${name} 配置不存在`)
+        }
     }
 
     const createSpinner = ora('函数部署中...').start()
