@@ -1,7 +1,10 @@
-import { getAuthTokenFromWeb } from './auth'
-import { getCredentialConfig, CloudService } from '../utils'
+import {
+    CloudService,
+    authStore,
+    checkAndGetCredential,
+    getAuthTokenFromWeb
+} from '../utils'
 import { ConfigItems } from '../constant'
-import { configStore } from '../utils/configstore'
 import { Credential, ILoginOptions } from '../types'
 
 const tcbService = new CloudService('tcb', '2018-06-08')
@@ -43,31 +46,10 @@ const LoginRes = {
 
 // 打开腾讯云-云开发控制台，通过获取临时密钥登录，临时密钥可续期，最长时间为 1 个月
 export async function loginWithToken() {
-    const tcbrc: Credential = getCredentialConfig()
-    // 已有永久密钥
-    if (tcbrc.secretId && tcbrc.secretKey) {
-        try {
-            const { secretId, secretKey } = tcbrc
-            await checkAuth({
-                tmpSecretId: secretId,
-                tmpSecretKey: secretKey
-            })
-            return LoginRes.SUCCESS
-        } catch (e) {
-            // 删除无效的 secret
-            configStore.delete('secretId')
-            configStore.delete('secretKey')
-        }
-    }
+    const isLogin = await checkAndGetCredential()
 
-    // 校验临时密钥
-    if (tcbrc.refreshToken) {
-        try {
-            await checkAuth(tcbrc)
-            return LoginRes.SUCCESS
-        } catch (e) {
-            // 忽略错误，继续进行
-        }
+    if (isLogin) {
+        return LoginRes.SUCCESS
     }
 
     let credential
@@ -88,25 +70,16 @@ export async function loginWithToken() {
         return LoginRes.UNKNOWN_ERROR(e.message)
     }
 
-    configStore.set(ConfigItems.credentail, credential)
+    authStore.set(ConfigItems.credentail, credential)
     return LoginRes.SUCCESS
 }
 
 // 使用永久密钥登录
 export async function loginWithKey(secretId?: string, secretKey?: string) {
-    const tcbrc: Credential = await getCredentialConfig()
-    // 已有永久密钥
-    if (tcbrc.secretId && tcbrc.secretKey) {
-        try {
-            const { secretId, secretKey } = tcbrc
-            await checkAuth({
-                tmpSecretId: secretId,
-                tmpSecretKey: secretKey
-            })
-            return LoginRes.SUCCESS
-        } catch (e) {
-            // 忽略错误
-        }
+    const hasLogin = await checkAndGetCredential()
+
+    if (hasLogin) {
+        return LoginRes.SUCCESS
     }
 
     if (!secretId || !secretKey) {
@@ -119,7 +92,7 @@ export async function loginWithKey(secretId?: string, secretKey?: string) {
         return LoginRes.CHECK_LOGIN_FAILED
     }
 
-    configStore.set(ConfigItems.credentail, { secretId, secretKey })
+    authStore.set(ConfigItems.credentail, { secretId, secretKey })
 
     return LoginRes.SUCCESS
 }

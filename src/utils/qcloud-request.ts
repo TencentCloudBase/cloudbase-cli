@@ -1,7 +1,7 @@
 import tencentcloud from '../../deps/tencentcloud-sdk-nodejs'
 import { CloudBaseError } from '../error'
-import { getCredential } from './index'
 import { AuthSecret } from '../types'
+import { getCredentialWithoutCheck } from './auth'
 
 function isObject(x) {
     return typeof x === 'object' && !Array.isArray(x) && x !== null
@@ -50,7 +50,14 @@ export class CloudService {
 
         // 缓存 secret 信息
         if (!this.sdkCredential || !this.sdkCredential.secretId) {
-            const credential: AuthSecret = await getCredential()
+            const credential: AuthSecret = await getCredentialWithoutCheck()
+
+            if (!credential) {
+                throw new CloudBaseError(
+                    '无有效身份信息，请使用 cloudbase login 登录'
+                )
+            }
+
             const { secretId, secretKey, token } = credential
             this.sdkCredential = new Credential(secretId, secretKey, token)
         }

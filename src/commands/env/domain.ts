@@ -1,6 +1,6 @@
 import program from 'commander'
 import inquirer from 'inquirer'
-import { printCliTable, getEnvId, loading } from '../../utils'
+import { printCliTable, getEnvId, loadingFactory } from '../../utils'
 import { CloudBaseError } from '../../error'
 import { successLog } from '../../logger'
 import { getEnvAuthDomains, createEnvDomain, deleteEnvDomain } from '../../env'
@@ -80,6 +80,7 @@ program
     .action(async function(envId?: string, options?: any) {
         const { configFile } = options.parent
         const assignEnvId = await getEnvId(envId, configFile)
+        const loading = loadingFactory()
 
         loading.start('拉取环境安全域名中')
 

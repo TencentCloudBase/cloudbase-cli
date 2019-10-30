@@ -15,5 +15,5 @@ export declare class FunctionPacker {
     getFileCode(): Promise<string>;
     getJavaFileCode(): string;
     build(type: CodeType): Promise<string>;
-    clean(): Promise<void>;
+    clean(): void;
 }

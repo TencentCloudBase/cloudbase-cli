@@ -1,6 +1,6 @@
 import program from 'commander'
 import { listEnvs, createEnv, getEnvInfo, updateEnvInfo } from '../../env'
-import { printCliTable, loading, getEnvId } from '../../utils'
+import { printCliTable, loadingFactory, getEnvId } from '../../utils'
 import { CloudBaseError } from '../../error'
 import { warnLog, successLog } from '../../logger'
 
@@ -69,6 +69,8 @@ program
         if (!alias) {
             throw new CloudBaseError('环境名称不能为空！')
         }
+
+        const  loading = loadingFactory()
 
         loading.start('创建环境中')
 

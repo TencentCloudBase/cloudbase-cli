@@ -21,7 +21,7 @@ import {
     deleteFunctionTrigger,
     invokeFunction
 } from './function'
-import { configStore } from './utils/configstore'
+import { authStore } from './utils'
 import { ILoginOptions } from './types'
 
 export = class CloudBase {
@@ -61,8 +61,10 @@ export = class CloudBase {
 
     constructor(secretId, secretKey) {
         if (secretId && secretKey) {
-            configStore.set('secretId', secretId)
-            configStore.set('secretKey', secretKey)
+            authStore.set('secretId', secretId)
+            authStore.set('secretKey', secretKey)
         }
     }
 }
+
+exports.authStore = authStore

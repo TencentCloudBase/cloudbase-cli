@@ -7,7 +7,7 @@ import program from 'commander'
 import { CloudBaseError } from '../error'
 import { successLog } from '../logger'
 import { listEnvs } from '../env'
-import { fetch, fetchStream, loading } from '../utils'
+import { fetch, fetchStream, loadingFactory } from '../utils'
 
 // 云函数
 const listUrl =
@@ -48,6 +48,7 @@ program
     .option('--server', '创建 node 项目')
     .description('创建并初始化一个新的项目')
     .action(async function(cmd) {
+        const loading = loadingFactory()
         loading.start('拉取环境列表')
         let envData = []
         try {

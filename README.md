@@ -22,6 +22,10 @@ yarn global add @cloudbase/cli
 0.1.5
 ```
 
+## CloudBase CLI 运行要求
+
+**Node.js 8.6.0+**
+
 ## 文档
 
 请访问[教程与文档](https://tencentcloudbase.github.io/2019-09-03-cli/)了解详细的使用方法。

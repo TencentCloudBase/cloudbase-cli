@@ -3,7 +3,7 @@ import { FunctionContext } from '../../types'
 import { CloudBaseError } from '../../error'
 import { updateFunctionCode } from '../../function'
 import { getEnvInfo } from '../../env'
-import { loading } from '../../utils'
+import { loadingFactory } from '../../utils'
 
 export async function codeUpdate(ctx: FunctionContext, options) {
     const { name, envId, config, functions } = ctx
@@ -24,6 +24,8 @@ export async function codeUpdate(ctx: FunctionContext, options) {
     if (!func || !func.name) {
         throw new CloudBaseError(`函数 ${name} 配置不存在`)
     }
+
+    const loading = loadingFactory()
 
     loading.start(`[${func.name}] 函数代码更新中...`)
     try {

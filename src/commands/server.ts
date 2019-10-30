@@ -1,7 +1,7 @@
 import program from 'commander'
 import { NodeController } from '../server/node/controller'
 import { CloudBaseError } from '../error'
-import { getCredential, resolveCloudBaseConfig, getSSH, getEnvId } from '../utils'
+import { checkAndGetCredential, resolveCloudBaseConfig, getSSH, getEnvId } from '../utils'
 import { ServerConfig, ServerLanguageType } from '../types'
 
 function checkServers(servers) {
@@ -40,7 +40,7 @@ program
     .action(async function(name: string) {
         const servers = await getServers(name)
         const envId = await getEnvId('')
-        const credential = await getCredential()
+        const credential = await checkAndGetCredential()
         const sshConfig = await getSSH()
 
         servers.forEach(async server => {
@@ -64,7 +64,7 @@ program
     .action(async function(name, options) {
         const servers = await getServers(name)
         const server = servers[0]
-        const credential = await getCredential()
+        const credential = await checkAndGetCredential()
         const sshConfig = await getSSH()
 
         // console.log(options.lines)
@@ -83,7 +83,7 @@ program
     .action(async function(name: string) {
         const servers = await getServers(name)
         const server = servers[0]
-        const credential = await getCredential()
+        const credential = await checkAndGetCredential()
         const sshConfig = await getSSH()
 
         await new NodeController({
@@ -100,7 +100,7 @@ program
     .action(async function(name) {
         const servers = await getServers(name)
         const server = servers[0]
-        const credential = await getCredential()
+        const credential = await checkAndGetCredential()
         const sshConfig = await getSSH()
 
         await new NodeController({
@@ -114,7 +114,7 @@ program
     .command('server:show')
     .description('查看状态')
     .action(async function() {
-        const credential = await getCredential()
+        const credential = await checkAndGetCredential()
         const sshConfig = await getSSH()
 
         await new NodeController({

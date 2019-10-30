@@ -2,7 +2,7 @@
     "compileOnSave": true,
     "compilerOptions": {
         "module": "commonjs",
-        "target": "ES2017",
+        "target": "es2015",
         "moduleResolution": "node",
         "outDir": "lib",
         "removeComments": true,

@@ -3,29 +3,8 @@ import inquirer from 'inquirer'
 import { login } from '../auth'
 import { listEnvs, initTcb } from '../env'
 import { CloudBaseError } from '../error'
-import { getCredentialConfig, loading } from '../utils'
-import { Credential } from '../types'
+import { checkAndGetCredential, loadingFactory } from '../utils'
 import { warnLog } from '../logger'
-
-async function checkLogin() {
-    const credential: Credential = getCredentialConfig()
-    // 已有永久密钥
-    if (credential.secretId && credential.secretKey) {
-        return true
-    }
-
-    // 尝试获取环境列表，判断是否登录
-    if (credential.refreshToken) {
-        try {
-            await listEnvs()
-            return true
-        } catch (error) {
-            return false
-        }
-    }
-
-    return false
-}
 
 // 登录
 program
@@ -34,8 +13,9 @@ program
     .option('--skey', '使用永久密钥 + skey 登录')
     .description('登录腾讯云账号')
     .action(async function(options) {
+        const loading = loadingFactory()
         loading.start('检验登录状态')
-        const hasLogin = await checkLogin()
+        const hasLogin = await checkAndGetCredential()
         if (hasLogin) {
             loading.succeed('您已登录，无需再次登录！')
             return
@@ -89,7 +69,7 @@ program
             }
         } else {
             // 使用临时密钥登录-支持自动续期
-            loading.start('获取授权中！')
+            loading.start('获取授权中...')
             const res = await login()
 
             if (res.code === 'SUCCESS') {
@@ -98,6 +78,7 @@ program
                 loading.fail(res.msg)
                 return
             }
+            return
         }
 
         // 检测用户是否存在，不存在则初始化

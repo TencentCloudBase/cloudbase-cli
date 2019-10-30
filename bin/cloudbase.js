@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+const os = require('os')
 const chalk = require('chalk')
 const Sentry = require('@sentry/node')
 const program = require('commander')
@@ -11,7 +12,11 @@ const isBeta = pkg.version.indexOf('-') > -1
 // Sentry 错误上报
 Sentry.init({
     release: pkg.version,
-    dsn: 'https://fff0077d06624655ad70d1ee25df419e@report.url.cn/sentry/1782'
+    dsn: 'https://fff0077d06624655ad70d1ee25df419e@report.url.cn/sentry/1782',
+    httpsProxy: process.env.http_proxy || '',
+    serverName: os.hostname()
+    // 忽略错误，正则匹配
+    // ignoreErrors
 })
 
 // 检查更新
@@ -32,6 +37,20 @@ notifier.notify({
 
 // 注册命令
 require('../lib')
+
+const store = require('../lib/utils/store')
+
+// 设置用户的 uin
+Sentry.configureScope(scope => {
+    try {
+        const credential = store.authStore.get('credential') || {}
+        scope.setUser({
+            uin: credential.uin || ''
+        })
+    } catch (e) {
+        Sentry.captureException(e)
+    }
+})
 
 program.option(
     '--config-file <path>',
@@ -81,6 +100,9 @@ function errorHandler(err) {
     // 3 空格，兼容中文字符编码长度问题
     console.log(logSymbols.error + ' ' + err.message)
     process.emit('tcbExit')
+    setTimeout(() => {
+        process.exit(1)
+    }, 1000)
 }
 
 process.on('uncaughtException', errorHandler)

@@ -1,4 +1,4 @@
-import { CloudService, FunctionPacker, CodeType, loading } from '../utils'
+import { CloudService, FunctionPacker, CodeType, loadingFactory } from '../utils'
 import { CloudBaseError } from '../error'
 import { ICreateFunctionOptions } from '../types'
 import { createFunctionTriggers } from './trigger'
@@ -150,10 +150,10 @@ export async function batchCreateFunctions(
     } = options
     const promises = functions.map(func =>
         (async () => {
-            const spinner = loading.init()
+            const loading = loadingFactory()
             // console.log('开始')
             try {
-                log && spinner.start(`[${func.name}] 函数部署中...`)
+                log && loading.start(`[${func.name}] 函数部署中...`)
                 await createFunction({
                     func,
                     envId,
@@ -161,9 +161,9 @@ export async function batchCreateFunctions(
                     codeSecret,
                     functionRootPath
                 })
-                log && spinner.succeed(`[${func.name}] 函数部署成功`)
+                log && loading.succeed(`[${func.name}] 函数部署成功`)
             } catch (e) {
-                log && spinner.fail(`[${func.name}] 函数部署失败`)
+                log && loading.fail(`[${func.name}] 函数部署失败`)
                 throw new CloudBaseError(e.message)
             }
         })()

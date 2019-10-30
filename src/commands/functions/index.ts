@@ -69,7 +69,7 @@ const commands = [
                 desc: '如果存在同名函数，上传后覆盖同名函数'
             }
         ],
-        desc: '创建云函数',
+        desc: '部署云函数',
         handler: async (name: string, envId: string, options) => {
             const { configFile } = options.parent
             const ctx = await getFunctionContext(name, envId, configFile)

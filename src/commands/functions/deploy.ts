@@ -1,6 +1,6 @@
 import path from 'path'
 import inquirer from 'inquirer'
-import { loading } from '../../utils'
+import { loadingFactory } from '../../utils'
 import { CloudBaseError } from '../../error'
 import { batchCreateFunctions, createFunction } from '../../function'
 import { FunctionContext } from '../../types'
@@ -70,6 +70,8 @@ export async function deploy(ctx: FunctionContext, commandOptions) {
         }
     }
 
+    const loading = loadingFactory()
+
     loading.start('函数部署中...')
 
     try {
@@ -88,7 +90,7 @@ export async function deploy(ctx: FunctionContext, commandOptions) {
             const { force } = await inquirer.prompt({
                 type: 'confirm',
                 name: 'force',
-                message: '存在同名云函数，是否覆盖',
+                message: '存在同名云函数，是否覆盖？',
                 default: false
             })
 
