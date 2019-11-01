@@ -80,7 +80,9 @@ export class FunctionPacker {
                 return code
             } catch (error) {
                 this.clean()
-                throw new CloudBaseError(`函数代码打包失败：\n ${error.message}`)
+                throw new CloudBaseError(
+                    `函数代码打包失败：\n ${error.message}`
+                )
             }
         }
 
@@ -90,12 +92,15 @@ export class FunctionPacker {
                 return code
             } catch (error) {
                 this.clean()
-                throw new CloudBaseError(`函数代码打包失败：\n ${error.message}`)
+                throw new CloudBaseError(
+                    `函数代码打包失败：\n ${error.message}`
+                )
             }
         }
     }
 
     clean() {
-        del.sync([this.funcDistPath, this.tmpPath])
+        this.funcDistPath && del.sync([this.funcDistPath])
+        this.tmpPath && del.sync([this.tmpPath])
     }
 }

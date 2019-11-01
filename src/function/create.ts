@@ -1,4 +1,9 @@
-import { CloudService, FunctionPacker, CodeType, loadingFactory } from '../utils'
+import {
+    CloudService,
+    FunctionPacker,
+    CodeType,
+    loadingFactory
+} from '../utils'
 import { CloudBaseError } from '../error'
 import { ICreateFunctionOptions } from '../types'
 import { createFunctionTriggers } from './trigger'

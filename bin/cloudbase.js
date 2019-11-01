@@ -5,6 +5,7 @@ const Sentry = require('@sentry/node')
 const program = require('commander')
 const logSymbols = require('log-symbols')
 const updateNotifier = require('update-notifier')
+const address = require('address')
 const pkg = require('../package.json')
 
 const isBeta = pkg.version.indexOf('-') > -1
@@ -45,7 +46,8 @@ Sentry.configureScope(scope => {
     try {
         const credential = store.authStore.get('credential') || {}
         scope.setUser({
-            uin: credential.uin || ''
+            uin: credential.uin || '',
+            ip: address.ip() || ''
         })
     } catch (e) {
         Sentry.captureException(e)

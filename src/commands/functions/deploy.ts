@@ -63,7 +63,8 @@ export async function deploy(ctx: FunctionContext, commandOptions) {
                     runtime: 'Nodejs8.9',
                     installDependency: true
                 },
-                handler: 'index.main'
+                handler: 'index.main',
+                ignore: ['node_modules', 'node_modules/**/*']
             }
         } else {
             throw new CloudBaseError(`函数 ${name} 配置不存在`)

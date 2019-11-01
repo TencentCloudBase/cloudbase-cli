@@ -4,6 +4,7 @@ import crypto from 'crypto'
 import portfinder from 'portfinder'
 import queryString from 'query-string'
 import open from 'open'
+import address from 'address'
 
 import { Credential, AuthSecret } from '../types'
 export { printCliTable } from './cli-table'
@@ -33,18 +34,16 @@ async function getPort(): Promise<number> {
 }
 
 // 获取本机 Mac 地址
-function getMacAddress(): string {
-    const networkInterfaces = os.networkInterfaces()
-    const options = ['eth0', 'eth1', 'en0', 'en1']
-    let netInterface: os.NetworkInterfaceInfo[] = []
-    options.some(key => {
-        if (networkInterfaces[key]) {
-            netInterface = networkInterfaces[key]
-            return true
-        }
+function getMacAddress(): Promise<string> {
+    return new Promise(resolve => {
+        address.mac((err, mac) => {
+            if (err) {
+                resolve('')
+                return
+            }
+            resolve(mac)
+        })
     })
-    const mac: string = (netInterface.length && netInterface[0].mac) || ''
-    return mac
 }
 
 // 获取 hostname 和平台信息
@@ -69,7 +68,7 @@ function md5(str: string): string {
 export async function refreshTmpToken(
     metaData: Credential & { isLogout?: boolean }
 ): Promise<Credential> {
-    const mac = getMacAddress()
+    const mac = await getMacAddress()
     const hash = md5(mac)
     metaData.hash = hash
 
@@ -164,9 +163,13 @@ export async function getAuthTokenFromWeb(): Promise<Credential> {
 
         try {
             const { server, port } = await createLocalServer()
-            const mac = getMacAddress()
+            const mac = await getMacAddress()
             const os = getOSInfo()
             const hash = md5(mac)
+
+            if (!mac) {
+                throw new CloudBaseError('获取 Mac 地址失败，无法登录！')
+            }
 
             const CliAuthUrl = `${CliAuthBaseUrl}?port=${port}&hash=${hash}&mac=${mac}&os=${os}`
             await open(CliAuthUrl)
