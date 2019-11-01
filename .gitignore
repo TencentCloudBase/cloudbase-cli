@@ -66,5 +66,6 @@ example/**/tcb.json
 
 node_modules
 
-.vscode
 .idea
+.vscode/*
+!.vscode/launch.json

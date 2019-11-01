@@ -13,16 +13,27 @@ program
     .action(async function() {
         const data = await listEnvs()
         const head = [
-            'EnvId',
             'Alias',
+            'EnvId',
             'PackageName',
             'Source',
             'CreateTime',
             'Status'
         ]
-        const tableData = data.map(item => [
-            item.EnvId,
+
+        const sortData = data.sort((prev, next) => {
+            if (prev.Alias > next.Alias) {
+                return 1
+            }
+            if (prev.Alias < next.Alias) {
+                return -1
+            }
+            return 0
+        })
+
+        const tableData = sortData.map(item => [
             item.Alias,
+            item.EnvId,
             item.PackageName,
             item.Source === 'miniapp' ? '小程序' : '云开发',
             item.CreateTime,
@@ -70,7 +81,7 @@ program
             throw new CloudBaseError('环境名称不能为空！')
         }
 
-        const  loading = loadingFactory()
+        const loading = loadingFactory()
 
         loading.start('创建环境中')
 

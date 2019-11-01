@@ -40,7 +40,7 @@ require('../lib')
 
 const store = require('../lib/utils/store')
 
-// 设置用户的 uin
+// 设置 Sentry 上报的用户 uin
 Sentry.configureScope(scope => {
     try {
         const credential = store.authStore.get('credential') || {}

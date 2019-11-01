@@ -37,7 +37,13 @@ export async function getLoginConfigList({ envId }) {
 }
 
 // 创建登录方式
-export async function createLoginConfig({ envId, platform, appId, appSecret }) {
+export async function createLoginConfig({
+    envId,
+    platform,
+    appId,
+    appSecret,
+    status
+}) {
     const validPlatform = ['WECHAT-OPEN', 'WECHAT-PUBLIC']
     if (!validPlatform.includes(platform)) {
         throw new CloudBaseError(
@@ -51,7 +57,7 @@ export async function createLoginConfig({ envId, platform, appId, appSecret }) {
         Platform: platform,
         PlatformId: appId,
         PlatformSecret: rsaEncrypt(appSecret),
-        Status: 'ENABLE'
+        Status: status
     })
 }
 

@@ -7,6 +7,12 @@ import {
     updateLoginConfig,
     createLoginConfig
 } from '../../env'
+import { CloudBaseError } from '../../error'
+
+const platformMap = {
+    'WECHAT-OPEN': '微信开放平台',
+    'WECHAT-PUBLIC': '微信公众平台'
+}
 
 program
     .command('env:login:list [envId]')
@@ -19,26 +25,88 @@ program
             envId: assignEnvId
         })
 
-        const platformMap = {
-            'WECHAT-OPEN': '微信开放平台',
-            'WECHAT-PUBLIC': '微信公众平台'
-        }
-
-        const head = ['Id', 'Platform', 'CreateTime', 'Status']
+        const head = ['平台', '平台 Id', '创建时间', '状态']
         const tableData = configList.map(item => [
-            item.Id,
             platformMap[item.Platform]
                 ? platformMap[item.Platform]
                 : item.Platform,
+            item.PlatformId,
             item.CreateTime,
-            item.Status === 'ENABLE' ? '启用' : '禁用中'
+            item.Status === 'ENABLE' ? '启用' : '禁用'
         ])
         printCliTable(head, tableData)
     })
 
 program
-    .command('env:login:config [envId]')
-    .description('配置环境登录方式')
+    .command('env:login:create [envId]')
+    .description('创建环境登录配置')
+    .action(async function(envId?: string, options?: any) {
+        const { configFile } = options.parent
+        const assignEnvId = await getEnvId(envId, configFile)
+
+        const { platform, status, appId, appSecret } = await inquirer.prompt([
+            {
+                type: 'list',
+                name: 'platform',
+                choices: [
+                    {
+                        name: '微信公众平台',
+                        value: 'WECHAT-PUBLIC'
+                    },
+                    {
+                        name: '微信开放平台',
+                        value: 'WECHAT-OPEN'
+                    }
+                ],
+                message: '请选择登录方式：',
+                default: 'WECHAT-PUBLIC'
+            },
+            {
+                type: 'list',
+                name: 'status',
+                choices: [
+                    {
+                        name: '启用',
+                        value: 'ENABLE'
+                    },
+                    {
+                        name: '禁用',
+                        value: 'DISABLE'
+                    }
+                ],
+                message: '请选择登录方式状态：',
+                default: 'ENABLE'
+            },
+            {
+                type: 'input',
+                name: 'appId',
+                message: '请输入 AppId：'
+            },
+            {
+                type: 'input',
+                name: 'appSecret',
+                message: '请输入 AppSecret：'
+            }
+        ])
+
+        if (!appId || !appSecret) {
+            throw new CloudBaseError('appId 和 appSecret 不能为空！')
+        }
+
+        await createLoginConfig({
+            envId: assignEnvId,
+            appId,
+            appSecret,
+            platform,
+            status
+        })
+
+        successLog('创建登录方式成功！')
+    })
+
+program
+    .command('env:login:update [envId]')
+    .description('更新环境登录方式配置')
     .action(async function(envId?: string, options?: any) {
         const { configFile } = options.parent
         const assignEnvId = await getEnvId(envId, configFile)
@@ -47,42 +115,37 @@ program
             envId: assignEnvId
         })
 
-        const { type, status } = await inquirer.prompt([
+        const configChoices = configList.map(item => ({
+            name: `${platformMap[item.Platform]}：${item.PlatformId} [${
+                item.Status === 'ENABLE' ? '启用' : '禁用'
+            }]`,
+            value: item.Id,
+            short: `${platformMap[item.Platform]}：${item.PlatformId}`
+        }))
+
+        const { configId, status, appId, appSecret } = await inquirer.prompt([
             {
                 type: 'list',
-                name: 'type',
-                choices: ['微信公众平台', '微信开放平台'],
-                message: '请选择登录方式：',
-                default: '微信公众平台'
+                name: 'configId',
+                choices: configChoices,
+                message: '请选择需要配置的条目：'
             },
             {
                 type: 'list',
                 name: 'status',
-                choices: ['启用', '禁用'],
+                choices: [
+                    {
+                        name: '启用',
+                        value: 'ENABLE'
+                    },
+                    {
+                        name: '禁用',
+                        value: 'DISABLE'
+                    }
+                ],
                 message: '请选择登录方式状态：',
                 default: '启用'
-            }
-        ])
-
-        const platformMap = {
-            微信开放平台: 'WECHAT-OPEN',
-            微信公众平台: 'WECHAT-PUBLIC'
-        }
-
-        const platform = platformMap[type]
-        const item = configList.find(item => item.Platform === platform)
-
-        if (status === '禁用' && item) {
-            await updateLoginConfig({
-                status: status === '启用' ? 'ENABLE' : 'DISABLE',
-                configId: item.Id,
-                envId: assignEnvId
-            })
-            successLog(`${type} 登录方式禁用成功！`)
-            return
-        }
-
-        const { appId, appSecret } = await inquirer.prompt([
+            },
             {
                 type: 'input',
                 name: 'appId',
@@ -96,21 +159,13 @@ program
         ])
 
         // 检查平台配置是否存在，若存在则更新配置，否则创建配置
-        if (item && item.Id) {
-            await updateLoginConfig({
-                envId: assignEnvId,
-                configId: item.Id,
-                appId,
-                appSecret
-            })
-        } else {
-            await createLoginConfig({
-                envId: assignEnvId,
-                appId,
-                appSecret,
-                platform
-            })
-        }
+        await updateLoginConfig({
+            envId: assignEnvId,
+            configId,
+            appId,
+            appSecret,
+            status
+        })
 
-        successLog('配置环境登录方式成功！')
+        successLog('更新登录方式成功！')
     })
