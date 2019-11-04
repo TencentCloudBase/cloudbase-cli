@@ -58,8 +58,11 @@ program
             throw e
         }
         loading.stop()
-        const envs: string[] = envData
-            .map(item => `${item.Alias} - [${item.EnvId}:${item.PackageName}]`)
+        const envs: { name: string; value: string }[] = envData
+            .map(item => ({
+                name: `${item.Alias} - [${item.EnvId}:${item.PackageName}]`,
+                value: item.EnvId
+            }))
             .sort()
 
         if (!envs.length) {
@@ -159,7 +162,7 @@ program
 
         fs.writeFileSync(
             configFilePath,
-            configContent.replace('{{envId}}', env.split(':')[0])
+            configContent.replace('{{envId}}', env)
         )
 
         successLog(`创建项目 ${projectName} 成功！\n`)
