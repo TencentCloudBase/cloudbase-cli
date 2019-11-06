@@ -23,6 +23,7 @@
     "@sentry/node": "^5.7.1",
     "address": "^1.1.2",
     "archiver": "^3.1.1",
+    "@cloudbase/manager-node": "1.0.1",
     "arg": "^4.1.1",
     "chalk": "^2.4.2",
     "cli-table3": "^0.5.1",

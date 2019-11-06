@@ -21,6 +21,7 @@ import {
     deleteFunctionTrigger,
     invokeFunction
 } from './function'
+import * as storage from './storage'
 import { authStore } from './utils'
 import { ILoginOptions } from './types'
 
@@ -28,6 +29,7 @@ export = class CloudBase {
     login: (
         options: ILoginOptions
     ) => Promise<{ code: string; msg: string }> = login
+
     env = {
         list: listEnvs,
         create: createEnv,
@@ -59,6 +61,8 @@ export = class CloudBase {
         }
     }
 
+    storage = storage
+
     constructor(secretId, secretKey) {
         if (secretId && secretKey) {
             authStore.set('secretId', secretId)
@@ -66,5 +70,3 @@ export = class CloudBase {
         }
     }
 }
-
-exports.authStore = authStore

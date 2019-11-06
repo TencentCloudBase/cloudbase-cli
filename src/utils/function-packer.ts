@@ -100,7 +100,8 @@ export class FunctionPacker {
     }
 
     clean() {
-        this.funcDistPath && del.sync([this.funcDistPath])
-        this.tmpPath && del.sync([this.tmpPath])
+        // allow deleting the current working directory and outside
+        this.funcDistPath && del.sync([this.funcDistPath], { force: true })
+        this.tmpPath && del.sync([this.tmpPath], { force: true })
     }
 }

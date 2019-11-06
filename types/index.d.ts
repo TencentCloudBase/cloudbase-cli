@@ -1,6 +1,7 @@
 import './commands';
 import { listEnvs, createEnv, getEnvAuthDomains, createEnvDomain, deleteEnvDomain, getLoginConfigList, createLoginConfig, updateLoginConfig } from './env';
 import { createFunction, listFunction, deleteFunction, getFunctionDetail, getFunctionLog, updateFunctionConfig, createFunctionTriggers, deleteFunctionTrigger, invokeFunction } from './function';
+import * as storage from './storage';
 import { ILoginOptions } from './types';
 declare const _default: {
     new (secretId: any, secretKey: any): {
@@ -37,6 +38,7 @@ declare const _default: {
                 delete: typeof deleteFunctionTrigger;
             };
         };
+        storage: typeof storage;
     };
 };
 export = _default;

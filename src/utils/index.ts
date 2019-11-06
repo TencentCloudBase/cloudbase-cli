@@ -16,12 +16,9 @@ export * from './cloudbase-config'
 export * from './auth'
 export * from './check-auth'
 export * from './os-release'
+export * from './time'
 
-export async function zipDir(
-    dirPath: string,
-    outputPath: string,
-    ignore?: string | string[]
-) {
+export async function zipDir(dirPath, outputPath, ignore?: string | string[]) {
     return new Promise((resolve, reject) => {
         const output = fs.createWriteStream(outputPath)
         const archive = archiver('zip')
