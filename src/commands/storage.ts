@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import inquirer from 'inquirer'
 import program from 'commander'
 import CloudBase from '@cloudbase/manager-node'
 import { StorageService } from '@cloudbase/manager-node/types/storage'
@@ -23,6 +24,13 @@ async function getStorageService(envId: string): Promise<StorageService> {
         envId
     })
     return app.storage
+}
+
+const AclMap = {
+    READONLY: '所有用户可读，仅创建者和管理员可写',
+    PRIVATE: '仅创建者及管理员可读写',
+    ADMINWRITE: '所有用户可读，仅管理员可写',
+    ADMINONLY: '仅管理员可读写'
 }
 
 program
@@ -180,23 +188,36 @@ program
 
         const acl = await storageService.getStorageAcl()
 
-        console.log(`权限类型：${acl}`)
+        console.log(`当前权限【${AclMap[acl]}】`)
     })
 
 program
-    .command('storage:set-acl <acl> [envId]')
+    .command('storage:set-acl [envId]')
     .description('设置文件存储权限信息')
-    .action(async function(
-        acl: 'READONLY' | 'PRIVATE' | 'ADMINWRITE' | 'ADMINONLY',
-        envId: string,
-        options
-    ) {
-        const validAcl = ['READONLY', 'PRIVATE', 'ADMINWRITE', 'ADMINONLY']
-        if (!validAcl.includes(acl)) {
-            throw new CloudBaseError(
-                '非法的权限值，仅支持：READONLY, PRIVATE, ADMINWRITE, ADMINONLY'
-            )
-        }
+    .action(async function(envId: string, options) {
+        const { acl } = await inquirer.prompt({
+            type: 'list',
+            name: 'acl',
+            message: '选择权限',
+            choices: [
+                {
+                    name: '所有用户可读，仅创建者和管理员可写',
+                    value: 'READONLY'
+                },
+                {
+                    name: '仅创建者及管理员可读写',
+                    value: 'PRIVATE'
+                },
+                {
+                    name: '所有用户可读，仅管理员可写',
+                    value: 'ADMINWRITE'
+                },
+                {
+                    name: '仅管理员可读写',
+                    value: 'ADMINONLY'
+                }
+            ]
+        })
         const { configFile } = options.parent
         const assignEnvId = await getEnvId(envId, configFile)
         const storageService = await getStorageService(assignEnvId)
