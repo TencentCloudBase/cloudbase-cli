@@ -1,6 +1,7 @@
 import fs from 'fs'
-import tar from 'tar-fs'
+import chalk from 'chalk'
 import path from 'path'
+import tar from 'tar-fs'
 import fse from 'fs-extra'
 import inquirer from 'inquirer'
 import program from 'commander'
@@ -41,6 +42,17 @@ async function copyServerTemplate(projectPath: string) {
         'server/node'
     )
     fse.copySync(templatePath, projectPath)
+}
+
+// 项目初始化成功后打印提示语
+function initSuccessOutput(projectName) {
+    successLog(`创建项目 ${projectName} 成功！\n`)
+    const command = chalk.bold.cyan(`cd ${projectName}`)
+    console.log(`👉 运行 ${command} 开始您的项目！\n`)
+
+    console.log(
+        '🎉 欢迎贡献你的模板 👉 https://github.com/TencentCloudBase/cloudbase-examples'
+    )
 }
 
 program
@@ -152,9 +164,10 @@ program
         const configFilePath = [configFileJSPath, configFileJSONPath].find(
             item => fs.existsSync(item)
         )
+
         // 配置文件未找到
         if (!configFilePath) {
-            successLog(`创建项目 ${projectName} 成功`)
+            initSuccessOutput(projectName)
             return
         }
 
@@ -164,10 +177,5 @@ program
             configFilePath,
             configContent.replace('{{envId}}', env)
         )
-
-        successLog(`创建项目 ${projectName} 成功！\n`)
-
-        console.log(
-            '🎉 欢迎贡献你的模板 👉 https://github.com/TencentCloudBase/cloudbase-examples'
-        )
+        initSuccessOutput(projectName)
     })

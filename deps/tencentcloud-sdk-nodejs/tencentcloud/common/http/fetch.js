@@ -6,8 +6,10 @@ module.exports = (url, options) => {
     ...options
   };
 
-  if (!options.agent && process.env.http_proxy) {
-    instanceOptions.agent = new HttpsProxyAgent(process.env.http_proxy);
+  const proxy = process.env.http_proxy || process.env.HTTP_PROXY
+
+  if (!options.agent && proxy) {
+    instanceOptions.agent = new HttpsProxyAgent(proxy);
   }
 
   return fetch(url, instanceOptions);

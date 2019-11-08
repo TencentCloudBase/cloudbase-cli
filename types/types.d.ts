@@ -1,4 +1,11 @@
 import { CloudBaseError } from './error';
+declare global {
+    namespace NodeJS {
+        interface Process {
+            IS_DEBUG: boolean;
+        }
+    }
+}
 export declare type TExportFunctionVoid = () => Promise<void | CloudBaseError>;
 export interface PermanentCredential {
     secretId?: string;
@@ -32,9 +39,9 @@ export interface IConfig {
     ssh?: SSH;
 }
 export interface CloudBaseConfig {
-    envId: string;
-    functionRoot: string;
-    functions: ICloudFunction[];
+    envId?: string;
+    functionRoot?: string;
+    functions?: ICloudFunction[];
     servers?: ServerConfig[];
 }
 export interface IGetCredential {

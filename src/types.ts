@@ -1,5 +1,15 @@
 import { CloudBaseError } from './error'
 
+/* eslint-disable */
+declare global {
+    namespace NodeJS {
+        interface Process {
+            IS_DEBUG: boolean
+        }
+    }
+}
+/* eslint-enable */
+
 export type TExportFunctionVoid = () => Promise<void | CloudBaseError>
 
 export interface PermanentCredential {
@@ -40,9 +50,9 @@ export interface IConfig {
 }
 
 export interface CloudBaseConfig {
-    envId: string
-    functionRoot: string
-    functions: ICloudFunction[]
+    envId?: string
+    functionRoot?: string
+    functions?: ICloudFunction[]
     servers?: ServerConfig[]
 }
 
@@ -107,7 +117,7 @@ export interface ICreateFunctionOptions {
     envId: string
     force?: boolean
     base64Code?: string
-    log?: boolean,
+    log?: boolean
     codeSecret?: string
 }
 

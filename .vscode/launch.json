@@ -1,5 +1,5 @@
 {
-    // 使用 IntelliSense 了解相关属性。 
+    // 使用 IntelliSense 了解相关属性。
     // 悬停以查看现有属性的描述。
     // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
@@ -7,14 +7,16 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "Launch Program",
+            "program": "${workspaceFolder}/src/utils/runtime/nodejs/bootstrap.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Debug: cloudbase logout",
             "program": "${workspaceFolder}/bin/cloudbase.js",
-            "args": [
-                "logout"
-            ],
-            "outFiles": [
-                "${workspaceFolder}/lib/**/*.js"
-            ]
+            "args": ["logout"],
+            "outFiles": ["${workspaceFolder}/lib/**/*.js"]
         }
     ]
 }

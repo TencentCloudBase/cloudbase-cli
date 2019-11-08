@@ -10,6 +10,22 @@ const pkg = require('../package.json')
 
 const isBeta = pkg.version.indexOf('-') > -1
 
+const userNodeVersion = Number(
+    process.versions.node
+        .split('.')
+        .slice(0, 2)
+        .join('.')
+)
+
+// Node 版本检验提示
+if (userNodeVersion < 8.6) {
+    console.log(
+        chalk.bold.red(
+            '您的 Node 版本较低，CloudBase CLI 可能无法正常运行，请升级 Node 到 v8.6.0 以上！\n'
+        )
+    )
+}
+
 // Sentry 错误上报
 Sentry.init({
     release: pkg.version,
@@ -54,10 +70,12 @@ Sentry.configureScope(scope => {
     }
 })
 
+// 设置 options 选项
 program.option(
     '--config-file <path>',
     '设置配置文件，默认为 ./cloudbaserc.js 或 .cloudbaserc.json'
 )
+program.option('--debug', 'open debug mode')
 
 program.version(pkg.version, '-V, --version', '输出当前 CloudBase CLI 版本')
 
@@ -92,6 +110,8 @@ if (process.argv.length < 3) {
 }
 
 program.parse(process.argv)
+
+process.IS_DEBUG = program.debug
 
 function errorHandler(err) {
     const stackIngoreErrors = ['TencentCloudSDKHttpException', 'CloudBaseError']

@@ -55,7 +55,7 @@ export async function resolveCloudBaseConfig(
         !fs.existsSync(cloudbasePath) ||
         !cloudbasePath.match(/.js$|.json$/g)
     ) {
-        throw new CloudBaseError('配置文件不存在')
+        return {}
     }
     const localCloudBaseConfig = await import(cloudbasePath)
     if (!localCloudBaseConfig.envId) {

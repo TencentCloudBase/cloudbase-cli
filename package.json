@@ -1,67 +1,73 @@
 {
-  "name": "@cloudbase/cli",
-  "version": "0.3.0",
-  "description": "",
-  "main": "lib/index.js",
-  "scripts": {
-    "build": "rimraf lib types && tsc",
-    "eslint": "eslint \"./**/*.ts\"",
-    "test": "jest --runInBand --forceExit --detectOpenHandles --coverage --verbose --testTimeout=10000",
-    "publish": "node scripts/publish.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/TencentCloudBase/cloud-base-cli.git"
-  },
-  "bin": {
-    "tcb": "./bin/tcb.js",
-    "cloudbase": "./bin/cloudbase.js"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@sentry/node": "^5.7.1",
-    "address": "^1.1.2",
-    "archiver": "^3.1.1",
-    "@cloudbase/manager-node": "1.0.1",
-    "arg": "^4.1.1",
-    "chalk": "^2.4.2",
-    "cli-table3": "^0.5.1",
-    "commander": "^3.0.2",
-    "del": "^5.1.0",
-    "dot-prop": "^5.1.0",
-    "form-data": "^2.5.0",
-    "fs-extra": "^8.1.0",
-    "get-stream": "^5.1.0",
-    "https-proxy-agent": "^2.2.4",
-    "inquirer": "^6.5.0",
-    "is-stream": "^2.0.0",
-    "log-symbols": "^3.0.0",
-    "make-dir": "^3.0.0",
-    "node-fetch": "^2.6.0",
-    "node-ssh": "^6.0.0",
-    "open": "^7.0.0",
-    "ora": "^4.0.2",
-    "portfinder": "^1.0.20",
-    "query-string": "^6.8.1",
-    "tar-fs": "^2.0.0",
-    "update-notifier": "^3.0.1",
-    "write-file-atomic": "^3.0.1",
-    "xdg-basedir": "^4.0.0"
-  },
-  "devDependencies": {
-    "@types/configstore": "^4.0.0",
-    "@types/jest": "^24.0.17",
-    "@types/node": "^12.7.2",
-    "@types/request": "^2.48.1",
-    "@typescript-eslint/eslint-plugin": "^1.11.0",
-    "@typescript-eslint/parser": "^1.11.0",
-    "eslint": "^5.16.0",
-    "eslint-config-prettier": "^5.1.0",
-    "eslint-plugin-prettier": "^3.1.0",
-    "jest": "^24.9.0",
-    "rimraf": "^3.0.0",
-    "ts-jest": "^24.0.2",
-    "typescript": "^3.5.2"
-  }
+    "name": "@cloudbase/cli",
+    "version": "0.3.0",
+    "description": "cli tool for cloudbase",
+    "main": "lib/index.js",
+    "scripts": {
+        "build": "rimraf lib types && tsc",
+        "eslint": "eslint \"./**/*.ts\"",
+        "test": "jest --runInBand --forceExit --detectOpenHandles --coverage --verbose --testTimeout=10000",
+        "publish": "node scripts/publish.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/TencentCloudBase/cloud-base-cli.git"
+    },
+    "bin": {
+        "tcb": "./bin/tcb.js",
+        "cloudbase": "./bin/cloudbase.js"
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "npm run build && git add ."
+        }
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@sentry/node": "^5.7.1",
+        "address": "^1.1.2",
+        "archiver": "^3.1.1",
+        "@cloudbase/manager-node": "1.0.1",
+        "arg": "^4.1.1",
+        "chalk": "^2.4.2",
+        "cli-table3": "^0.5.1",
+        "commander": "^3.0.2",
+        "del": "^5.1.0",
+        "dot-prop": "^5.1.0",
+        "form-data": "^2.5.0",
+        "fs-extra": "^8.1.0",
+        "get-stream": "^5.1.0",
+        "https-proxy-agent": "^2.2.4",
+        "inquirer": "^6.5.0",
+        "is-stream": "^2.0.0",
+        "log-symbols": "^3.0.0",
+        "make-dir": "^3.0.0",
+        "node-fetch": "^2.6.0",
+        "node-ssh": "^6.0.0",
+        "open": "^7.0.0",
+        "ora": "^4.0.2",
+        "portfinder": "^1.0.20",
+        "query-string": "^6.8.1",
+        "tar-fs": "^2.0.0",
+        "update-notifier": "^3.0.1",
+        "write-file-atomic": "^3.0.1",
+        "xdg-basedir": "^4.0.0"
+    },
+    "devDependencies": {
+        "@types/configstore": "^4.0.0",
+        "@types/jest": "^24.0.17",
+        "@types/node": "^12.7.2",
+        "@types/request": "^2.48.1",
+        "@typescript-eslint/eslint-plugin": "^1.11.0",
+        "@typescript-eslint/parser": "^1.11.0",
+        "eslint": "^5.16.0",
+        "eslint-config-prettier": "^5.1.0",
+        "eslint-plugin-prettier": "^3.1.0",
+        "husky": "^3.0.9",
+        "jest": "^24.9.0",
+        "rimraf": "^3.0.0",
+        "ts-jest": "^24.0.2",
+        "typescript": "^3.5.2"
+    }
 }
