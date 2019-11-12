@@ -13,6 +13,7 @@ import { triggerCreate } from './trigger-create'
 import { triggerDelete } from './trigger-delete'
 import { invoke } from './invoke'
 import { copy } from './copy'
+import { codeDownload } from './code-download'
 
 async function getFunctionContext(
     name: string,
@@ -55,6 +56,22 @@ const commands = [
             const { configFile } = options.parent
             const ctx = await getFunctionContext('', envId, configFile)
             await list(ctx, options)
+        }
+    },
+    {
+        cmd: 'functions:download <functionName> [dest] [envId]',
+        options: [
+            { flags: '-l, --limit <limit>', desc: '返回数据长度，默认值为 20' },
+            {
+                flags: '--code-secret <codeSecret>',
+                desc: '代码加密的函数的 CodeSecret'
+            }
+        ],
+        desc: '下载云函数代码',
+        handler: async (name: string, dest: string, envId: string, options) => {
+            const { configFile } = options.parent
+            const ctx = await getFunctionContext(name, envId, configFile)
+            await codeDownload(ctx, dest, options)
         }
     },
     {

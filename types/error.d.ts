@@ -3,6 +3,7 @@ interface Options {
     original?: Error | undefined;
     code?: string | number;
     requestId?: string;
+    action?: string;
 }
 export declare class CloudBaseError extends Error {
     readonly exit: number;
@@ -11,6 +12,7 @@ export declare class CloudBaseError extends Error {
     readonly original: Error | undefined;
     readonly code: string | number;
     readonly requestId: string;
+    readonly action: string;
     constructor(message: string, options?: Options);
 }
 export {};

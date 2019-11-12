@@ -1,2 +1,3 @@
-import './domain';
+import './base';
 import './login';
+import './domain';

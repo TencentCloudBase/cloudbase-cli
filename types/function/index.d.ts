@@ -1,6 +1,7 @@
 import { IListFunctionOptions, IFunctionLogOptions, IUpdateFunctionConfigOptions, IFunctionBatchOptions, InvokeFunctionOptions } from '../types';
 export * from './create';
 export * from './trigger';
+export * from './code';
 interface ICopyFunctionOptions {
     envId: string;
     functionName: string;

@@ -19,7 +19,8 @@ import {
     updateFunctionConfig,
     createFunctionTriggers,
     deleteFunctionTrigger,
-    invokeFunction
+    invokeFunction,
+    downloadFunctionCode
 } from './function'
 import * as storage from './storage'
 import { authStore } from './utils'
@@ -58,7 +59,8 @@ export = class CloudBase {
         trigger: {
             create: createFunctionTriggers,
             delete: deleteFunctionTrigger
-        }
+        },
+        download: downloadFunctionCode
     }
 
     storage = storage

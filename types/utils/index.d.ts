@@ -11,6 +11,8 @@ export * from './auth';
 export * from './check-auth';
 export * from './os-release';
 export * from './time';
+export * from './cloud-api-request';
+export * from './fs';
 export declare function zipDir(dirPath: any, outputPath: any, ignore?: string | string[]): Promise<unknown>;
 export declare function askForInput(question: any): Promise<string>;
 export declare function getSSHConfig(): SSH;

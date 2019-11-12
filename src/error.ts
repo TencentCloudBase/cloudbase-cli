@@ -3,6 +3,7 @@ interface Options {
     original?: Error | undefined
     code?: string | number
     requestId?: string
+    action?: string
 }
 
 export class CloudBaseError extends Error {
@@ -12,12 +13,20 @@ export class CloudBaseError extends Error {
     readonly original: Error | undefined
     readonly code: string | number
     readonly requestId: string
+    readonly action: string
 
     constructor(message: string, options: Options = {}) {
         super()
         this.message = message
-        this.original = options.original
-        this.code = options.code
-        this.requestId = options.requestId
+        const {
+            code = '',
+            action = '',
+            original = null,
+            requestId = ''
+        } = options
+        this.original = original
+        this.code = code
+        this.requestId = requestId
+        this.action = action
     }
 }

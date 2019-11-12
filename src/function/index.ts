@@ -12,6 +12,7 @@ import { getVpcs, getSubnets } from './vpc'
 
 export * from './create'
 export * from './trigger'
+export * from './code'
 
 interface ICopyFunctionOptions {
     envId: string
@@ -238,7 +239,9 @@ export async function updateFunctionConfig(
     params.InstallDependency =
         typeof config.installDependency === 'undefined'
             ? null
-            : config.installDependency ? 'TRUE' : 'FALSE'
+            : config.installDependency
+            ? 'TRUE'
+            : 'FALSE'
 
     await scfService.request('UpdateFunctionConfiguration', params)
 }

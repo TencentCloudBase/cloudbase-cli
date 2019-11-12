@@ -1,6 +1,6 @@
 import './commands';
 import { listEnvs, createEnv, getEnvAuthDomains, createEnvDomain, deleteEnvDomain, getLoginConfigList, createLoginConfig, updateLoginConfig } from './env';
-import { createFunction, listFunction, deleteFunction, getFunctionDetail, getFunctionLog, updateFunctionConfig, createFunctionTriggers, deleteFunctionTrigger, invokeFunction } from './function';
+import { createFunction, listFunction, deleteFunction, getFunctionDetail, getFunctionLog, updateFunctionConfig, createFunctionTriggers, deleteFunctionTrigger, invokeFunction, downloadFunctionCode } from './function';
 import * as storage from './storage';
 import { ILoginOptions } from './types';
 declare const _default: {
@@ -37,6 +37,7 @@ declare const _default: {
                 create: typeof createFunctionTriggers;
                 delete: typeof deleteFunctionTrigger;
             };
+            download: typeof downloadFunctionCode;
         };
         storage: typeof storage;
     };

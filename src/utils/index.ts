@@ -17,6 +17,8 @@ export * from './auth'
 export * from './check-auth'
 export * from './os-release'
 export * from './time'
+export * from './cloud-api-request'
+export * from './fs'
 
 export async function zipDir(dirPath, outputPath, ignore?: string | string[]) {
     return new Promise((resolve, reject) => {
