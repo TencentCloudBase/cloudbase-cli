@@ -1,8 +1,9 @@
 import './commands';
 import { listEnvs, createEnv, getEnvAuthDomains, createEnvDomain, deleteEnvDomain, getLoginConfigList, createLoginConfig, updateLoginConfig } from './env';
-import { createFunction, listFunction, deleteFunction, getFunctionDetail, getFunctionLog, updateFunctionConfig, createFunctionTriggers, deleteFunctionTrigger, invokeFunction, downloadFunctionCode } from './function';
+import { createFunction, listFunction, deleteFunction, getFunctionDetail, getFunctionLog, updateFunctionConfig, createFunctionTriggers, deleteFunctionTrigger, invokeFunction, downloadFunctionCode, copyFunction } from './function';
 import * as storage from './storage';
 import { ILoginOptions } from './types';
+import { codeUpdate } from './commands/functions/code-update';
 declare const _default: {
     new (secretId: any, secretKey: any): {
         login: (options: ILoginOptions) => Promise<{
@@ -30,6 +31,9 @@ declare const _default: {
             delete: typeof deleteFunction;
             detail: typeof getFunctionDetail;
             log: typeof getFunctionLog;
+            code: {
+                update: typeof codeUpdate;
+            };
             config: {
                 update: typeof updateFunctionConfig;
             };
@@ -38,6 +42,7 @@ declare const _default: {
                 delete: typeof deleteFunctionTrigger;
             };
             download: typeof downloadFunctionCode;
+            copy: typeof copyFunction;
         };
         storage: typeof storage;
     };
