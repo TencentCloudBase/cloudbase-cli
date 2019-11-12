@@ -41,7 +41,8 @@ export async function zipDir(dirPath, outputPath, ignore?: string | string[]) {
         archive.glob('**/*', {
             // 目标路径
             cwd: dirPath,
-            ignore: ignore
+            ignore: ignore,
+            dot: true
         })
         archive.finalize()
     })
