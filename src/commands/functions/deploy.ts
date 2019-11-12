@@ -57,7 +57,7 @@ export async function deploy(ctx: FunctionContext, commandOptions) {
                     installDependency: true
                 },
                 handler: 'index.main',
-                ignore: ['node_modules', 'node_modules/**/*']
+                ignore: ['node_modules', 'node_modules/**/*', '.git']
             }
         } else {
             throw new CloudBaseError(`函数 ${name} 配置不存在`)
