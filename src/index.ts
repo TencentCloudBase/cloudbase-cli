@@ -21,12 +21,12 @@ import {
     deleteFunctionTrigger,
     invokeFunction,
     downloadFunctionCode,
-    copyFunction
+    copyFunction,
+    updateFunctionCode
 } from './function'
 import * as storage from './storage'
 import { authStore } from './utils'
 import { ILoginOptions } from './types'
-import { codeUpdate } from './commands/functions/code-update'
 
 export = class CloudBase {
     login: (
@@ -56,7 +56,7 @@ export = class CloudBase {
         detail: getFunctionDetail,
         log: getFunctionLog,
         code: {
-            update: codeUpdate
+            update: updateFunctionCode
         },
         config: {
             update: updateFunctionConfig
