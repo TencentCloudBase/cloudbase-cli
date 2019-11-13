@@ -73,8 +73,11 @@ export = class CloudBase {
 
     constructor(secretId, secretKey) {
         if (secretId && secretKey) {
-            authStore.set('secretId', secretId)
-            authStore.set('secretKey', secretKey)
+            const credential = {
+                secretId,
+                secretKey
+            }
+            authStore.set('credential', credential)
         }
     }
 }

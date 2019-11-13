@@ -69,3 +69,6 @@ node_modules
 .idea
 .vscode/*
 !.vscode/launch.json
+
+# Test api Key
+test/api-key.js
