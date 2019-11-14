@@ -34,14 +34,14 @@ export async function downloadFunctionCode(options: IFunctionCodeOptions) {
         const dest = fs.createWriteStream(zipPath)
         res.body.pipe(dest)
 
-        // 可选不解压 ZIP 文件
-        if (!unzip) {
-            resolve()
-            return
-        }
-
         // 解压文件
-        res.body.on('end', () => {
+        dest.on('close', () => {
+            // 不解压 ZIP 文件
+            if (!unzip) {
+                resolve()
+                return
+            }
+
             const unzipStream = unzipper.Extract({
                 path: destPath
             })
