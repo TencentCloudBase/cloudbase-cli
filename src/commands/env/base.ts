@@ -1,6 +1,6 @@
 import program from 'commander'
 import { listEnvs, createEnv, getEnvInfo, updateEnvInfo } from '../../env'
-import { printCliTable, loadingFactory, getEnvId } from '../../utils'
+import { printHorizontalTable, loadingFactory, getEnvId } from '../../utils'
 import { CloudBaseError } from '../../error'
 import { warnLog, successLog } from '../../logger'
 
@@ -36,7 +36,7 @@ program
             item.CreateTime,
             item.Status === 'NORMAL' ? '正常' : '不可用'
         ])
-        printCliTable(head, tableData)
+        printHorizontalTable(head, tableData)
         // 不可用环境警告
         const unavailableEnv = data.find(item => item.Status === 'UNAVAILABLE')
         if (unavailableEnv) {

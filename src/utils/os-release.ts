@@ -30,12 +30,12 @@ const winMap = new Map([
     ['4.0', '95']
 ])
 
-export function getPlatformRelease(platform, release) {
+export function getPlatformRelease(platform: string, release: string) {
     // macOS
     if (platform === 'darwin') {
-        release = Number(release.split('.')[0])
-        const name = macOSMap.get(release)
-        const version = '10.' + (release - 4)
+        const releaseNum = Number(release.split('.')[0])
+        const name = macOSMap.get(releaseNum)
+        const version = '10.' + (releaseNum - 4)
         return `${name} ${version}`
     }
 

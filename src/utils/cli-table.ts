@@ -1,17 +1,19 @@
-import Table from 'cli-table3'
+import Table, { TableOptions, HorizontalTable } from 'cli-table3'
 
-export function printCliTable(
+// 打印水平方向的表格
+export function printHorizontalTable(
     head: string[],
     data: string[][] = [],
-    options?: any
+    options?: TableOptions
 ) {
-    const table = new Table({
+    const table: HorizontalTable = new Table({
         head,
         style: { head: ['yellow'] },
         colAligns: new Array(head.length).fill('center'),
         ...options
-    })
-    data.forEach((item: any) => {
+    }) as HorizontalTable
+
+    data.forEach((item: Table.Cell[]) => {
         table.push(item)
     })
     console.log(table.toString())

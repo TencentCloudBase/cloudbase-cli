@@ -3,6 +3,18 @@ import { StorageService } from '@cloudbase/manager-node/types/storage'
 import { checkAndGetCredential } from './utils'
 import { CloudBaseError } from './error'
 
+interface IStorageOptions {
+    envId: string
+    localPath: string
+    cloudPath: string
+}
+
+interface IStorageCloudOptions {
+    envId: string
+    cloudPath: string
+    cloudPaths?: string[]
+}
+
 async function getStorageService(envId: string): Promise<StorageService> {
     const { secretId, secretKey, token } = await checkAndGetCredential()
     const app = new CloudBase({
@@ -14,32 +26,32 @@ async function getStorageService(envId: string): Promise<StorageService> {
     return app.storage
 }
 
-export async function uploadFile(options) {
+export async function uploadFile(options: IStorageOptions) {
     const { envId, localPath, cloudPath } = options
     const storageService = await getStorageService(envId)
     return storageService.uploadFile(localPath, cloudPath)
 }
 
-export async function uploadDirectory(options) {
+export async function uploadDirectory(options: IStorageOptions) {
     const { envId, localPath, cloudPath } = options
     const storageService = await getStorageService(envId)
     return storageService.uploadDirectory(localPath, cloudPath)
 }
 
-export async function downloadFile(options) {
+export async function downloadFile(options: IStorageOptions) {
     const { envId, localPath, cloudPath } = options
     const storageService = await getStorageService(envId)
     return storageService.downloadFile(cloudPath, localPath)
 }
 
-export async function downloadDirectory(options) {
+export async function downloadDirectory(options: IStorageOptions) {
     const { envId, localPath, cloudPath } = options
     const storageService = await getStorageService(envId)
 
     return storageService.downloadDirectory(cloudPath, localPath)
 }
 
-export async function deleteFile(options) {
+export async function deleteFile(options: IStorageCloudOptions) {
     const { envId, cloudPath, cloudPaths } = options
     const storageService = await getStorageService(envId)
 
@@ -50,28 +62,28 @@ export async function deleteFile(options) {
     return storageService.deleteFile([cloudPath])
 }
 
-export async function deleteDirectory(options) {
+export async function deleteDirectory(options: IStorageCloudOptions) {
     const { envId, cloudPath } = options
     const storageService = await getStorageService(envId)
 
     return storageService.deleteDirectory(cloudPath)
 }
 
-export async function list(options) {
+export async function list(options: IStorageCloudOptions) {
     const { envId, cloudPath } = options
     const storageService = await getStorageService(envId)
 
     return storageService.listDirectoryFiles(cloudPath)
 }
 
-export async function getUrl(options) {
+export async function getUrl(options: IStorageCloudOptions) {
     const { envId, cloudPaths } = options
     const storageService = await getStorageService(envId)
 
     return storageService.getTemporaryUrl(cloudPaths)
 }
 
-export async function detail(options) {
+export async function detail(options: IStorageCloudOptions) {
     const { envId, cloudPath } = options
     const storageService = await getStorageService(envId)
 

@@ -8,10 +8,13 @@ export async function logout() {
     const credentail = getCredentialData()
 
     try {
-        await refreshTmpToken({
-            ...credentail,
-            isLogout: true
-        })
+        // 仅使用 Web 控制台授权登录时才删除 token
+        if (credentail.refreshToken) {
+            await refreshTmpToken({
+                ...credentail,
+                isLogout: true
+            })
+        }
         authStore.delete(ConfigItems.credentail)
         authStore.delete(ConfigItems.ssh)
         successLog('注销登录成功！')

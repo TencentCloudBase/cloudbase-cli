@@ -1,6 +1,6 @@
 import program from 'commander'
 import inquirer from 'inquirer'
-import { printCliTable, getEnvId } from '../../utils'
+import { printHorizontalTable, getEnvId } from '../../utils'
 import { successLog } from '../../logger'
 import {
     getLoginConfigList,
@@ -34,7 +34,7 @@ program
             item.CreateTime,
             item.Status === 'ENABLE' ? '启用' : '禁用'
         ])
-        printCliTable(head, tableData)
+        printHorizontalTable(head, tableData)
     })
 
 program

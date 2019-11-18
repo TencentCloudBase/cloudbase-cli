@@ -7,7 +7,7 @@ import open from 'open'
 import address from 'address'
 
 import { Credential, AuthSecret } from '../types'
-export { printCliTable } from './cli-table'
+export { printHorizontalTable } from './cli-table'
 import { authStore } from './store'
 import { ConfigItems } from '../constant'
 import Logger from '../logger'

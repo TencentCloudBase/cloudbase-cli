@@ -1,1 +1,1 @@
-export declare function getPlatformRelease(platform: any, release: any): string;
+export declare function getPlatformRelease(platform: string, release: string): string;

@@ -3,7 +3,7 @@ import {
     listFunction
 } from '../../function'
 import { FunctionContext } from '../../types'
-import { printCliTable } from '../../utils'
+import { printHorizontalTable } from '../../utils'
 
 const StatusMap = {
     Active: '部署完成',
@@ -50,5 +50,5 @@ export async function list(ctx: FunctionContext, options) {
         StatusMap[item.Status]
     ])
 
-    printCliTable(head, tableData)
+    printHorizontalTable(head, tableData)
 }

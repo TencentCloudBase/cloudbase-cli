@@ -8,7 +8,7 @@ import {
     checkAndGetCredential,
     getEnvId,
     loadingFactory,
-    printCliTable,
+    printHorizontalTable,
     formatDate
 } from '../utils'
 
@@ -146,7 +146,7 @@ program
                 item.ETag,
                 String(item.Size)
             ])
-        printCliTable(head, tableData)
+        printHorizontalTable(head, tableData)
     })
 
 program

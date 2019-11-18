@@ -1,5 +1,5 @@
 import { Credential, AuthSecret } from '../types';
-export { printCliTable } from './cli-table';
+export { printHorizontalTable } from './cli-table';
 export declare function refreshTmpToken(metaData: Credential & {
     isLogout?: boolean;
 }): Promise<Credential>;

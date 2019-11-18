@@ -1,6 +1,6 @@
 import program from 'commander'
 import inquirer from 'inquirer'
-import { printCliTable, getEnvId, loadingFactory } from '../../utils'
+import { printHorizontalTable, getEnvId, loadingFactory } from '../../utils'
 import { CloudBaseError } from '../../error'
 import { successLog } from '../../logger'
 import { getEnvAuthDomains, createEnvDomain, deleteEnvDomain } from '../../env'
@@ -26,7 +26,7 @@ program
             item.CreateTime,
             item.Status === 'ENABLE' ? '启用中' : '禁用中'
         ])
-        printCliTable(head, tableData)
+        printHorizontalTable(head, tableData)
     })
 
 program

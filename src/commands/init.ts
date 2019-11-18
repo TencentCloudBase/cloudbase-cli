@@ -51,7 +51,7 @@ function initSuccessOutput(projectName) {
     console.log(`👉 运行 ${command} 开始您的项目！\n`)
 
     console.log(
-        '🎉 欢迎贡献你的模板 👉 https://github.com/TencentCloudBase/cloudbase-examples'
+        '🎉 欢迎贡献你的模板 👉 https://github.com/TencentCloudBase/cloudbase-templates'
     )
 }
 

@@ -4,7 +4,7 @@ import readline from 'readline'
 import { authStore } from './store'
 import { SSH } from '../types'
 import { ConfigItems } from '../constant'
-export { printCliTable } from './cli-table'
+export { printHorizontalTable } from './cli-table'
 
 export * from './uuid'
 export * from './qcloud-request'

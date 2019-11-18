@@ -1,5 +1,5 @@
 import { SSH } from '../types';
-export { printCliTable } from './cli-table';
+export { printHorizontalTable } from './cli-table';
 export * from './uuid';
 export * from './qcloud-request';
 export * from './http-request';
