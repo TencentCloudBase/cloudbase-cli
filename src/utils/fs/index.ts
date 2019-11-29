@@ -11,4 +11,9 @@ export function checkPathExist(dest: string, throwError: boolean = false): boole
     return exist
 }
 
+export function isDirectory(dest: string) {
+    checkPathExist(dest, true)
+    return fs.statSync(dest).isDirectory()
+}
+
 export * from './del'

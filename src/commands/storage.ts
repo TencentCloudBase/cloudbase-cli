@@ -9,7 +9,8 @@ import {
     getEnvId,
     loadingFactory,
     printHorizontalTable,
-    formatDate
+    formatDate,
+    getProxy
 } from '../utils'
 
 import { CloudBaseError } from '../error'
@@ -21,7 +22,8 @@ async function getStorageService(envId: string): Promise<StorageService> {
         secretId,
         secretKey,
         token,
-        envId
+        envId,
+        proxy: getProxy()
     })
     return app.storage
 }
@@ -36,12 +38,7 @@ const AclMap = {
 program
     .command('storage:upload <localPath> <cloudPath> [envId]')
     .description('上传文件/文件夹')
-    .action(async function(
-        localPath: string,
-        cloudPath: string,
-        envId: string,
-        options
-    ) {
+    .action(async function(localPath: string, cloudPath: string, envId: string, options) {
         const { configFile } = options.parent
         const assignEnvId = await getEnvId(envId, configFile)
         const storageService = await getStorageService(assignEnvId)
@@ -67,12 +64,7 @@ program
     .command('storage:download <cloudPath> <localPath> [envId]')
     .option('-d, --dir', '下载目标是否为文件夹')
     .description('下载文件/文件夹，文件夹需指定 --dir 选项')
-    .action(async function(
-        cloudPath: string,
-        localPath: string,
-        envId: string,
-        options
-    ) {
+    .action(async function(cloudPath: string, localPath: string, envId: string, options) {
         const { configFile } = options.parent
         const assignEnvId = await getEnvId(envId, configFile)
         const storageService = await getStorageService(assignEnvId)
@@ -122,11 +114,11 @@ program
     })
 
 program
-    .command('storage:list <cloudPath> [envId]')
+    .command('storage:list [cloudPath] [envId]')
     .option('--max', '传输数据的最大条数')
     .option('--markder', '起始路径名，后（不含）按照 UTF-8 字典序返回条目')
-    .description('获取文件夹中的文件列表')
-    .action(async function(cloudPath: string, envId: string, options) {
+    .description('获取文件存储的文件列表')
+    .action(async function(cloudPath = '', envId: string, options) {
         const { configFile } = options.parent
         const assignEnvId = await getEnvId(envId, configFile)
         const storageService = await getStorageService(assignEnvId)
@@ -134,8 +126,7 @@ program
 
         const head = ['序号', 'Key', 'LastModified', 'ETag', 'Size(B)']
 
-        const notDir = item =>
-            !(Number(item.Size) === 0 && /\/$/g.test(item.Key))
+        const notDir = item => !(Number(item.Size) === 0 && /\/$/g.test(item.Key))
 
         const tableData = list
             .filter(notDir)

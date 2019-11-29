@@ -182,3 +182,17 @@ export interface FunctionContext {
     // 配置文件中所有的函数
     functions?: ICloudFunction[]
 }
+
+export interface IFlattenFunctionConfig {
+    name: string
+    triggers?: ICloudFunctionTrigger[]
+    params?: Record<string, string>
+    handler?: string
+    ignore?: string | string[]
+    timeout?: number
+    envVariables?: Record<string, string | number | boolean>
+    runtime?: string
+    vpc?: IFunctionVPC
+    l5?: boolean
+    installDependency?: boolean
+}

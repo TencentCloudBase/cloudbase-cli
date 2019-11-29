@@ -14,6 +14,7 @@ import { triggerDelete } from './trigger-delete'
 import { invoke } from './invoke'
 import { copy } from './copy'
 import { codeDownload } from './code-download'
+import { debugFunctionByPath, debugByConfig } from './debug'
 
 async function getFunctionContext(
     name: string,
@@ -122,12 +123,7 @@ const commands = [
         cmd: 'functions:invoke [functionName] [params] [envId]',
         options: [],
         desc: '触发云函数',
-        handler: async (
-            name: string,
-            jsonStringParams: string,
-            envId: string,
-            options
-        ) => {
+        handler: async (name: string, jsonStringParams: string, envId: string, options) => {
             const { configFile } = options.parent
             const ctx = await getFunctionContext(name, envId, configFile)
             await invoke(ctx, jsonStringParams)
@@ -159,8 +155,7 @@ const commands = [
         }
     },
     {
-        cmd:
-            'functions:copy <functionName> <newFunctionName> [envId] [targentEnvId]',
+        cmd: 'functions:copy <functionName> <newFunctionName> [envId] [targentEnvId]',
         options: [
             {
                 flags: '--code-secret <codeSecret>',
@@ -180,11 +175,7 @@ const commands = [
             options?
         ) => {
             const { configFile } = options.parent
-            const ctx = await getFunctionContext(
-                functionName,
-                envId,
-                configFile
-            )
+            const ctx = await getFunctionContext(functionName, envId, configFile)
             await copy(ctx, newFunctionName, targentEnvId, options)
         }
     },
@@ -211,13 +202,11 @@ const commands = [
             },
             {
                 flags: '--startTime <startTime>',
-                desc:
-                    '查询的具体日期，例如：2019-05-16 20:00:00，只能与 endtime 相差一天之内'
+                desc: '查询的具体日期，例如：2019-05-16 20:00:00，只能与 endtime 相差一天之内'
             },
             {
                 flags: '--endTime <endTime>',
-                desc:
-                    '查询的具体日期，例如：2019-05-16 20:59:59，只能与 startTime 相差一天之内'
+                desc: '查询的具体日期，例如：2019-05-16 20:59:59，只能与 startTime 相差一天之内'
             },
             { flags: '-e, --error', desc: '只返回错误类型的日志' },
             { flags: '-s, --success', desc: '只返回正确类型的日志' }
@@ -243,19 +232,48 @@ const commands = [
         cmd: 'functions:trigger:delete [functionName] [triggerName] [envId]',
         options: [],
         desc: '删除云函数触发器',
-        handler: async (
-            functionName: string,
-            triggerName: string,
-            envId: string,
-            options
-        ) => {
+        handler: async (functionName: string, triggerName: string, envId: string, options) => {
             const { configFile } = options.parent
-            const ctx = await getFunctionContext(
-                functionName,
-                envId,
-                configFile
-            )
+            const ctx = await getFunctionContext(functionName, envId, configFile)
             await triggerDelete(ctx, triggerName)
+        }
+    },
+    {
+        cmd: 'functions:invoke:local',
+        options: [
+            {
+                flags: '--path <path>',
+                desc: '云函数路径，使用默认配置直接调用云函数，无需配置文件'
+            },
+            {
+                flags: '--name <name>',
+                desc: '指定云函数的名称进行调用，需要配置文件'
+            },
+            {
+                flags: '--params <params>',
+                desc: '调用函数传入的参数，JSON 字符串格式'
+            },
+            {
+                flags: '--port <port>',
+                desc: '启动调试时监听的端口号，默认为 9229'
+            },
+            {
+                flags: '--debug',
+                desc: '启动调试模式'
+            }
+        ],
+        desc: '本地运行云函数',
+        handler: async (options: any) => {
+            const { path } = options
+            // 指定函数路径，以默认配置运行函数
+            if (path) {
+                await debugFunctionByPath(path, options)
+            } else {
+                const { name } = options
+                const { configFile } = options.parent
+                const ctx = await getFunctionContext(name, '', configFile)
+                await debugByConfig(ctx, options)
+            }
         }
     }
 ]

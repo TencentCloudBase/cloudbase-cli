@@ -1,6 +1,6 @@
 import CloudBase from '@cloudbase/manager-node'
 import { StorageService } from '@cloudbase/manager-node/types/storage'
-import { checkAndGetCredential } from './utils'
+import { checkAndGetCredential, getProxy } from './utils'
 import { CloudBaseError } from './error'
 
 interface IStorageOptions {
@@ -21,7 +21,8 @@ async function getStorageService(envId: string): Promise<StorageService> {
         secretId,
         secretKey,
         token,
-        envId
+        envId,
+        proxy: getProxy()
     })
     return app.storage
 }

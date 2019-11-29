@@ -25,7 +25,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@cloudbase/manager-node": "1.0.1",
+        "@cloudbase/manager-node": "^1.1.2",
         "@sentry/node": "^5.7.1",
         "address": "^1.1.2",
         "archiver": "^3.1.1",
@@ -41,6 +41,7 @@
         "https-proxy-agent": "^2.2.4",
         "inquirer": "^6.5.0",
         "is-stream": "^2.0.0",
+        "lodash": "^4.17.15",
         "log-symbols": "^3.0.0",
         "make-dir": "^3.0.0",
         "node-fetch": "^2.6.0",
