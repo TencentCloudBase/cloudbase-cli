@@ -15,6 +15,12 @@ function checkJSON(data) {
     }
 }
 
+function errorLog(msg: string, debug?: boolean) {
+    throw new CloudBaseError(msg, {
+        meta: { debug }
+    })
+}
+
 function getDebugArgs(port = 9229) {
     return [
         `--inspect-brk=0.0.0.0:${port}`,
@@ -63,20 +69,20 @@ export async function debugFunctionByPath(functionPath: string, options: Record<
 
     // 检查路径是否存在
     const filePath = path.resolve(functionPath)
-    checkPathExist(filePath, true)
+    checkPathExist(filePath)
 
     let debugDirname
 
     if (isDirectory(filePath)) {
         const exists = checkPathExist(path.join(filePath, 'index.js'))
         if (!exists) {
-            throw new CloudBaseError('index.js 文件不存在！')
+            errorLog('index.js 文件不存在！', debug)
         }
         debugDirname = filePath
     } else {
         const { base, dir } = path.parse(filePath)
         if (base !== 'index.js') {
-            throw new CloudBaseError('index.js 文件不存在！')
+            errorLog('index.js 文件不存在！', debug)
         }
         debugDirname = dir
     }
@@ -85,10 +91,10 @@ export async function debugFunctionByPath(functionPath: string, options: Record<
         // eslint-disable-next-line
         const fileExports = require(path.join(debugDirname, 'index.js'))
         if (!fileExports.main) {
-            throw new CloudBaseError('main 方法不存在！')
+            errorLog('main 方法不存在！', debug)
         }
     } catch (e) {
-        throw new CloudBaseError(`导入云函数异常：${e.message}`)
+        errorLog(`导入云函数异常：${e.message}`, debug)
     }
 
     const debugArgs = getDebugArgs(port)
@@ -114,7 +120,7 @@ export async function debugByConfig(ctx: FunctionContext, options: Record<string
     // 检查路径是否存在
     let functionPath = path.resolve(config.functionRoot, name)
     const filePath = path.resolve(functionPath)
-    checkPathExist(filePath, true)
+    checkPathExist(filePath, !debug)
 
     let debugDirname
     const funcConfig = findAndFlattenFunConfig(config, name)
@@ -127,13 +133,13 @@ export async function debugByConfig(ctx: FunctionContext, options: Record<string
     if (isDirectory(filePath)) {
         const exists = checkPathExist(path.join(filePath, indexFile))
         if (!exists) {
-            throw new CloudBaseError(`${indexFile} 文件不存在！`)
+            errorLog(`${indexFile} 文件不存在！`, debug)
         }
         debugDirname = filePath
     } else {
         const { base, dir } = path.parse(filePath)
         if (base !== indexFile) {
-            throw new CloudBaseError(`${indexFile} 文件不存在！`)
+            errorLog(`${indexFile} 文件不存在！`, debug)
         }
         debugDirname = dir
     }
@@ -142,10 +148,10 @@ export async function debugByConfig(ctx: FunctionContext, options: Record<string
         // eslint-disable-next-line
         const fileExports = require(path.join(debugDirname, indexFile))
         if (!fileExports[mainFunction]) {
-            throw new CloudBaseError(`handler 中的 ${mainFunction} 方法不存在，请检查你的配置！`)
+            errorLog(`handler 中的 ${mainFunction} 方法不存在，请检查你的配置！`, debug)
         }
     } catch (e) {
-        throw new CloudBaseError(`导入云函数异常:${e.message}`)
+        errorLog(`导入云函数异常:${e.message}`, debug)
     }
 
     const debugArgs = getDebugArgs(port)

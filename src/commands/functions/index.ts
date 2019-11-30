@@ -14,7 +14,7 @@ import { triggerDelete } from './trigger-delete'
 import { invoke } from './invoke'
 import { copy } from './copy'
 import { codeDownload } from './code-download'
-import { debugFunctionByPath, debugByConfig } from './debug'
+import { debugFunctionByPath, debugByConfig } from './run'
 
 async function getFunctionContext(
     name: string,
@@ -117,16 +117,6 @@ const commands = [
             const { configFile } = options.parent
             const ctx = await getFunctionContext(name, envId, configFile)
             await detail(ctx, options)
-        }
-    },
-    {
-        cmd: 'functions:invoke [functionName] [params] [envId]',
-        options: [],
-        desc: '触发云函数',
-        handler: async (name: string, jsonStringParams: string, envId: string, options) => {
-            const { configFile } = options.parent
-            const ctx = await getFunctionContext(name, envId, configFile)
-            await invoke(ctx, jsonStringParams)
         }
     },
     {
@@ -239,7 +229,17 @@ const commands = [
         }
     },
     {
-        cmd: 'functions:invoke:local',
+        cmd: 'functions:invoke [functionName] [params] [envId]',
+        options: [],
+        desc: '触发云端部署的云函数',
+        handler: async (name: string, jsonStringParams: string, envId: string, options) => {
+            const { configFile } = options.parent
+            const ctx = await getFunctionContext(name, envId, configFile)
+            await invoke(ctx, jsonStringParams)
+        }
+    },
+    {
+        cmd: 'functions:run',
         options: [
             {
                 flags: '--path <path>',
@@ -262,7 +262,7 @@ const commands = [
                 desc: '启动调试模式'
             }
         ],
-        desc: '本地运行云函数',
+        desc: '本地运行云函数（当前仅支持 Node）',
         handler: async (options: any) => {
             const { path } = options
             // 指定函数路径，以默认配置运行函数

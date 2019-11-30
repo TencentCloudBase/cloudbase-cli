@@ -22,10 +22,14 @@ const HostingStatusMap = {
 }
 
 program
-    .command('hosting:enable [envId]')
+    .command('hosting:enable')
+    .option('-e, --envId', '环境 Id')
     .description('开启静态网站服务')
-    .action(async (envId: string, options: any) => {
-        const { configFile } = options.parent
+    .action(async (options: any) => {
+        const {
+            parent: { configFile },
+            envId
+        } = options
         const assignEnvId = await getEnvId(envId, configFile)
         const res = await enableHosting({ envId: assignEnvId })
         if (res.code === 0) {
@@ -36,10 +40,14 @@ program
     })
 
 program
-    .command('hosting:detail [envId]')
+    .command('hosting:detail')
+    .option('-e, --envId', '环境 Id')
     .description('查看静态网站服务信息')
-    .action(async (envId: string, options: any) => {
-        const { configFile } = options.parent
+    .action(async (options: any) => {
+        const {
+            parent: { configFile },
+            envId
+        } = options
         const assignEnvId = await getEnvId(envId, configFile)
         const res = await getHostingInfo({ envId: assignEnvId })
 
@@ -58,10 +66,14 @@ program
     })
 
 program
-    .command('hosting:destroy [envId]')
+    .command('hosting:destroy')
+    .option('-e, --envId', '环境 Id')
     .description('关闭静态网站服务')
-    .action(async (envId: string, options: any) => {
-        const { configFile } = options.parent
+    .action(async (options: any) => {
+        const {
+            parent: { configFile },
+            envId
+        } = options
         const assignEnvId = await getEnvId(envId, configFile)
         // 危险操作，再次确认
         const { confirm } = await inquirer.prompt({
@@ -85,10 +97,14 @@ program
     })
 
 program
-    .command('hosting:deploy [filePath] [cloudPath] [envId]')
+    .command('hosting:deploy [filePath] [cloudPath]')
+    .option('-e, --envId', '环境 Id')
     .description('部署静态网站文件')
-    .action(async (filePath: string, cloudPath = '', envId: string, options: any) => {
-        const { configFile } = options.parent
+    .action(async (filePath: string, cloudPath = '', options: any) => {
+        const {
+            parent: { configFile },
+            envId
+        } = options
         const assignEnvId = await getEnvId(envId, configFile)
 
         const isDir = isDirectory(filePath)
@@ -111,11 +127,15 @@ program
     })
 
 program
-    .command('hosting:delete [cloudPath] [envId]')
+    .command('hosting:delete [cloudPath]')
+    .option('-e, --envId', '环境 Id')
     .option('-d, --dir', '删除文件夹')
     .description('删除静态网站文件/文件夹')
-    .action(async (cloudPath = '', envId: string, options: any) => {
-        const { configFile } = options.parent
+    .action(async (cloudPath = '', options: any) => {
+        const {
+            parent: { configFile },
+            envId
+        } = options
         const { dir } = options
         const fileText = dir ? '文件夹' : '文件'
 
@@ -137,10 +157,14 @@ program
     })
 
 program
-    .command('hosting:list [envId]')
+    .command('hosting:list')
+    .option('-e, --envId', '环境 Id')
     .description('展示文件列表')
-    .action(async (envId: string, options: any) => {
-        const { configFile } = options.parent
+    .action(async (options: any) => {
+        const {
+            parent: { configFile },
+            envId
+        } = options
         const assignEnvId = await getEnvId(envId, configFile)
 
         const loading = loadingFactory()

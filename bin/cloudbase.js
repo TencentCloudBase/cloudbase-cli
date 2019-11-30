@@ -116,7 +116,11 @@ ${chalk.gray('–')} 初始化云开发项目
 
 ${chalk.gray('–')} 部署云函数
 
-  ${chalk.cyan('$ cloudbase functions:deploy')}`
+  ${chalk.cyan('$ cloudbase functions:deploy')}
+
+${chalk.gray('–')} 查看命令使用介绍
+
+  ${chalk.cyan('$ cloudbase functions:log -h')}`
     console.log(tips)
 })
 
