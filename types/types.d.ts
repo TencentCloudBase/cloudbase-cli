@@ -135,9 +135,10 @@ export interface IFunctionTriggerOptions {
     envId: string;
 }
 export interface ILoginOptions {
-    key: boolean;
+    key?: boolean;
     secretId?: string;
     secretKey?: string;
+    authUrl?: string;
 }
 export interface FunctionContext {
     name: string;

@@ -1,5 +1,5 @@
 import { ILoginOptions } from '../types';
-export declare function loginWithToken(): Promise<{
+export declare function loginWithToken(options: ILoginOptions): Promise<{
     code: string;
     msg: string;
 }>;

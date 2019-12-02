@@ -165,9 +165,11 @@ export interface IFunctionTriggerOptions {
 }
 
 export interface ILoginOptions {
-    key: boolean
+    key?: boolean
     secretId?: string
     secretKey?: string
+    // 浏览器登录打开的链接
+    authUrl?: string
 }
 
 export interface FunctionContext {
