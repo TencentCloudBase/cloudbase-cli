@@ -45,9 +45,14 @@ export async function getEnvInfo(envId: string) {
 }
 
 // 列出所有环境
-export async function listEnvs() {
+export async function listEnvs(options: { source?: string[] } = {}) {
+    const { source } = options
     const res: any = await tcbService.request('DescribeEnvs')
-    const { EnvList = [] } = res
+    let { EnvList = [] } = res
+    // 过滤为指定 source 环境
+    if (source && Array.isArray(source)) {
+        EnvList = EnvList.filter(item => source.includes(item.Source))
+    }
     return EnvList
 }
 
