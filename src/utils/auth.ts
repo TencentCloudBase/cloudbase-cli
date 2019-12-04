@@ -156,11 +156,8 @@ async function createLocalServer(): Promise<ServerRes> {
 }
 
 // 打开云开发控制台，获取授权
-export async function getAuthTokenFromWeb(
-    options: ILoginOptions
-): Promise<Credential> {
-    console.log(options)
-    const { authUrl } = options
+export async function getAuthTokenFromWeb(options: ILoginOptions): Promise<Credential> {
+    const { getAuthUrl } = options
     return new Promise(async (resolve, reject) => {
         const loading = loadingFactory()
         loading.start('正在打开腾讯云获取授权')
@@ -175,39 +172,43 @@ export async function getAuthTokenFromWeb(
                 throw new CloudBaseError('获取 Mac 地址失败，无法登录！')
             }
 
-            const CliAuthUrl =
-                authUrl ||
-                `${CliAuthBaseUrl}?port=${port}&hash=${hash}&mac=${mac}&os=${os}`
-            await open(CliAuthUrl)
+            let cliAuthUrl = `${CliAuthBaseUrl}?port=${port}&hash=${hash}&mac=${mac}&os=${os}`
 
-            loading.succeed(
-                '已打开云开发 CLI 授权页面，请在云开发 CLI 授权页面同意授权！'
-            )
-
-            server.on(
-                'request',
-                (req: IncomingMessage, res: ServerResponse) => {
-                    const { url } = req
-                    const { query } = queryString.parseUrl(url)
-
-                    // CORS
-                    res.writeHead(200, {
-                        'Access-Control-Allow-Origin': '*',
-                        'Content-Type': 'text/plain',
-                        // 立即关闭 http 连接
-                        Connection: 'close'
-                    })
-
-                    res.end('ok')
-
-                    // 防止接受到异常请求导致本地服务关闭
-                    if (query && query.tmpToken) {
-                        server.close()
-                    }
-
-                    resolve(query as Credential)
+            if (getAuthUrl) {
+                try {
+                    cliAuthUrl = getAuthUrl(
+                        `${CliAuthBaseUrl}?port=${port}&hash=${hash}&mac=${mac}&os=${os}`
+                    )
+                } catch (error) {
+                    // 忽略错误
                 }
-            )
+            }
+
+            await open(cliAuthUrl)
+
+            loading.succeed('已打开云开发 CLI 授权页面，请在云开发 CLI 授权页面同意授权！')
+
+            server.on('request', (req: IncomingMessage, res: ServerResponse) => {
+                const { url } = req
+                const { query } = queryString.parseUrl(url)
+
+                // CORS
+                res.writeHead(200, {
+                    'Access-Control-Allow-Origin': '*',
+                    'Content-Type': 'text/plain',
+                    // 立即关闭 http 连接
+                    Connection: 'close'
+                })
+
+                res.end('ok')
+
+                // 防止接受到异常请求导致本地服务关闭
+                if (query && query.tmpToken) {
+                    server.close()
+                }
+
+                resolve(query as Credential)
+            })
         } catch (err) {
             logger.error(err.message)
             loading.fail('获取授权失败！')

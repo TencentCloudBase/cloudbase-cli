@@ -138,7 +138,7 @@ export interface ILoginOptions {
     key?: boolean;
     secretId?: string;
     secretKey?: string;
-    authUrl?: string;
+    getAuthUrl?: (url: string) => string;
 }
 export interface FunctionContext {
     name: string;
