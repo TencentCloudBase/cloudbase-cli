@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const os = require('os')
+const path = require('path')
 const chalk = require('chalk')
 const Sentry = require('@sentry/node')
 const program = require('commander')
@@ -60,11 +61,27 @@ if (processArgv.includes('--deb')) {
     )
 }
 
+if (processArgv.includes('--tcb-test')) {
+    console.log(
+        chalk.bold.yellow(
+            '====\n您已经进入 test 模式！\n移除 --tcb-test 选项退出 test 模式！\n===='
+        )
+    )
+    try {
+        const envs = require(path.join(process.cwd(), './tcb-test.js'))
+        for (const key in envs) {
+            process.env[key] = envs[key]
+        }
+    } catch (err) {
+        console.log(err)
+    }
+}
+
 // debug 模式
 process.IS_DEBUG = processArgv.includes('--deb')
 
 // 需要隐藏的选项
-const hideArgs = ['--deb']
+const hideArgs = ['--deb', '--tcb-test']
 hideArgs.forEach(arg => {
     const index = processArgv.indexOf(arg)
     if (index > -1) {

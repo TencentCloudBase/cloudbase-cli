@@ -1,7 +1,7 @@
 import _ from 'lodash'
 
 _.mixin({
-    deeply: function(obj, mapper) {
+    deep: function(obj, mapper) {
         return mapper(
             _.mapValues(obj, function(v) {
                 if (_.isPlainObject(v)) {

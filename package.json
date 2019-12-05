@@ -25,7 +25,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@cloudbase/manager-node": "^1.1.2",
+        "@cloudbase/manager-node": "^1.2.2",
         "@sentry/node": "^5.7.1",
         "address": "^1.1.2",
         "archiver": "^3.1.1",

@@ -145,7 +145,7 @@ export class CloudApiService {
             headers: {
                 Host: new URL(this.url).host,
                 'X-TC-Action': this.action,
-                'X-TC-Region': process.env.TCB_Region || 'ap-shanghai',
+                'X-TC-Region': process.env.TCB_REGION || 'ap-shanghai',
                 'X-TC-Timestamp': timestamp,
                 'X-TC-Version': this.version
             }

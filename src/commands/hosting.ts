@@ -18,12 +18,14 @@ const HostingStatusMap = {
     process: '处理中',
     online: '上线',
     destroying: '销毁中',
-    offline: '下线'
+    offline: '下线',
+    create_fail: '初始化失败', // eslint-disable-line
+    destroy_fail: '销毁失败' // eslint-disable-line
 }
 
 program
     .command('hosting:enable')
-    .option('-e, --envId', '环境 Id')
+    .option('-e, --envId [envId]', '环境 Id')
     .description('开启静态网站服务')
     .action(async (options: any) => {
         const {
@@ -41,7 +43,7 @@ program
 
 program
     .command('hosting:detail')
-    .option('-e, --envId', '环境 Id')
+    .option('-e, --envId [envId] [envId]', '环境 Id')
     .description('查看静态网站服务信息')
     .action(async (options: any) => {
         const {
@@ -57,17 +59,17 @@ program
                 '你还没有开启静态网站服务，请使用 cloudbase hosting:enable 命令启用静态网站服务！'
             )
         }
-        const url = `https://${website.CdnDomain}`
+        const url = `https://${website.cdnDomain}`
         console.log(
             `静态网站域名：${chalk.bold.underline(url)}\n静态网站状态：${
-                HostingStatusMap[website.Status]
+                HostingStatusMap[website.status]
             }`
         )
     })
 
 program
     .command('hosting:destroy')
-    .option('-e, --envId', '环境 Id')
+    .option('-e, --envId [envId]', '环境 Id')
     .description('关闭静态网站服务')
     .action(async (options: any) => {
         const {
@@ -88,17 +90,21 @@ program
 
         const loading = loadingFactory()
         loading.start('静态网站销毁中')
-        const res = await destroyHosting({ envId: assignEnvId })
-        if (res.code === 0) {
-            loading.succeed('静态网站服务销毁成功！')
-        } else {
-            loading.fail('静态网站服务销毁失败！')
+        try {
+            const res = await destroyHosting({ envId: assignEnvId })
+            if (res.code === 0) {
+                loading.succeed('静态网站服务销毁中...')
+            } else {
+                loading.fail('静态网站服务销毁失败！')
+            }
+        } catch (e) {
+            loading.fail(e.message || '静态网站服务销毁失败！')
         }
     })
 
 program
     .command('hosting:deploy [filePath] [cloudPath]')
-    .option('-e, --envId', '环境 Id')
+    .option('-e, --envId [envId]', '环境 Id')
     .description('部署静态网站文件')
     .action(async (filePath: string, cloudPath = '', options: any) => {
         const {
@@ -120,7 +126,7 @@ program
                 envId: assignEnvId,
                 isDir
             })
-            loading.succeed('文件部署中...')
+            loading.succeed('文件部署成功！')
         } catch (error) {
             loading.fail('文件部署失败！')
         }
@@ -128,7 +134,7 @@ program
 
 program
     .command('hosting:delete [cloudPath]')
-    .option('-e, --envId', '环境 Id')
+    .option('-e, --envId [envId]', '环境 Id')
     .option('-d, --dir', '删除文件夹')
     .description('删除静态网站文件/文件夹')
     .action(async (cloudPath = '', options: any) => {
@@ -150,15 +156,16 @@ program
                 envId: assignEnvId,
                 isDir: dir
             })
-            loading.succeed(`删除${fileText}成功...`)
-        } catch (error) {
-            loading.fail(`删除${fileText}失败...`)
+            loading.succeed(`删除${fileText}成功！`)
+        } catch (e) {
+            loading.fail(`删除${fileText}失败！`)
+            console.log(e.message)
         }
     })
 
 program
     .command('hosting:list')
-    .option('-e, --envId', '环境 Id')
+    .option('-e, --envId [envId]', '环境 Id')
     .description('展示文件列表')
     .action(async (options: any) => {
         const {
@@ -187,7 +194,8 @@ program
                     String(item.Size)
                 ])
             printHorizontalTable(head, tableData)
-        } catch (error) {
-            loading.fail('获取文件列表失败')
+        } catch (e) {
+            loading.fail('获取文件列表失败！')
+            console.log(e.message)
         }
     })

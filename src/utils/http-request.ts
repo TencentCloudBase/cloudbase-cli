@@ -8,6 +8,7 @@ export async function fetch(url: string, config: Record<string, any> = {}) {
     if (proxy) {
         config.agent = new HttpsProxyAgent(proxy)
     }
+
     const res = await _fetch(url, config)
     // const text = await
     const text = await res.text()
