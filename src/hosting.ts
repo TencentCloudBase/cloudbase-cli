@@ -2,7 +2,6 @@ import path from 'path'
 import CloudBase from '@cloudbase/manager-node'
 import { StorageService } from '@cloudbase/manager-node/types/storage'
 import { CloudApiService, firstLetterToLowerCase, checkPathExist, isDirectory } from './utils'
-import { list } from './storage'
 import { CloudBaseError } from './error'
 import { checkAndGetCredential, getProxy } from './utils'
 
@@ -58,17 +57,23 @@ async function checkHostingStatus(envId: string) {
     const hostings = await getHostingInfo({ envId })
 
     if (!hostings.data || !hostings.data.length) {
-        throw new CloudBaseError('静态网站服务未开启！', {
-            code: 'INVALID_OPERATION'
-        })
+        throw new CloudBaseError(
+            '您还没有开启静态网站服务，请先到云开发控制台开启静态网站服务！\n 👉 https://console.cloud.tencent.com/tcb',
+            {
+                code: 'INVALID_OPERATION'
+            }
+        )
     }
 
     const website = hostings.data[0]
 
     if (website.status !== 'online') {
-        throw new CloudBaseError(`静态网站服务【${HostingStatusMap[website.status]}】，请稍后重试！`, {
-            code: 'INVALID_OPERATION'
-        })
+        throw new CloudBaseError(
+            `静态网站服务【${HostingStatusMap[website.status]}】，请稍后重试！`,
+            {
+                code: 'INVALID_OPERATION'
+            }
+        )
     }
 
     return website
@@ -79,8 +84,9 @@ export async function enableHosting(options: IBaseOptions) {
     const hostings = await getHostingInfo(options)
     if (hostings.data && hostings.data.length) {
         const website = hostings.data[0]
-        if (website.status !== 'destroy' || website.status !== 'destroy_fail') {
-            throw new CloudBaseError('静态网站服务已开启！')
+        // offline 状态的服务可重新开启
+        if (website.status !== 'offline') {
+            throw new CloudBaseError('静态网站服务已开启，请勿重复操作！')
         }
     }
 

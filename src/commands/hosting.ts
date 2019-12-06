@@ -1,49 +1,22 @@
 import chalk from 'chalk'
 import program from 'commander'
-import inquirer from 'inquirer'
-import {
-    enableHosting,
-    getHostingInfo,
-    destroyHosting,
-    hostingDeploy,
-    hostingDelete,
-    hostingList
-} from '../hosting'
+import { getHostingInfo, hostingDeploy, hostingDelete, hostingList } from '../hosting'
 import { CloudBaseError } from '../error'
 import { getEnvId, loadingFactory, isDirectory, printHorizontalTable, formatDate } from '../utils'
-import { successLog } from '../logger'
 
 const HostingStatusMap = {
     init: '初始化中',
     process: '处理中',
-    online: '上线',
+    online: '已上线',
     destroying: '销毁中',
-    offline: '下线',
+    offline: '已下线',
     create_fail: '初始化失败', // eslint-disable-line
     destroy_fail: '销毁失败' // eslint-disable-line
 }
 
 program
-    .command('hosting:enable')
-    .option('-e, --envId [envId]', '环境 Id')
-    .description('开启静态网站服务')
-    .action(async (options: any) => {
-        const {
-            parent: { configFile },
-            envId
-        } = options
-        const assignEnvId = await getEnvId(envId, configFile)
-        const res = await enableHosting({ envId: assignEnvId })
-        if (res.code === 0) {
-            successLog('静态网站服务开启成功！')
-        } else {
-            throw new CloudBaseError('静态网站服务失败！')
-        }
-    })
-
-program
     .command('hosting:detail')
-    .option('-e, --envId [envId] [envId]', '环境 Id')
+    .option('-e, --envId [envId]', '环境 Id')
     .description('查看静态网站服务信息')
     .action(async (options: any) => {
         const {
@@ -54,51 +27,23 @@ program
         const res = await getHostingInfo({ envId: assignEnvId })
 
         const website = res.data && res.data[0]
+
         if (!website) {
             throw new CloudBaseError(
-                '你还没有开启静态网站服务，请使用 cloudbase hosting:enable 命令启用静态网站服务！'
+                '您还没有开启静态网站服务，请先到云开发控制台开启静态网站服务！\n 👉 https://console.cloud.tencent.com/tcb'
             )
         }
         const url = `https://${website.cdnDomain}`
-        console.log(
-            `静态网站域名：${chalk.bold.underline(url)}\n静态网站状态：${
-                HostingStatusMap[website.status]
-            }`
-        )
-    })
 
-program
-    .command('hosting:destroy')
-    .option('-e, --envId [envId]', '环境 Id')
-    .description('关闭静态网站服务')
-    .action(async (options: any) => {
-        const {
-            parent: { configFile },
-            envId
-        } = options
-        const assignEnvId = await getEnvId(envId, configFile)
-        // 危险操作，再次确认
-        const { confirm } = await inquirer.prompt({
-            type: 'confirm',
-            name: 'confirm',
-            message: '确定要关闭静态网站服务吗，关闭后您的所有静态网站资源将被销毁，无法恢复！',
-            default: false
-        })
-        if (!confirm) {
-            throw new CloudBaseError('操作终止！')
-        }
-
-        const loading = loadingFactory()
-        loading.start('静态网站销毁中')
-        try {
-            const res = await destroyHosting({ envId: assignEnvId })
-            if (res.code === 0) {
-                loading.succeed('静态网站服务销毁中...')
-            } else {
-                loading.fail('静态网站服务销毁失败！')
-            }
-        } catch (e) {
-            loading.fail(e.message || '静态网站服务销毁失败！')
+        // offline 状态不展示域名
+        if (website.status === 'offline') {
+            console.log(`静态网站状态：${HostingStatusMap[website.status]}`)
+        } else {
+            console.log(
+                `静态网站域名：${chalk.bold.underline(url)}\n静态网站状态：${
+                    HostingStatusMap[website.status]
+                }`
+            )
         }
     })
 
