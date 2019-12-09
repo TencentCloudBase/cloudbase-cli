@@ -1,5 +1,6 @@
 import chalk from 'chalk'
 import program from 'commander'
+import inquirer from 'inquirer'
 import { getHostingInfo, hostingDeploy, hostingDelete, hostingList } from '../hosting'
 import { CloudBaseError } from '../error'
 import {
@@ -85,15 +86,30 @@ program
 program
     .command('hosting:delete [cloudPath]')
     .option('-e, --envId [envId]', '环境 Id')
-    .option('-d, --dir', '删除文件夹')
-    .description('删除静态网站文件/文件夹')
+    .option('-d, --dir', '删除目标是否为文件夹')
+    .description('删除静态网站文件/文件夹，文件夹需指定 --dir 选项')
     .action(async (cloudPath = '', options: any) => {
         const {
             parent: { configFile },
             envId
         } = options
-        const { dir } = options
-        const fileText = dir ? '文件夹' : '文件'
+
+        let isDir = options.dir
+
+        // 删除所有文件，危险操作，需要提示
+        if (cloudPath === '') {
+            const { confirm } = await inquirer.prompt({
+                type: 'confirm',
+                name: 'confirm',
+                message: '指定云端路径为空，将会删除所有文件，是否继续',
+                default: false
+            })
+            if (!confirm) {
+                throw new CloudBaseError('操作终止！')
+            }
+            isDir = true
+        }
+        const fileText = isDir ? '文件夹' : '文件'
 
         const assignEnvId = await getEnvId(envId, configFile)
 
@@ -102,9 +118,9 @@ program
 
         try {
             await hostingDelete({
+                isDir,
                 cloudPath,
-                envId: assignEnvId,
-                isDir: dir
+                envId: assignEnvId
             })
             loading.succeed(`删除${fileText}成功！`)
         } catch (e) {

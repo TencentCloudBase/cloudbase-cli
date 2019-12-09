@@ -166,11 +166,11 @@ export async function hostingDeploy(options: IHostingFileOptions) {
     const storageService = await getStorageService(envId)
 
     if (isDirectory(resolvePath)) {
-        storageService.uploadDirectoryCustom(resolvePath, cloudPath, bucket, regoin, {
+        await storageService.uploadDirectoryCustom(resolvePath, cloudPath, bucket, regoin, {
             onProgress
         })
     } else {
-        storageService.uploadFileCustom(resolvePath, cloudPath, bucket, regoin, {
+        await storageService.uploadFileCustom(resolvePath, cloudPath, bucket, regoin, {
             onProgress
         })
     }
@@ -184,8 +184,8 @@ export async function hostingDelete(options: IHostingCloudOptions) {
     const storageService = await getStorageService(envId)
 
     if (isDir) {
-        storageService.deleteDirectoryCustom(cloudPath, bucket, regoin)
+        await storageService.deleteDirectoryCustom(cloudPath, bucket, regoin)
     } else {
-        storageService.deleteFileCustom([cloudPath], bucket, regoin)
+        await storageService.deleteFileCustom([cloudPath], bucket, regoin)
     }
 }

@@ -92,7 +92,7 @@ export interface ICloudFunctionConfig {
     runtime?: string
     vpc?: IFunctionVPC
     l5?: boolean
-    installDependency: boolean
+    installDependency?: boolean
 }
 
 export interface ICloudFunctionTrigger {
