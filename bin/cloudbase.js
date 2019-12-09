@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const os = require('os')
+const path = require('path')
 const chalk = require('chalk')
 const Sentry = require('@sentry/node')
 const program = require('commander')
@@ -8,6 +9,7 @@ const updateNotifier = require('update-notifier')
 const address = require('address')
 const pkg = require('../package.json')
 
+let processArgv = process.argv
 const isBeta = pkg.version.indexOf('-') > -1
 
 const userNodeVersion = Number(
@@ -52,6 +54,41 @@ notifier.notify({
     isGlobal: true
 })
 
+// 测试模式
+if (processArgv.includes('--deb')) {
+    console.log(
+        chalk.bold.yellow('====\n您已经进入 debug 模式！\n移除 --deb 选项退出 debug 模式！\n====')
+    )
+}
+
+if (processArgv.includes('--tcb-test')) {
+    console.log(
+        chalk.bold.yellow(
+            '====\n您已经进入 test 模式！\n移除 --tcb-test 选项退出 test 模式！\n===='
+        )
+    )
+    try {
+        const envs = require(path.join(process.cwd(), './tcb-test.js'))
+        for (const key in envs) {
+            process.env[key] = envs[key]
+        }
+    } catch (err) {
+        console.log(err)
+    }
+}
+
+// debug 模式
+process.IS_DEBUG = processArgv.includes('--deb')
+
+// 需要隐藏的选项
+const hideArgs = ['--deb', '--tcb-test']
+hideArgs.forEach(arg => {
+    const index = processArgv.indexOf(arg)
+    if (index > -1) {
+        processArgv.splice(index, 1)
+    }
+})
+
 // 注册命令
 require('../lib')
 
@@ -71,11 +108,7 @@ Sentry.configureScope(scope => {
 })
 
 // 设置 options 选项
-program.option(
-    '--config-file <path>',
-    '设置配置文件，默认为 ./cloudbaserc.js 或 .cloudbaserc.json'
-)
-program.option('--debug', 'open debug mode')
+program.option('--config-file <path>', '设置配置文件，默认为 ./cloudbaserc.js 或 .cloudbaserc.json')
 
 program.version(pkg.version, '-V, --version', '输出当前 CloudBase CLI 版本')
 
@@ -100,7 +133,11 @@ ${chalk.gray('–')} 初始化云开发项目
 
 ${chalk.gray('–')} 部署云函数
 
-  ${chalk.cyan('$ cloudbase functions:deploy')}`
+  ${chalk.cyan('$ cloudbase functions:deploy')}
+
+${chalk.gray('–')} 查看命令使用介绍
+
+  ${chalk.cyan('$ cloudbase functions:log -h')}`
     console.log(tips)
 })
 
@@ -109,9 +146,7 @@ if (process.argv.length < 3) {
     program.outputHelp()
 }
 
-program.parse(process.argv)
-
-process.IS_DEBUG = program.debug
+program.parse(processArgv)
 
 function errorHandler(err) {
     const stackIngoreErrors = ['TencentCloudSDKHttpException', 'CloudBaseError']

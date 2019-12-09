@@ -1,10 +1,10 @@
 import { getCredentialData, refreshTmpToken } from './auth'
 import { AuthSecret } from '../types'
-import { CloudService } from './qcloud-request'
 import { authStore } from './store'
 import { ConfigItems } from '../constant'
+import { CloudApiService } from './cloud-api-request'
 
-const tcbService = new CloudService('tcb', '2018-06-08')
+const tcbService = new CloudApiService('tcb')
 
 // 调用 env:list 接口，检查密钥是否有效
 async function checkAuth(secretId, secretKey, token?) {

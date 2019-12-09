@@ -1,9 +1,8 @@
 /* eslint-disable */
-var fs = require('fs')
-var crypto = require('crypto')
+const fs = require('fs')
+const crypto = require('crypto')
 
-var GLOBAL_FUNCTION_HANDLER =
-    process.argv[2] || process.env.SCF_FUNCTION_HANDLER || 'index:main'
+var GLOBAL_FUNCTION_HANDLER = process.argv[2] || process.env.SCF_FUNCTION_HANDLER || 'index.main'
 var GLOBAL_FUNCTION_NAME = process.env.SCF_FUNCTION_NAME || 'main'
 var GLOBAL_EVENT_BODY =
     process.argv[3] ||
@@ -26,6 +25,7 @@ var GLOBAL_STAGE = 0
 module.exports = {
     init: function() {
         if (!GLOBAL_IS_QUIET) {
+            consoleLog('开始本地执行云函数，受环境影响，执行结果可能与云端存在一定差异！')
             consoleLog('START RequestId: ' + GLOBAL_REQUEST_ID)
         }
         return 0
@@ -37,8 +37,7 @@ module.exports = {
         switch (GLOBAL_STAGE) {
             case 1:
                 invokeInfo.cmd = 'RELOAD'
-                invokeInfo.context =
-                    GLOBAL_USER_FILE_PATH + GLOBAL_FUNCTION_HANDLER
+                invokeInfo.context = GLOBAL_USER_FILE_PATH + GLOBAL_FUNCTION_HANDLER
                 break
             case 2:
                 invokeInfo.cmd = 'EVENT'
@@ -109,44 +108,37 @@ function reportDone(resultStr, errType = 0) {
     }
 
     var diffMs = hrTimeMs(process.hrtime(GLOBAL_START_TIME))
-    var billedMs = Math.min(
-        100 * (Math.floor(diffMs / 100) + 1),
-        GLOBAL_TIMEOUT * 1000
-    )
+    var billedMs = Math.min(100 * (Math.floor(diffMs / 100) + 1), GLOBAL_TIMEOUT * 1000)
     if (errType === 0) {
         consoleLog('END RequestId: ' + GLOBAL_REQUEST_ID)
         consoleLog(
             [
+                '运行信息：',
                 'REPORT RequestId: ' + GLOBAL_REQUEST_ID,
                 'Duration: ' + diffMs.toFixed(2) + ' ms',
                 'Billed Duration: ' + billedMs + ' ms',
                 'Memory Size: ' + GLOBAL_MEM_SIZE + ' MB',
-                'Max Memory Used: ' +
-                    Math.round(process.memoryUsage().rss / (1024 * 1024)) +
-                    ' MB',
-                ''
-            ].join('\t')
+                'Max Memory Used: ' + Math.round(process.memoryUsage().rss / (1024 * 1024)) + ' MB'
+            ].join('\n')
         )
     } else {
         consoleLogErr(
             [
+                '运行信息：',
                 'REPORT RequestId: ' + GLOBAL_REQUEST_ID,
                 'Duration: ' + diffMs.toFixed(2) + ' ms',
                 'Billed Duration: ' + billedMs + ' ms',
                 'Memory Size: ' + GLOBAL_MEM_SIZE + ' MB',
-                'Max Memory Used: ' +
-                    Math.round(process.memoryUsage().rss / (1024 * 1024)) +
-                    ' MB',
-                ''
-            ].join('\t')
+                'Max Memory Used: ' + Math.round(process.memoryUsage().rss / (1024 * 1024)) + ' MB'
+            ].join('\n')
         )
     }
 
     if (typeof resultStr === 'string') {
         if (errType === 0) {
-            consoleLog('\n返回结果：\n' + resultStr)
+            consoleLog('返回结果：\n' + resultStr)
         } else {
-            consoleLogErr('\n返回结果：' + resultStr)
+            consoleLogErr('返回结果：\n' + resultStr)
         }
     }
 }

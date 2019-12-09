@@ -9,7 +9,7 @@ function isObject(x) {
     return typeof x === 'object' && !Array.isArray(x) && x !== null
 }
 
-// 移除对象中的空值
+// 移除对象中的空值，方式调用云 API 失败
 function deepRemoveVoid(obj) {
     if (Array.isArray(obj)) {
         return obj.map(deepRemoveVoid)
@@ -31,11 +31,7 @@ function deepRemoveVoid(obj) {
 
 type HexBase64Latin1Encoding = 'latin1' | 'hex' | 'base64'
 
-function sha256(
-    message: string,
-    secret: string,
-    encoding?: HexBase64Latin1Encoding
-) {
+function sha256(message: string, secret: string, encoding?: HexBase64Latin1Encoding) {
     const hmac = crypto.createHmac('sha256', secret)
     return hmac.update(message).digest(encoding)
 }
@@ -49,8 +45,15 @@ function getDate(timestamp: number): string {
     const date = new Date(timestamp * 1000)
     const year = date.getFullYear()
     const month = ('0' + (date.getMonth() + 1)).slice(-2)
-    const day = ('0' + date.getDate()).slice(-2)
+    const day = ('0' + date.getUTCDate()).slice(-2)
     return `${year}-${month}-${day}`
+}
+
+const ServiceVersionMap = {
+    tcb: '2018-06-08',
+    scf: '2018-04-16',
+    flexdb: '2018-11-27',
+    cam: '2019-01-16'
 }
 
 export class CloudApiService {
@@ -67,38 +70,39 @@ export class CloudApiService {
     payload: Record<string, any>
     baseParams: Record<string, any>
 
-    constructor(
-        service: string,
-        version: string,
-        baseParams?: Record<string, any>
-    ) {
+    constructor(service: string, baseParams?: Record<string, any>, version: string = '') {
         this.service = service
-        this.version = version
+        this.version = ServiceVersionMap[service] || version
         this.timeout = 60000
         this.baseParams = baseParams || {}
     }
 
-    getUrl() {
+    get baseUrl() {
         const urlMap = {
-            tcb: 'https://tcb.tencentcloudapi.com',
-            scf: 'https://scf.tencentcloudapi.com',
+            tcb: process.env.TCB_BASE_URL || 'https://tcb.tencentcloudapi.com',
             flexdb: 'https://flexdb.ap-shanghai.tencentcloudapi.com'
         }
-        return urlMap[this.service]
+        if (urlMap[this.service]) {
+            return urlMap[this.service]
+        } else {
+            return `https://${this.service}.tencentcloudapi.com`
+        }
     }
 
-    async request(
-        action: string,
-        data: Record<string, any> = {},
-        method: 'POST' | 'GET' = 'POST'
-    ) {
+    async request(action: string, data: Record<string, any> = {}, method: 'POST' | 'GET' = 'POST') {
         this.action = action
         this.data = deepRemoveVoid({ ...data, ...this.baseParams })
         this.method = method
 
-        this.url = this.getUrl()
+        this.url = this.baseUrl
 
-        const { secretId, secretKey, token } = await getCredentialWithoutCheck()
+        const credential = await getCredentialWithoutCheck()
+
+        if (!credential) {
+            throw new CloudBaseError('无有效身份信息，请使用 cloudbase login 登录')
+        }
+
+        const { secretId, secretKey, token } = credential
 
         this.secretId = secretId
         this.secretKey = secretKey
@@ -108,13 +112,10 @@ export class CloudApiService {
             const data: Record<string, any> = await this.requestWithSign()
 
             if (data.Response.Error) {
-                const tcError = new CloudBaseError(
-                    data.Response.Error.Message,
-                    {
-                        requestId: data.Response.RequestId,
-                        code: data.Response.Error.Code
-                    }
-                )
+                const tcError = new CloudBaseError(data.Response.Error.Message, {
+                    requestId: data.Response.RequestId,
+                    code: data.Response.Error.Code
+                })
                 throw tcError
             } else {
                 return data.Response
@@ -150,7 +151,7 @@ export class CloudApiService {
             headers: {
                 Host: new URL(this.url).host,
                 'X-TC-Action': this.action,
-                'X-TC-Region': 'ap-shanghai',
+                'X-TC-Region': process.env.TCB_REGION || 'ap-shanghai',
                 'X-TC-Timestamp': timestamp,
                 'X-TC-Version': this.version
             }
@@ -193,9 +194,7 @@ export class CloudApiService {
         const path = urlObj.pathname
         const querystring = urlObj.search.slice(1)
 
-        const payloadHash = this.payload
-            ? getHash(JSON.stringify(this.payload))
-            : getHash('')
+        const payloadHash = this.payload ? getHash(JSON.stringify(this.payload)) : getHash('')
 
         const canonicalRequest = `${method}\n${path}\n${querystring}\n${headers}\n${signedHeaders}\n${payloadHash}`
 
@@ -211,5 +210,11 @@ export class CloudApiService {
         const signature = sha256(StringToSign, kSigning, 'hex')
 
         return `TC3-HMAC-SHA256 Credential=${secretId}/${date}/${service}/tc3_request, SignedHeaders=${signedHeaders}, Signature=${signature}`
+    }
+
+    setCredential(secretId: string, secretKey: string, token: string) {
+        this.secretId = secretId
+        this.secretKey = secretKey
+        this.token = token
     }
 }

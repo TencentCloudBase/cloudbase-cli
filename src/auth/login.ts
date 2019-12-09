@@ -45,7 +45,7 @@ const LoginRes = {
 }
 
 // 打开腾讯云-云开发控制台，通过获取临时密钥登录，临时密钥可续期，最长时间为 1 个月
-export async function loginWithToken() {
+export async function loginWithToken(options: ILoginOptions) {
     const isLogin = await checkAndGetCredential()
 
     if (isLogin) {
@@ -55,7 +55,7 @@ export async function loginWithToken() {
     let credential
 
     try {
-        credential = await getAuthTokenFromWeb()
+        credential = await getAuthTokenFromWeb(options)
     } catch (e) {
         return LoginRes.UNKNOWN_ERROR(e.message)
     }
@@ -98,12 +98,12 @@ export async function loginWithKey(secretId?: string, secretKey?: string) {
 }
 
 export async function login(
-    options?: ILoginOptions
+    options: ILoginOptions = {}
 ): Promise<{ code: string; msg: string }> {
     if (options && options.key) {
         const { secretId, secretKey } = options
         return await loginWithKey(secretId, secretKey)
     } else {
-        return await loginWithToken()
+        return await loginWithToken(options)
     }
 }

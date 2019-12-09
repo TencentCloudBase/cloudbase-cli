@@ -6,7 +6,7 @@ import queryString from 'query-string'
 import open from 'open'
 import address from 'address'
 
-import { Credential, AuthSecret } from '../types'
+import { Credential, AuthSecret, ILoginOptions } from '../types'
 export { printHorizontalTable } from './cli-table'
 import { authStore } from './store'
 import { ConfigItems } from '../constant'
@@ -156,7 +156,11 @@ async function createLocalServer(): Promise<ServerRes> {
 }
 
 // 打开云开发控制台，获取授权
-export async function getAuthTokenFromWeb(): Promise<Credential> {
+export async function getAuthTokenFromWeb(
+    options: ILoginOptions
+): Promise<Credential> {
+    console.log(options)
+    const { authUrl } = options
     return new Promise(async (resolve, reject) => {
         const loading = loadingFactory()
         loading.start('正在打开腾讯云获取授权')
@@ -171,7 +175,9 @@ export async function getAuthTokenFromWeb(): Promise<Credential> {
                 throw new CloudBaseError('获取 Mac 地址失败，无法登录！')
             }
 
-            const CliAuthUrl = `${CliAuthBaseUrl}?port=${port}&hash=${hash}&mac=${mac}&os=${os}`
+            const CliAuthUrl =
+                authUrl ||
+                `${CliAuthBaseUrl}?port=${port}&hash=${hash}&mac=${mac}&os=${os}`
             await open(CliAuthUrl)
 
             loading.succeed(

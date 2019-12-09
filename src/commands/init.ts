@@ -16,7 +16,7 @@ const listUrl =
 
 async function extractTemplate(projectPath: string, templatePath: string) {
     // 文件下载链接
-    const url = `https://6261-base-830cab-1252710547.tcb.qcloud.la/cloudbase-examples/${templatePath}.tar.gz`
+    const url = `https://6261-base-830cab-1252710547.tcb.qcloud.la/cloudbase-templates/${templatePath}.tar.gz`
 
     return fetchStream(url).then(async res => {
         if (res.status !== 200) {
