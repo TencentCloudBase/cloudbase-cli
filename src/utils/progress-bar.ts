@@ -9,9 +9,11 @@ export function createOnProgressBar(onFinished: Function) {
         const { total, loaded, percent } = data
         if (+percent === 1) {
             if (finished) return
-            bar.tick(total - lastLoaded)
-            onFinished()
             finished = true
+            setTimeout(() => {
+                onFinished()
+            }, 500)
+            bar.tick(total - lastLoaded)
             return
         }
         const tick = loaded - lastLoaded

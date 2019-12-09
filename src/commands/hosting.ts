@@ -63,6 +63,8 @@ program
         const assignEnvId = await getEnvId(envId, configFile)
         const isDir = isDirectory(filePath)
 
+        console.log('文件部署中...')
+
         try {
             const onProgress = createOnProgressBar(() => {
                 successLog('文件部署成功！')

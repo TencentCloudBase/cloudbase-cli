@@ -41,7 +41,7 @@ program
     .command('storage:upload <localPath> [cloudPath]')
     .option('-e, --envId [envId]', '环境 Id')
     .description('上传文件/文件夹')
-    .action(async function(localPath: string, cloudPath: string = localPath, options) {
+    .action(async function(localPath: string, cloudPath: string = '', options) {
         const {
             parent: { configFile },
             envId
