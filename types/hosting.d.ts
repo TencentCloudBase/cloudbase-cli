@@ -5,6 +5,7 @@ interface IHostingFileOptions extends IBaseOptions {
     filePath: string;
     cloudPath: string;
     isDir: boolean;
+    onProgress: (data: any) => void;
 }
 interface IHostingCloudOptions extends IBaseOptions {
     cloudPath: string;

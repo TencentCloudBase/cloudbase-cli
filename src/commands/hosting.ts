@@ -2,7 +2,16 @@ import chalk from 'chalk'
 import program from 'commander'
 import { getHostingInfo, hostingDeploy, hostingDelete, hostingList } from '../hosting'
 import { CloudBaseError } from '../error'
-import { getEnvId, loadingFactory, isDirectory, printHorizontalTable, formatDate } from '../utils'
+import {
+    getEnvId,
+    loadingFactory,
+    isDirectory,
+    printHorizontalTable,
+    formatDate,
+    formateFileSize,
+    createOnProgressBar
+} from '../utils'
+import { errorLog, successLog } from '../logger'
 
 const HostingStatusMap = {
     init: '初始化中',
@@ -36,15 +45,10 @@ program
         const url = `https://${website.cdnDomain}`
 
         // offline 状态不展示域名
-        if (website.status === 'offline') {
-            console.log(`静态网站状态：${HostingStatusMap[website.status]}`)
-        } else {
-            console.log(
-                `静态网站域名：${chalk.bold.underline(url)}\n静态网站状态：${
-                    HostingStatusMap[website.status]
-                }`
-            )
+        if (website.status !== 'offline') {
+            console.log(`静态网站域名：${chalk.bold.underline(url)}`)
         }
+        console.log(`静态网站状态：【${HostingStatusMap[website.status]}】`)
     })
 
 program
@@ -57,23 +61,22 @@ program
             envId
         } = options
         const assignEnvId = await getEnvId(envId, configFile)
-
         const isDir = isDirectory(filePath)
 
-        const loading = loadingFactory()
-
-        loading.start('文件部署中...')
-
         try {
+            const onProgress = createOnProgressBar(() => {
+                successLog('文件部署成功！')
+            })
             await hostingDeploy({
                 filePath,
                 cloudPath,
                 envId: assignEnvId,
-                isDir
+                isDir,
+                onProgress
             })
-            loading.succeed('文件部署成功！')
-        } catch (error) {
-            loading.fail('文件部署失败！')
+        } catch (e) {
+            errorLog('文件部署失败！')
+            console.log(e.message)
         }
     })
 
@@ -127,7 +130,7 @@ program
                 envId: assignEnvId
             })
             loading.stop()
-            const head = ['序号', 'Key', 'LastModified', 'ETag', 'Size(B)']
+            const head = ['序号', 'Key', 'LastModified', 'ETag', 'Size(KB)']
             const notDir = item => !(Number(item.Size) === 0 && /\/$/g.test(item.Key))
             const tableData = list
                 .filter(notDir)
@@ -136,7 +139,7 @@ program
                     item.Key,
                     formatDate(item.LastModified, 'yyyy-MM-dd hh:mm:ss'),
                     item.ETag,
-                    String(item.Size)
+                    String(formateFileSize(item.Size, 'KB'))
                 ])
             printHorizontalTable(head, tableData)
         } catch (e) {

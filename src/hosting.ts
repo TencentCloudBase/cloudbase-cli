@@ -25,6 +25,7 @@ interface IHostingFileOptions extends IBaseOptions {
     filePath: string
     cloudPath: string
     isDir: boolean
+    onProgress: (data: any) => void
 }
 
 interface IHostingCloudOptions extends IBaseOptions {
@@ -69,7 +70,7 @@ async function checkHostingStatus(envId: string) {
 
     if (website.status !== 'online') {
         throw new CloudBaseError(
-            `静态网站服务【${HostingStatusMap[website.status]}】，请稍后重试！`,
+            `静态网站服务【${HostingStatusMap[website.status]}】，无法进行此操作！`,
             {
                 code: 'INVALID_OPERATION'
             }
@@ -135,7 +136,7 @@ export async function destroyHosting(options: IBaseOptions) {
     // destroy_fail 状态可重试
     if (website.status !== 'online' && website.status !== 'destroy_fail') {
         throw new CloudBaseError(
-            `静态网站服务【${HostingStatusMap[website.status]}】，无法处理请求！`,
+            `静态网站服务【${HostingStatusMap[website.status]}】，无法进行此操作！`,
             {
                 code: 'INVALID_OPERATION'
             }
@@ -155,7 +156,7 @@ export async function destroyHosting(options: IBaseOptions) {
 
 // 上传文件
 export async function hostingDeploy(options: IHostingFileOptions) {
-    const { envId, filePath, cloudPath } = options
+    const { envId, filePath, cloudPath, onProgress } = options
     const resolvePath = path.resolve(filePath)
     // 检查路径是否存在
     checkPathExist(resolvePath, true)
@@ -165,9 +166,13 @@ export async function hostingDeploy(options: IHostingFileOptions) {
     const storageService = await getStorageService(envId)
 
     if (isDirectory(resolvePath)) {
-        storageService.uploadDirectoryCustom(resolvePath, cloudPath, bucket, regoin)
+        storageService.uploadDirectoryCustom(resolvePath, cloudPath, bucket, regoin, {
+            onProgress
+        })
     } else {
-        storageService.uploadFileCustom(resolvePath, cloudPath, bucket, regoin)
+        storageService.uploadFileCustom(resolvePath, cloudPath, bucket, regoin, {
+            onProgress
+        })
     }
 }
 

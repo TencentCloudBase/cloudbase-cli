@@ -16,6 +16,7 @@ export * from './fs';
 export * from './proxy';
 export * from './object';
 export * from './config';
+export * from './progress-bar';
 export declare function zipDir(dirPath: any, outputPath: any, ignore?: string | string[]): Promise<unknown>;
 export declare function askForInput(question: any): Promise<string>;
 export declare function getSSHConfig(): SSH;
