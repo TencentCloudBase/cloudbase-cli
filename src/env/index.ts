@@ -1,10 +1,9 @@
-import { random } from '../utils'
+import { random, CloudApiService } from '../utils'
 import { CloudBaseError } from '../error'
-import { CloudService } from '../utils'
 export * from './domain'
 export * from './login'
 
-const tcbService = new CloudService('tcb', '2018-06-08')
+const tcbService = new CloudApiService('tcb')
 
 // 初始化云开发服务
 // 当用户没开通云开发服务时，需要调用此接口初始化云开发服务

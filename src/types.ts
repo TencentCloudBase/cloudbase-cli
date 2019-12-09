@@ -92,7 +92,7 @@ export interface ICloudFunctionConfig {
     runtime?: string
     vpc?: IFunctionVPC
     l5?: boolean
-    installDependency: boolean
+    installDependency?: boolean
 }
 
 export interface ICloudFunctionTrigger {
@@ -181,4 +181,18 @@ export interface FunctionContext {
     config: CloudBaseConfig
     // 配置文件中所有的函数
     functions?: ICloudFunction[]
+}
+
+export interface IFlattenFunctionConfig {
+    name: string
+    triggers?: ICloudFunctionTrigger[]
+    params?: Record<string, string>
+    handler?: string
+    ignore?: string | string[]
+    timeout?: number
+    envVariables?: Record<string, string | number | boolean>
+    runtime?: string
+    vpc?: IFunctionVPC
+    l5?: boolean
+    installDependency?: boolean
 }

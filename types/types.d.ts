@@ -72,7 +72,7 @@ export interface ICloudFunctionConfig {
     runtime?: string;
     vpc?: IFunctionVPC;
     l5?: boolean;
-    installDependency: boolean;
+    installDependency?: boolean;
 }
 export interface ICloudFunctionTrigger {
     name: string;
@@ -145,4 +145,17 @@ export interface FunctionContext {
     envId: string;
     config: CloudBaseConfig;
     functions?: ICloudFunction[];
+}
+export interface IFlattenFunctionConfig {
+    name: string;
+    triggers?: ICloudFunctionTrigger[];
+    params?: Record<string, string>;
+    handler?: string;
+    ignore?: string | string[];
+    timeout?: number;
+    envVariables?: Record<string, string | number | boolean>;
+    runtime?: string;
+    vpc?: IFunctionVPC;
+    l5?: boolean;
+    installDependency?: boolean;
 }

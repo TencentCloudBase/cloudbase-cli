@@ -3,7 +3,7 @@ var runtime = require('./runtime')
 var util = require('util')
 
 var initHandlerFault = 'function initialization failed'
-var maxRetMsgLen = 6 * 1024 * 1024 //byte
+var maxRetMsgLen = 6 * 1024 * 1024 // byte
 var maxRetMsgLenExceedError = 'body size is too long'
 var httpHandler, eventHandler
 
@@ -12,11 +12,11 @@ var _user_exception = false
 
 function wrapLog(invokeId) {
     console.log = console.info = function prettyConsoleLog() {
-        var message = `${util.format.apply(this, arguments)}\n`
+        var message = `${util.format.apply(this, arguments)}`
         runtime.console_log(message)
     }
     console.error = console.warn = function prettyConsoleLogErr() {
-        var message = `${util.format.apply(this, arguments)}\n`
+        var message = `${util.format.apply(this, arguments)}`
         runtime.console_log(message, (err = true))
     }
 }
@@ -67,7 +67,7 @@ function waitForInvoke() {
 function invoke(invokeInfo) {
     if (invokeInfo.cmd === 'RELOAD') {
         runtime.log(`get reload request: ${invokeInfo.context}`)
-        var ff = invokeInfo.context.split(':')
+        var ff = invokeInfo.context.split('.')
         initHandler(ff[ff.length - 2], ff[ff.length - 1])
         runtime.log('handlers reloaded')
         _result = 'reload'

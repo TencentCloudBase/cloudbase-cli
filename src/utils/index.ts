@@ -19,6 +19,10 @@ export * from './os-release'
 export * from './time'
 export * from './cloud-api-request'
 export * from './fs'
+export * from './proxy'
+export * from './object'
+export * from './config'
+export * from './progress-bar'
 
 export async function zipDir(dirPath, outputPath, ignore?: string | string[]) {
     return new Promise((resolve, reject) => {

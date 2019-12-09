@@ -9,7 +9,10 @@ import {
     getEnvId,
     loadingFactory,
     printHorizontalTable,
-    formatDate
+    formatDate,
+    getProxy,
+    createOnProgressBar,
+    formateFileSize
 } from '../utils'
 
 import { CloudBaseError } from '../error'
@@ -21,7 +24,8 @@ async function getStorageService(envId: string): Promise<StorageService> {
         secretId,
         secretKey,
         token,
-        envId
+        envId,
+        proxy: getProxy()
     })
     return app.storage
 }
@@ -34,18 +38,18 @@ const AclMap = {
 }
 
 program
-    .command('storage:upload <localPath> <cloudPath> [envId]')
+    .command('storage:upload <localPath> [cloudPath]')
+    .option('-e, --envId [envId]', '环境 Id')
     .description('上传文件/文件夹')
-    .action(async function(
-        localPath: string,
-        cloudPath: string,
-        envId: string,
-        options
-    ) {
-        const { configFile } = options.parent
+    .action(async function(localPath: string, cloudPath: string = '', options) {
+        const {
+            parent: { configFile },
+            envId
+        } = options
         const assignEnvId = await getEnvId(envId, configFile)
         const storageService = await getStorageService(assignEnvId)
         const resolveLocalPath = path.resolve(localPath)
+        console.log(resolveLocalPath)
 
         if (!fs.existsSync(resolveLocalPath)) {
             throw new CloudBaseError('文件未找到！')
@@ -53,27 +57,29 @@ program
 
         const isDir = fs.statSync(resolveLocalPath).isDirectory()
         const fileText = isDir ? '文件夹' : '文件'
-        const loading = loadingFactory()
-        loading.start(`上传${fileText}中`)
+        // 上传进度条
+        const onProgress = createOnProgressBar(() => {
+            successLog(`上传${fileText}成功！`)
+        })
         if (isDir) {
-            await storageService.uploadDirectory(resolveLocalPath, cloudPath)
+            await storageService.uploadDirectory(resolveLocalPath, cloudPath, {
+                onProgress
+            })
         } else {
-            await storageService.uploadFile(resolveLocalPath, cloudPath)
+            await storageService.uploadFile(resolveLocalPath, cloudPath, onProgress)
         }
-        loading.succeed(`上传${fileText}成功！`)
     })
 
 program
-    .command('storage:download <cloudPath> <localPath> [envId]')
+    .command('storage:download <cloudPath> <localPath>')
+    .option('-e, --envId [envId]', '环境 Id')
     .option('-d, --dir', '下载目标是否为文件夹')
     .description('下载文件/文件夹，文件夹需指定 --dir 选项')
-    .action(async function(
-        cloudPath: string,
-        localPath: string,
-        envId: string,
-        options
-    ) {
-        const { configFile } = options.parent
+    .action(async function(cloudPath: string, localPath: string, options) {
+        const {
+            parent: { configFile },
+            envId
+        } = options
         const assignEnvId = await getEnvId(envId, configFile)
         const storageService = await getStorageService(assignEnvId)
         const resolveLocalPath = path.resolve(localPath)
@@ -99,11 +105,15 @@ program
     })
 
 program
-    .command('storage:delete <cloudPath> [envId]')
+    .command('storage:delete <cloudPath>')
+    .option('-e, --envId [envId]', '环境 Id')
     .option('-d, --dir', '下载目标是否为文件夹')
     .description('删除文件/文件夹，文件夹需指定 --dir 选项')
-    .action(async function(cloudPath: string, envId: string, options) {
-        const { configFile } = options.parent
+    .action(async function(cloudPath: string, options) {
+        const {
+            parent: { configFile },
+            envId
+        } = options
         const assignEnvId = await getEnvId(envId, configFile)
         const storageService = await getStorageService(assignEnvId)
 
@@ -122,20 +132,23 @@ program
     })
 
 program
-    .command('storage:list <cloudPath> [envId]')
+    .command('storage:list [cloudPath]')
+    .option('-e, --envId [envId]', '环境 Id')
     .option('--max', '传输数据的最大条数')
     .option('--markder', '起始路径名，后（不含）按照 UTF-8 字典序返回条目')
-    .description('获取文件夹中的文件列表')
-    .action(async function(cloudPath: string, envId: string, options) {
-        const { configFile } = options.parent
+    .description('获取文件存储的文件列表')
+    .action(async function(cloudPath = '', options) {
+        const {
+            parent: { configFile },
+            envId
+        } = options
         const assignEnvId = await getEnvId(envId, configFile)
         const storageService = await getStorageService(assignEnvId)
         const list = await storageService.listDirectoryFiles(cloudPath)
 
-        const head = ['序号', 'Key', 'LastModified', 'ETag', 'Size(B)']
+        const head = ['序号', 'Key', 'LastModified', 'ETag', 'Size(KB)']
 
-        const notDir = item =>
-            !(Number(item.Size) === 0 && /\/$/g.test(item.Key))
+        const notDir = item => !(Number(item.Size) === 0 && /\/$/g.test(item.Key))
 
         const tableData = list
             .filter(notDir)
@@ -144,16 +157,20 @@ program
                 item.Key,
                 formatDate(item.LastModified, 'yyyy-MM-dd hh:mm:ss'),
                 item.ETag,
-                String(item.Size)
+                String(formateFileSize(item.Size, 'KB'))
             ])
         printHorizontalTable(head, tableData)
     })
 
 program
-    .command('storage:url <cloudPath> [envId]')
+    .command('storage:url <cloudPath>')
+    .option('-e, --envId [envId]', '环境 Id')
     .description('获取文件临时访问地址')
-    .action(async function(cloudPath: string, envId: string, options) {
-        const { configFile } = options.parent
+    .action(async function(cloudPath: string, options) {
+        const {
+            parent: { configFile },
+            envId
+        } = options
         const assignEnvId = await getEnvId(envId, configFile)
         const storageService = await getStorageService(assignEnvId)
         const fileList = await storageService.getTemporaryUrl([cloudPath])
@@ -163,10 +180,14 @@ program
     })
 
 program
-    .command('storage:detail <cloudPath> [envId]')
+    .command('storage:detail <cloudPath>')
+    .option('-e, --envId [envId]', '环境 Id')
     .description('获取文件信息')
-    .action(async function(cloudPath: string, envId: string, options) {
-        const { configFile } = options.parent
+    .action(async function(cloudPath: string, options) {
+        const {
+            parent: { configFile },
+            envId
+        } = options
         const assignEnvId = await getEnvId(envId, configFile)
         const storageService = await getStorageService(assignEnvId)
 
@@ -179,10 +200,14 @@ program
     })
 
 program
-    .command('storage:get-acl [envId]')
+    .command('storage:get-acl')
+    .option('-e, --envId [envId]', '环境 Id')
     .description('获取文件存储权限信息')
-    .action(async function(envId: string, options) {
-        const { configFile } = options.parent
+    .action(async function(options) {
+        const {
+            parent: { configFile },
+            envId
+        } = options
         const assignEnvId = await getEnvId(envId, configFile)
         const storageService = await getStorageService(assignEnvId)
 
@@ -192,9 +217,14 @@ program
     })
 
 program
-    .command('storage:set-acl [envId]')
+    .command('storage:set-acl')
+    .option('-e, --envId [envId]', '环境 Id')
     .description('设置文件存储权限信息')
-    .action(async function(envId: string, options) {
+    .action(async function(options) {
+        const {
+            parent: { configFile },
+            envId
+        } = options
         const { acl } = await inquirer.prompt({
             type: 'list',
             name: 'acl',
@@ -218,7 +248,6 @@ program
                 }
             ]
         })
-        const { configFile } = options.parent
         const assignEnvId = await getEnvId(envId, configFile)
         const storageService = await getStorageService(assignEnvId)
 

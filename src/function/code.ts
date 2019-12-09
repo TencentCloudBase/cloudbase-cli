@@ -11,7 +11,7 @@ interface IFunctionCodeOptions {
     unzip?: boolean
 }
 
-const scfService = new CloudApiService('scf', '2018-04-16')
+const scfService = new CloudApiService('scf')
 
 // 下载函数代码
 export async function downloadFunctionCode(options: IFunctionCodeOptions) {
