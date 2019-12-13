@@ -7,3 +7,4 @@ import './storage';
 import './hosting';
 import './server';
 import './open';
+import './gateway';
