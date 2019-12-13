@@ -196,3 +196,44 @@ export interface IFlattenFunctionConfig {
     l5?: boolean
     installDependency?: boolean
 }
+
+export interface GatewayContext {
+    // 环境 id
+    envId: string
+    // 整体配置
+    config: CloudBaseConfig
+}
+
+export interface ICreateFunctionGatewayOptions {
+    envId: string
+    path: string
+    functionName: string
+}
+
+export interface IQueryGatewayOptions {
+    envId: string,
+    domain?: string,
+    path?: string,
+    gatewayId?: string
+}
+
+export interface IDeleteGatewayOptions {
+    envId: string
+    path?: string
+    gatewayId?: string
+}
+
+export interface IBindGatewayDomainOptions {
+    envId: string
+    domain: string
+}
+
+export interface IQueryGatewayDomainOptions {
+    envId: string
+    domain?: string
+}
+
+export interface IUnbindGatewayDomainOptions {
+    envId: string
+    domain: string
+}
