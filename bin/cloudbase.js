@@ -146,7 +146,12 @@ if (process.argv.length < 3) {
     program.outputHelp()
 }
 
-program.parse(processArgv)
+try {
+    program.parse(processArgv)
+} catch (e) {
+    const errMsg = `${logSymbols.error} ${e.message || '参数异常，请检查您是否输入了正确的命令！'}`
+    console.log(errMsg)
+}
 
 function errorHandler(err) {
     const stackIngoreErrors = ['TencentCloudSDKHttpException', 'CloudBaseError']

@@ -6,10 +6,14 @@ import { successLog } from '../../logger'
 import { getEnvAuthDomains, createEnvDomain, deleteEnvDomain } from '../../env'
 
 program
-    .command('env:domain:list [envId]')
+    .command('env:domain:list')
+    .option('-e, --envId <envId>', '环境 Id')
     .description('列出环境的安全域名列表')
-    .action(async function(envId?: string, options?: any) {
-        const { configFile } = options.parent
+    .action(async function(options?: any) {
+        const {
+            envId,
+            parent: { configFile }
+        } = options
         const assignEnvId = await getEnvId(envId, configFile)
         const domains = await getEnvAuthDomains({
             envId: assignEnvId
@@ -30,10 +34,14 @@ program
     })
 
 program
-    .command('env:domain:create <domain> [envId]')
+    .command('env:domain:create <domain>')
+    .option('-e, --envId <envId>', '环境 Id')
     .description('添加环境安全域名，多个以斜杠 / 分隔')
-    .action(async function(domain: string, envId?: string, options?: any) {
-        const { configFile } = options.parent
+    .action(async function(domain: string, options?: any) {
+        const {
+            envId,
+            parent: { configFile }
+        } = options
         const assignEnvId = await getEnvId(envId, configFile)
 
         const domains = domain.split('/')
@@ -61,9 +69,7 @@ program
             }
         })
         if (exitDomains.length) {
-            throw new CloudBaseError(
-                `域名 [${exitDomains.join(', ')}] 已存在！`
-            )
+            throw new CloudBaseError(`域名 [${exitDomains.join(', ')}] 已存在！`)
         }
 
         await createEnvDomain({
@@ -75,10 +81,14 @@ program
     })
 
 program
-    .command('env:domain:delete [envId]')
+    .command('env:domain:delete')
+    .option('-e, --envId <envId>', '环境 Id')
     .description('删除环境的安全域名')
-    .action(async function(envId?: string, options?: any) {
-        const { configFile } = options.parent
+    .action(async function(options?: any) {
+        const {
+            envId,
+            parent: { configFile }
+        } = options
         const assignEnvId = await getEnvId(envId, configFile)
         const loading = loadingFactory()
 

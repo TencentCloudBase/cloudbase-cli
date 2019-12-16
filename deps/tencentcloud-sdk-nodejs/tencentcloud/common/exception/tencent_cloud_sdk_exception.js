@@ -8,7 +8,7 @@ class TencentCloudSDKHttpException extends Error {
         this.name = 'TencentCloudSDKHttpException'
         this.code = code
         this.message =
-            '[TencentCloudSDKException]' +
+            'API 请求异常' +
             `\nCode: ${code}` +
             '\nMessage: ' +
             error +
@@ -26,7 +26,7 @@ class TencentCloudSDKHttpException extends Error {
 
     toString() {
         return (
-            '[TencentCloudSDKException]' +
+            'API 请求异常' +
             `\nCode: ${this.code}` +
             '\nMessage: ' +
             this.getMessage() +
@@ -37,7 +37,7 @@ class TencentCloudSDKHttpException extends Error {
 
     toLocaleString() {
         return (
-            '[TencentCloudSDKException]' +
+            'API 请求异常' +
             'message:' +
             this.getMessage() +
             '  requestId:' +

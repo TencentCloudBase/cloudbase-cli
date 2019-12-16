@@ -104,9 +104,11 @@ program
     })
 
 program
-    .command('env:rename <name> [envId]')
-    .description('重命名云开发环境')
-    .action(async function(name: string, envId: string, options) {
+    .command('env:rename <name>')
+    .option('-e, --envId <envId>', '环境 Id')
+    .description('修改云开发环境别名')
+    .action(async function(name: string, options) {
+        const { envId } = options
         if (!name) {
             throw new CloudBaseError('环境名称不能为空！')
         }
