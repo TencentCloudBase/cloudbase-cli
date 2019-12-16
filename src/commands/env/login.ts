@@ -2,11 +2,7 @@ import program from 'commander'
 import inquirer from 'inquirer'
 import { printHorizontalTable, getEnvId } from '../../utils'
 import { successLog } from '../../logger'
-import {
-    getLoginConfigList,
-    updateLoginConfig,
-    createLoginConfig
-} from '../../env'
+import { getLoginConfigList, updateLoginConfig, createLoginConfig } from '../../env'
 import { CloudBaseError } from '../../error'
 
 const platformMap = {
@@ -15,10 +11,14 @@ const platformMap = {
 }
 
 program
-    .command('env:login:list [envId]')
+    .command('env:login:list')
+    .option('-e, --envId <envId>', '环境 Id')
     .description('列出环境登录配置')
-    .action(async function(envId?: string, options?: any) {
-        const { configFile } = options.parent
+    .action(async function(options?: any) {
+        const {
+            envId,
+            parent: { configFile }
+        } = options
         const assignEnvId = await getEnvId(envId, configFile)
 
         const configList = await getLoginConfigList({
@@ -27,9 +27,7 @@ program
 
         const head = ['平台', '平台 Id', '创建时间', '状态']
         const tableData = configList.map(item => [
-            platformMap[item.Platform]
-                ? platformMap[item.Platform]
-                : item.Platform,
+            platformMap[item.Platform] ? platformMap[item.Platform] : item.Platform,
             item.PlatformId,
             item.CreateTime,
             item.Status === 'ENABLE' ? '启用' : '禁用'
@@ -38,10 +36,14 @@ program
     })
 
 program
-    .command('env:login:create [envId]')
+    .command('env:login:create')
+    .option('-e, --envId <envId>', '环境 Id')
     .description('创建环境登录配置')
-    .action(async function(envId?: string, options?: any) {
-        const { configFile } = options.parent
+    .action(async function(options?: any) {
+        const {
+            envId,
+            parent: { configFile }
+        } = options
         const assignEnvId = await getEnvId(envId, configFile)
 
         const { platform, status, appId, appSecret } = await inquirer.prompt([
@@ -105,10 +107,14 @@ program
     })
 
 program
-    .command('env:login:update [envId]')
+    .command('env:login:update')
+    .option('-e, --envId <envId>', '环境 Id')
     .description('更新环境登录方式配置')
-    .action(async function(envId?: string, options?: any) {
-        const { configFile } = options.parent
+    .action(async function(options?: any) {
+        const {
+            envId,
+            parent: { configFile }
+        } = options
         const assignEnvId = await getEnvId(envId, configFile)
 
         const configList = await getLoginConfigList({
