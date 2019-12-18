@@ -4,11 +4,11 @@ import { createFunctionGateway } from '../../gateway'
 import { listFunction } from '../../function'
 import { loadingFactory } from '../../utils'
 
-export async function createGw(ctx: GatewayContext, gatewayPath: string, commandOptions) {
+export async function createGw(ctx: GatewayContext, servicePath: string, commandOptions) {
     const { envId } = ctx
 
-    if (!gatewayPath) {
-        throw new CloudBaseError('请指定需要创建的网关路径！')
+    if (!servicePath) {
+        throw new CloudBaseError('请指定需要创建的HTTP service路径！')
     }
 
     const { function: functionName } = commandOptions
@@ -17,7 +17,7 @@ export async function createGw(ctx: GatewayContext, gatewayPath: string, command
     // 创建云函数网关
     if (functionName) {
         const loading = loadingFactory()
-        loading.start(`[${functionName}] 云函数网关创建中...`)
+        loading.start(`[${functionName}] 云函数HTTP service创建中...`)
 
         try {
             // step1: 判断云函数是否存在
@@ -33,10 +33,10 @@ export async function createGw(ctx: GatewayContext, gatewayPath: string, command
             // step2: 创建云函数网关
             const res = await createFunctionGateway({
                 envId,
-                path: gatewayPath,
+                path: servicePath,
                 functionName
             })
-            loading.succeed(`[${functionName}:${res.APIId}] 云函数网关创建成功！`)
+            loading.succeed(`云函数HTTP service [path: ${envId}.service.tcloudbase.com${servicePath}] [id: ${res.APIId}] 创建成功！`)
         } catch (e) {
             loading.stop()
             throw e
@@ -44,5 +44,5 @@ export async function createGw(ctx: GatewayContext, gatewayPath: string, command
         return
     }
 
-    throw new CloudBaseError('请指定需要创建的网关类型！')
+    throw new CloudBaseError('请指定需要创建的HTTP service类型！')
 }

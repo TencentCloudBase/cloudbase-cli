@@ -1,35 +1,35 @@
 import { GatewayContext } from '../../types'
 import { CloudBaseError } from '../../error'
 import { queryGateway } from '../../gateway'
-import { printHorizontalTable, loadingFactory } from '../../utils'
+import { printHorizontalTable, loadingFactory, formatDate } from '../../utils'
 
 export async function queryGw(ctx: GatewayContext, commandOptions) {
     const { envId } = ctx
 
-    const { domain: domainName, gatewayPath, gatewayId } = commandOptions
+    const { domain: domainName, servicePath, serviceId } = commandOptions
 
     if (!envId && !domainName) {
-        throw new CloudBaseError('请指定需要查询的环境ID或网关域名！')
+        throw new CloudBaseError('请指定需要查询的环境ID或HTTP service域名！')
     }
 
     const loading = loadingFactory()
-    loading.start(`查询云函数网关中...`)
+    loading.start(`查询HTTP service中...`)
 
     try {
         const res = await queryGateway({
             envId,
             domain: domainName,
-            path: gatewayPath,
-            gatewayId
+            path: servicePath,
+            gatewayId: serviceId
         })
-        loading.succeed(`查询云函数网关成功！`)
+        loading.succeed(`查询HTTP service成功！`)
 
-        const head = ['GatewayID', 'Path', 'FunctionName', 'CreateTime']
+        const head = ['Id', 'Path', 'FunctionName', 'CreateTime']
         const tableData = res.APISet.map(item => [
             item.APIId,
             item.Path,
             item.Name,
-            item.CreateTime
+            formatDate(item.CreateTime * 1000, 'yyyy-MM-dd hh:mm:ss'),
         ])
         printHorizontalTable(head, tableData)
     } catch (e) {

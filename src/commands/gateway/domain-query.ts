@@ -1,7 +1,7 @@
 import { GatewayContext } from '../../types'
 import { CloudBaseError } from '../../error'
 import { queryGatewayDomain } from '../../gateway'
-import { printHorizontalTable, loadingFactory } from '../../utils'
+import { printHorizontalTable, loadingFactory, formatDate } from '../../utils'
 
 export async function queryGwDomain(ctx: GatewayContext, commandOptions) {
     const { envId } = ctx
@@ -9,22 +9,22 @@ export async function queryGwDomain(ctx: GatewayContext, commandOptions) {
     const { domain: domainName } = commandOptions
 
     if (!envId && !domainName) {
-        throw new CloudBaseError('请指定需要查询的环境ID或网关域名！')
+        throw new CloudBaseError('请指定需要查询的环境ID或HTTP service域名！')
     }
 
     const loading = loadingFactory()
-    loading.start(`查询自定义网关域名中...`)
+    loading.start(`查询HTTP service域名中...`)
 
     try {
         const res = await queryGatewayDomain({
             envId,
             domain: domainName
         })
-        loading.succeed(`查询自定义网关域名成功！`)
-        const head = ['CustomDomain', 'CreateTime']
+        loading.succeed(`查询HTTP service域名成功！`)
+        const head = ['HTTP service domain', 'CreateTime']
         const tableData = res.ServiceSet.map(item => [
             item.Domain,
-            item.OpenTime
+            formatDate(item.OpenTime * 1000, 'yyyy-MM-dd hh:mm:ss'),
         ])
         printHorizontalTable(head, tableData)
     } catch (e) {

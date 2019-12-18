@@ -6,22 +6,22 @@ import { loadingFactory } from '../../utils'
 export async function deleteGw(ctx: GatewayContext, commandOptions) {
     const { envId } = ctx
 
-    const { gatewayPath, gatewayId } = commandOptions
+    const { servicePath, serviceId } = commandOptions
 
-    if (!gatewayPath && !gatewayId) {
-        throw new CloudBaseError('请指定需要删除的网关路径或ID！')
+    if (!servicePath && !serviceId) {
+        throw new CloudBaseError('请指定需要删除的HTTP Service路径或ID！')
     }
 
     const loading = loadingFactory()
-    loading.start(`[${gatewayPath || gatewayId}] 云函数网关删除中...`)
+    loading.start(`[${servicePath || serviceId}] HTTP Service删除中...`)
 
     try {
         await deleteGateway({
             envId,
-            path: gatewayPath,
-            gatewayId
+            path: servicePath,
+            gatewayId: serviceId
         })
-        loading.succeed(`[${gatewayPath || gatewayId}] 云函数网关删除成功！`)
+        loading.succeed(`HTTP Service 删除成功！`)
     } catch (e) {
         loading.stop()
         throw e

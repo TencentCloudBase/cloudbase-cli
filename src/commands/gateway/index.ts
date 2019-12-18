@@ -32,119 +32,157 @@ async function getGatewayContext(
 
 const commands = [
     {
-        cmd: 'gateway:create <gatewayPath> [envId]',
+        cmd: 'service:create <servicePath>',
         options: [
             {
+                flags: '-e, --envId [envId]',
+                desc: '环境 Id'
+            },
+            {
                 flags: '-f, --function <function>',
-                desc: '创建云函数网关.'
+                desc: '创建云函数HTTP service'
             }
         ],
-        desc: '创建云函数网关.',
+        desc: '创建HTTP service',
         handler: async (
-            gatewayPath:string,
-            envId: string,
+            servicePath:string,
             options
         ) => {
-            const { configFile } = options.parent
+            const {
+                parent: { configFile },
+                envId
+            } = options
             const ctx = await getGatewayContext(envId, configFile)
-            await createGw(ctx, gatewayPath, options)
+            await createGw(ctx, servicePath, options)
         }
     },
 
     {
-        cmd: 'gateway:delete [envId]',
+        cmd: 'service:delete',
         options: [
             {
-                flags: '-p, --gateway-path <gatewayPath>',
-                desc: 'API Path'
+                flags: '-e, --envId [envId]',
+                desc: '环境 Id'
             },
             {
-                flags: '-i, --gateway-id <gatewayId>',
-                desc: 'API id'
+                flags: '-p, --service-path <servicePath>',
+                desc: 'Service Path'
+            },
+            {
+                flags: '-i, --service-id <serviceId>',
+                desc: 'Service Id'
             }
         ],
-        desc: '删除云函数网关.',
+        desc: '删除HTTP service',
         handler: async (
-            envId: string,
             options
         ) => {
-            const { configFile } = options.parent
+            const {
+                parent: { configFile },
+                envId
+            } = options
             const ctx = await getGatewayContext(envId, configFile)
             await deleteGw(ctx, options)
         }
     },
 
     {
-        cmd: 'gateway:list [envId]',
+        cmd: 'service:list',
         options: [
+            {
+                flags: '-e, --envId [envId]',
+                desc: '环境 Id'
+            },
             {
                 flags: '-d, --domain <domain>',
                 desc: '域名'
             },
             {
-                flags: '-p, --gateway-path <gatewayPath>',
-                desc: 'API Path'
+                flags: '-p, --service-path <servicePath>',
+                desc: 'Service Path'
             },
             {
-                flags: '-i, --gateway-id <gatewayId>',
-                desc: 'API id'
+                flags: '-i, --service-id <serviceId>',
+                desc: 'Service Id'
             }
         ],
-        desc: '查询云函数网关.',
+        desc: '查询HTTP service',
         handler: async (
-            envId: string,
             options
         ) => {
-            const { configFile } = options.parent
+            const {
+                parent: { configFile },
+                envId
+            } = options
             const ctx = await getGatewayContext(envId, configFile)
             await queryGw(ctx, options)
         }
     },
 
     {
-        cmd: 'gateway:domain:bind <customDomain> [envId]',
-        options: [],
-        desc: '绑定自定义网关域名.',
-        handler: async (
-            customDomain: string,
-            envId: string,
-            options
-        ) => {
-            const { configFile } = options.parent
-            const ctx = await getGatewayContext(envId, configFile)
-            await bindGwDomain(ctx, customDomain)
-        }
-    },
-
-    {
-        cmd: 'gateway:domain:unbind <customDomain> [envId]',
-        options: [],
-        desc: '解绑自定义网关名.',
-        handler: async (
-            customDomain: string,
-            envId: string,
-            options
-        ) => {
-            const { configFile } = options.parent
-            const ctx = await getGatewayContext(envId, configFile)
-            await unbindGwDomain(ctx, customDomain)
-        }
-    },
-
-    {
-        cmd: 'gateway:domain:list [envId]',
+        cmd: 'service:domain:bind <domain>',
         options: [
+            {
+                flags: '-e, --envId [envId]',
+                desc: '环境 Id'
+            }
+        ],
+        desc: '绑定HTTP service域名',
+        handler: async (
+            domain: string,
+            options
+        ) => {
+            const {
+                parent: { configFile },
+                envId
+            } = options
+            const ctx = await getGatewayContext(envId, configFile)
+            await bindGwDomain(ctx, domain)
+        }
+    },
+
+    {
+        cmd: 'service:domain:unbind <domain>',
+        options: [
+            {
+                flags: '-e, --envId [envId]',
+                desc: '环境 Id'
+            }
+        ],
+        desc: '解绑HTTP service域名',
+        handler: async (
+            domain: string,
+            options
+        ) => {
+            const {
+                parent: { configFile },
+                envId
+            } = options
+            const ctx = await getGatewayContext(envId, configFile)
+            await unbindGwDomain(ctx, domain)
+        }
+    },
+
+    {
+        cmd: 'service:domain:list',
+        options: [
+            {
+                flags: '-e, --envId [envId]',
+                desc: '环境 Id'
+            },
             {
                 flags: '-d, --domain <domain>',
                 desc: '域名'
             }
         ],
-        desc: '查询自定义网关域名.',
+        desc: '查询HTTP service域名',
         handler: async (
-            envId: string,
             options
         ) => {
-            const { configFile } = options.parent
+            const {
+                parent: { configFile },
+                envId
+            } = options
             const ctx = await getGatewayContext(envId, configFile)
             await queryGwDomain(ctx, options)
         }
