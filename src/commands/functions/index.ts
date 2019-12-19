@@ -42,10 +42,20 @@ async function getFunctionContext(
     return ctx
 }
 
+const validOptions = options => {
+    if (!options || !options.parent) {
+        throw new CloudBaseError('参数异常，请检查您是否输入了正确的命令！')
+    }
+}
+
 const commands = [
     {
-        cmd: 'functions:list [envId]',
+        cmd: 'functions:list',
         options: [
+            {
+                flags: '-e, --envId <envId>',
+                desc: '环境 Id'
+            },
             { flags: '-l, --limit <limit>', desc: '返回数据长度，默认值为 20' },
             {
                 flags: '-o, --offset <offset>',
@@ -53,15 +63,22 @@ const commands = [
             }
         ],
         desc: '展示云函数列表',
-        handler: async (envId: string, options) => {
-            const { configFile } = options.parent
+        handler: async options => {
+            const {
+                envId,
+                parent: { configFile }
+            } = options
             const ctx = await getFunctionContext('', envId, configFile)
             await list(ctx, options)
         }
     },
     {
-        cmd: 'functions:download <functionName> [dest] [envId]',
+        cmd: 'functions:download <functionName> [dest]',
         options: [
+            {
+                flags: '-e, --envId <envId>',
+                desc: '环境 Id'
+            },
             { flags: '-l, --limit <limit>', desc: '返回数据长度，默认值为 20' },
             {
                 flags: '--code-secret <codeSecret>',
@@ -69,15 +86,22 @@ const commands = [
             }
         ],
         desc: '下载云函数代码',
-        handler: async (name: string, dest: string, envId: string, options) => {
-            const { configFile } = options.parent
+        handler: async (name: string, dest: string, options) => {
+            const {
+                envId,
+                parent: { configFile }
+            } = options
             const ctx = await getFunctionContext(name, envId, configFile)
             await codeDownload(ctx, dest, options)
         }
     },
     {
-        cmd: 'functions:deploy [functionName] [envId]',
+        cmd: 'functions:deploy [functionName]',
         options: [
+            {
+                flags: '-e, --envId <envId>',
+                desc: '环境 Id'
+            },
             {
                 flags: '--code-secret <codeSecret>',
                 desc: '传入此参数将保护代码，格式为 36 位大小字母和数字'
@@ -88,65 +112,106 @@ const commands = [
             }
         ],
         desc: '部署云函数',
-        handler: async (name: string, envId: string, options) => {
-            const { configFile } = options.parent
+        handler: async (name: string, options) => {
+            const {
+                envId,
+                parent: { configFile }
+            } = options
             const ctx = await getFunctionContext(name, envId, configFile)
             await deploy(ctx, options)
         }
     },
     {
-        cmd: 'functions:delete [functionName] [envId]',
-        options: [],
+        cmd: 'functions:delete [functionName]',
+        options: [
+            {
+                flags: '-e, --envId <envId>',
+                desc: '环境 Id'
+            }
+        ],
         desc: '删除云函数',
-        handler: async (name: string, envId: string, options) => {
-            const { configFile } = options.parent
+        handler: async (name: string, options) => {
+            const {
+                envId,
+                parent: { configFile }
+            } = options
             const ctx = await getFunctionContext(name, envId, configFile)
             await deleteFunc(ctx)
         }
     },
     {
-        cmd: 'functions:detail [functionName] [envId]',
+        cmd: 'functions:detail [functionName]',
         options: [
+            {
+                flags: '-e, --envId <envId>',
+                desc: '环境 Id'
+            },
             {
                 flags: '--code-secret <codeSecret>',
                 desc: '代码加密的函数的 CodeSecret'
             }
         ],
         desc: '获取云函数信息',
-        handler: async (name: string, envId: string, options) => {
-            const { configFile } = options.parent
+        handler: async (name: string, options) => {
+            const {
+                envId,
+                parent: { configFile }
+            } = options
             const ctx = await getFunctionContext(name, envId, configFile)
             await detail(ctx, options)
         }
     },
     {
-        cmd: 'functions:code:update <functionName> [envId]',
+        cmd: 'functions:code:update <functionName>',
         options: [
+            {
+                flags: '-e, --envId <envId>',
+                desc: '环境 Id'
+            },
             {
                 flags: '--code-secret <codeSecret>',
                 desc: '传入此参数将保护代码，格式为 36 位大小字母和数字'
             }
         ],
         desc: '更新云函数代码',
-        handler: async (name: string, envId: string, options) => {
-            const { configFile } = options.parent
+        handler: async (name: string, options) => {
+            const {
+                envId,
+                parent: { configFile }
+            } = options
             const ctx = await getFunctionContext(name, envId, configFile)
             await codeUpdate(ctx, options)
         }
     },
     {
-        cmd: 'functions:config:update [functionName] [envId]',
-        options: [],
+        cmd: 'functions:config:update [functionName]',
+        options: [
+            {
+                flags: '-e, --envId <envId>',
+                desc: '环境 Id'
+            }
+        ],
         desc: '更新云函数配置',
-        handler: async (name: string, envId: string, options) => {
-            const { configFile } = options.parent
+        handler: async (name: string, options) => {
+            const {
+                envId,
+                parent: { configFile }
+            } = options
             const ctx = await getFunctionContext(name, envId, configFile)
             await configUpdate(ctx)
         }
     },
     {
-        cmd: 'functions:copy <functionName> <newFunctionName> [envId] [targentEnvId]',
+        cmd: 'functions:copy <functionName> <newFunctionName>',
         options: [
+            {
+                flags: '-e, --envId <envId>',
+                desc: '环境 Id'
+            },
+            {
+                flags: '-t, --target <targetEnvId>',
+                desc: '目标环境 Id'
+            },
             {
                 flags: '--code-secret <codeSecret>',
                 desc: '代码加密的函数的 CodeSecret'
@@ -157,21 +222,23 @@ const commands = [
             }
         ],
         desc: '拷贝云函数',
-        handler: async (
-            functionName: string,
-            newFunctionName: string,
-            envId?: string,
-            targentEnvId?: string,
-            options?
-        ) => {
-            const { configFile } = options.parent
+        handler: async (functionName: string, newFunctionName: string, options?) => {
+            const {
+                envId,
+                targentEnvId,
+                parent: { configFile }
+            } = options
             const ctx = await getFunctionContext(functionName, envId, configFile)
             await copy(ctx, newFunctionName, targentEnvId, options)
         }
     },
     {
-        cmd: 'functions:log <functionName> [envId]',
+        cmd: 'functions:log <functionName>',
         options: [
+            {
+                flags: '-e, --envId <envId>',
+                desc: '环境 Id'
+            },
             { flags: '-i, --reqId <reqId>', desc: '函数请求 Id' },
             {
                 flags: '-o, --offset <offset>',
@@ -202,40 +269,72 @@ const commands = [
             { flags: '-s, --success', desc: '只返回正确类型的日志' }
         ],
         desc: '打印云函数日志',
-        handler: async (name: string, envId: string, options) => {
-            const { configFile } = options.parent
+        handler: async (name: string, options) => {
+            const {
+                envId,
+                parent: { configFile }
+            } = options
             const ctx = await getFunctionContext(name, envId, configFile)
             await log(ctx, options)
         }
     },
     {
-        cmd: 'functions:trigger:create [functionName] [envId]',
-        options: [],
+        cmd: 'functions:trigger:create [functionName]',
+        options: [
+            {
+                flags: '-e, --envId <envId>',
+                desc: '环境 Id'
+            }
+        ],
         desc: '创建云函数触发器',
-        handler: async (name: string, envId: string, options) => {
-            const { configFile } = options.parent
+        handler: async (name: string, options) => {
+            const {
+                envId,
+                parent: { configFile }
+            } = options
             const ctx = await getFunctionContext(name, envId, configFile)
             await triggerCreate(ctx)
         }
     },
     {
-        cmd: 'functions:trigger:delete [functionName] [triggerName] [envId]',
-        options: [],
+        cmd: 'functions:trigger:delete [functionName] [triggerName]',
+        options: [
+            {
+                flags: '-e, --envId <envId>',
+                desc: '环境 Id'
+            }
+        ],
         desc: '删除云函数触发器',
-        handler: async (functionName: string, triggerName: string, envId: string, options) => {
-            const { configFile } = options.parent
+        handler: async (functionName: string, triggerName: string, options) => {
+            const {
+                envId,
+                parent: { configFile }
+            } = options
             const ctx = await getFunctionContext(functionName, envId, configFile)
             await triggerDelete(ctx, triggerName)
         }
     },
     {
-        cmd: 'functions:invoke [functionName] [params] [envId]',
-        options: [],
+        cmd: 'functions:invoke [functionName]',
+        options: [
+            {
+                flags: '-e, --envId <envId>',
+                desc: '环境 Id'
+            },
+            {
+                flags: '--params <params>',
+                desc: '调用函数的入参，JSON 字符串形式'
+            }
+        ],
         desc: '触发云端部署的云函数',
-        handler: async (name: string, jsonStringParams: string, envId: string, options) => {
-            const { configFile } = options.parent
+        handler: async (name: string, options) => {
+            const {
+                envId,
+                params,
+                parent: { configFile }
+            } = options
             const ctx = await getFunctionContext(name, envId, configFile)
-            await invoke(ctx, jsonStringParams)
+            await invoke(ctx, params)
         }
     },
     {
@@ -287,5 +386,10 @@ commands.forEach(item => {
     })
 
     instance.description(item.desc)
-    instance.action(item.handler)
+    instance.action((...args) => {
+        const option = args.slice(-1)[0]
+        // 校验 option 是否正确
+        validOptions(option)
+        item.handler.apply(null, args)
+    })
 })
