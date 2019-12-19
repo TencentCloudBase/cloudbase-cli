@@ -4,3 +4,4 @@ addons/
 lib/
 types/
 node_modules
+bin/
