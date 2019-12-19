@@ -1,9 +1,4 @@
-import {
-    CloudService,
-    FunctionPacker,
-    CodeType,
-    loadingFactory
-} from '../utils'
+import { CloudService, FunctionPacker, CodeType, loadingFactory } from '../utils'
 import { CloudBaseError } from '../error'
 import { ICreateFunctionOptions } from '../types'
 import { createFunctionTriggers } from './trigger'
@@ -13,10 +8,9 @@ const scfService = new CloudService('scf', '2018-04-16', {
     Stamp: 'MINI_QCBASE'
 })
 
+/* eslint-disable complexity */
 // 创建云函数
-export async function createFunction(
-    options: ICreateFunctionOptions
-): Promise<void> {
+export async function createFunction(options: ICreateFunctionOptions): Promise<void> {
     const {
         func,
         functionRootPath = '',
@@ -31,9 +25,7 @@ export async function createFunction(
 
     // 校验 CodeSecret 格式
     if (codeSecret && !/^[A-Za-z0-9+=/]{1,160}$/.test(codeSecret)) {
-        throw new CloudBaseError(
-            'CodeSecret 格式错误，格式为 1-160 位大小字母，数字+=/'
-        )
+        throw new CloudBaseError('CodeSecret 格式错误，格式为 1-160 位大小字母，数字+=/')
     }
 
     // 校验运行时
@@ -49,8 +41,7 @@ export async function createFunction(
     // CLI 从本地读取
     if (!base64Code) {
         packer = new FunctionPacker(functionRootPath, funcName, func.ignore)
-        const type: CodeType =
-            func.config.runtime === 'Java8' ? CodeType.JavaFile : CodeType.File
+        const type: CodeType = func.config.runtime === 'Java8' ? CodeType.JavaFile : CodeType.File
         base64 = await packer.build(type)
 
         if (!base64) {
@@ -61,12 +52,10 @@ export async function createFunction(
     }
 
     // 转换环境变量
-    const envVariables = Object.keys(func.config.envVariables || {}).map(
-        key => ({
-            Key: key,
-            Value: func.config.envVariables[key]
-        })
-    )
+    const envVariables = Object.keys(func.config.envVariables || {}).map(key => ({
+        Key: key,
+        Value: func.config.envVariables[key]
+    }))
 
     const params: any = {
         FunctionName: funcName,
@@ -142,17 +131,8 @@ export async function createFunction(
 }
 
 // 批量创建云函数
-export async function batchCreateFunctions(
-    options: ICreateFunctionOptions
-): Promise<void> {
-    const {
-        functions,
-        functionRootPath = '',
-        envId,
-        force,
-        codeSecret,
-        log = false
-    } = options
+export async function batchCreateFunctions(options: ICreateFunctionOptions): Promise<void> {
+    const { functions, functionRootPath = '', envId, force, codeSecret, log = false } = options
     const promises = functions.map(func =>
         (async () => {
             const loading = loadingFactory()
@@ -179,39 +159,30 @@ export async function batchCreateFunctions(
 
 // 更新云函数代码
 export async function updateFunctionCode(options: ICreateFunctionOptions) {
-    const {
-        func,
-        functionRootPath = '',
-        envId,
-        base64Code = '',
-        codeSecret
-    } = options
+    const { func, functionRootPath = '', envId, base64Code = '', codeSecret } = options
     let base64
     let packer
     const funcName = func.name
 
     // 校验 CodeSecret 格式
     if (codeSecret && !/^[A-Za-z0-9+=/]{1,160}$/.test(codeSecret)) {
-        throw new CloudBaseError(
-            'CodeSecret 格式错误，格式为 1-160 位大小字母，数字+=/'
-        )
+        throw new CloudBaseError('CodeSecret 格式错误，格式为 1-160 位大小字母，数字+=/')
     }
 
     // 校验运行时
     const validRuntime = ['Nodejs8.9', 'Php7', 'Java8']
     if (func.config.runtime && !validRuntime.includes(func.config.runtime)) {
         throw new CloudBaseError(
-            `${funcName} 非法的运行环境：${
-                func.config.runtime
-            }，当前支持环境：${validRuntime.join(', ')}`
+            `${funcName} 非法的运行环境：${func.config.runtime}，当前支持环境：${validRuntime.join(
+                ', '
+            )}`
         )
     }
 
     // CLI 从本地读取
     if (!base64Code) {
         packer = new FunctionPacker(functionRootPath, funcName, func.ignore)
-        const type: CodeType =
-            func.config.runtime === 'Java8' ? CodeType.JavaFile : CodeType.File
+        const type: CodeType = func.config.runtime === 'Java8' ? CodeType.JavaFile : CodeType.File
         base64 = await packer.build(type)
 
         if (!base64) {
@@ -241,11 +212,8 @@ export async function updateFunctionCode(options: ICreateFunctionOptions) {
         // 更新云函数代码
         await scfService.request('UpdateFunctionCode', params)
     } catch (e) {
-        throw new CloudBaseError(
-            `[${funcName}] 函数代码更新失败： ${e.message}`,
-            {
-                code: e.code
-            }
-        )
+        throw new CloudBaseError(`[${funcName}] 函数代码更新失败： ${e.message}`, {
+            code: e.code
+        })
     }
 }

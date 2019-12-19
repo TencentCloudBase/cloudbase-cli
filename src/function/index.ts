@@ -315,7 +315,7 @@ export async function batchInvokeFunctions(options: IFunctionBatchOptions) {
         })()
     )
 
-    return await Promise.all(promises)
+    return Promise.all(promises)
 }
 
 // 复制云函数

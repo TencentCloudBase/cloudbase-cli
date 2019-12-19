@@ -139,55 +139,51 @@ export async function getCredentialWithoutCheck(): Promise<AuthSecret> {
 
 // 创建本地 Web 服务器，接受 Web 控制台传入的信息
 async function createLocalServer(): Promise<ServerRes> {
-    return new Promise(async (resolve, reject) => {
-        const server = http.createServer()
-        try {
-            const port = await getPort()
-            server.listen(port, () => {
-                resolve({
-                    port,
-                    server
-                })
+    const server = http.createServer()
+    const port = await getPort()
+    return new Promise((resolve, reject) => {
+        server.listen(port, () => {
+            resolve({
+                port,
+                server
             })
-        } catch (err) {
-            reject(err)
-        }
+        })
     })
 }
 
 // 打开云开发控制台，获取授权
 export async function getAuthTokenFromWeb(options: ILoginOptions): Promise<Credential> {
     const { getAuthUrl } = options
-    return new Promise(async (resolve, reject) => {
-        const loading = loadingFactory()
-        loading.start('正在打开腾讯云获取授权')
+    const loading = loadingFactory()
+    loading.start('正在打开腾讯云获取授权')
 
-        try {
-            const { server, port } = await createLocalServer()
-            const mac = await getMacAddress()
-            const os = getOSInfo()
-            const hash = md5(mac)
+    try {
+        const { server, port } = await createLocalServer()
+        const mac = await getMacAddress()
+        const os = getOSInfo()
+        const hash = md5(mac)
 
-            if (!mac) {
-                throw new CloudBaseError('获取 Mac 地址失败，无法登录！')
+        if (!mac) {
+            throw new CloudBaseError('获取 Mac 地址失败，无法登录！')
+        }
+
+        let cliAuthUrl = `${CliAuthBaseUrl}?port=${port}&hash=${hash}&mac=${mac}&os=${os}`
+
+        if (getAuthUrl) {
+            try {
+                cliAuthUrl = getAuthUrl(
+                    `${CliAuthBaseUrl}?port=${port}&hash=${hash}&mac=${mac}&os=${os}`
+                )
+            } catch (error) {
+                // 忽略错误
             }
+        }
 
-            let cliAuthUrl = `${CliAuthBaseUrl}?port=${port}&hash=${hash}&mac=${mac}&os=${os}`
+        await open(cliAuthUrl)
 
-            if (getAuthUrl) {
-                try {
-                    cliAuthUrl = getAuthUrl(
-                        `${CliAuthBaseUrl}?port=${port}&hash=${hash}&mac=${mac}&os=${os}`
-                    )
-                } catch (error) {
-                    // 忽略错误
-                }
-            }
+        loading.succeed('已打开云开发 CLI 授权页面，请在云开发 CLI 授权页面同意授权！')
 
-            await open(cliAuthUrl)
-
-            loading.succeed('已打开云开发 CLI 授权页面，请在云开发 CLI 授权页面同意授权！')
-
+        return new Promise(resolve => {
             server.on('request', (req: IncomingMessage, res: ServerResponse) => {
                 const { url } = req
                 const { query } = queryString.parseUrl(url)
@@ -203,16 +199,16 @@ export async function getAuthTokenFromWeb(options: ILoginOptions): Promise<Crede
                 res.end('ok')
 
                 // 防止接受到异常请求导致本地服务关闭
-                if (query && query.tmpToken) {
+                if (query?.tmpToken) {
                     server.close()
                 }
 
                 resolve(query as Credential)
             })
-        } catch (err) {
-            logger.error(err.message)
-            loading.fail('获取授权失败！')
-            reject(err)
-        }
-    })
+        })
+    } catch (err) {
+        logger.error(err.message)
+        loading.fail('获取授权失败！')
+        throw err
+    }
 }

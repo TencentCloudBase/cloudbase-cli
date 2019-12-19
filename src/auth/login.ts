@@ -1,9 +1,4 @@
-import {
-    CloudService,
-    authStore,
-    checkAndGetCredential,
-    getAuthTokenFromWeb
-} from '../utils'
+import { CloudService, authStore, checkAndGetCredential, getAuthTokenFromWeb } from '../utils'
 import { ConfigItems } from '../constant'
 import { Credential, ILoginOptions } from '../types'
 
@@ -13,7 +8,7 @@ const tcbService = new CloudService('tcb', '2018-06-08')
 async function checkAuth(credential: Credential) {
     const { tmpSecretId, tmpSecretKey, tmpToken } = credential
     tcbService.setCredential(tmpSecretId, tmpSecretKey, tmpToken)
-    return await tcbService.request('DescribeEnvs')
+    return tcbService.request('DescribeEnvs')
 }
 
 // 登录返回 code 与信息
@@ -97,13 +92,7 @@ export async function loginWithKey(secretId?: string, secretKey?: string) {
     return LoginRes.SUCCESS
 }
 
-export async function login(
-    options: ILoginOptions = {}
-): Promise<{ code: string; msg: string }> {
-    if (options && options.key) {
-        const { secretId, secretKey } = options
-        return await loginWithKey(secretId, secretKey)
-    } else {
-        return await loginWithToken(options)
-    }
+export async function login(options: ILoginOptions = {}): Promise<{ code: string; msg: string }> {
+    const { secretId, secretKey, key } = options
+    return key ? loginWithKey(secretId, secretKey) : loginWithToken(options)
 }

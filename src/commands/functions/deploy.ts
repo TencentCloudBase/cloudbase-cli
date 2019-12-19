@@ -27,7 +27,7 @@ export async function deploy(ctx: FunctionContext, commandOptions) {
     }
 
     if (isBatchCreating) {
-        return await batchCreateFunctions({
+        return batchCreateFunctions({
             envId,
             force,
             functions,

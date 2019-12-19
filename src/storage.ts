@@ -56,7 +56,7 @@ export async function deleteFile(options: IStorageCloudOptions) {
     const { envId, cloudPath, cloudPaths } = options
     const storageService = await getStorageService(envId)
 
-    if (cloudPaths && cloudPaths.length) {
+    if (cloudPaths?.length) {
         return storageService.deleteFile(cloudPaths)
     }
 

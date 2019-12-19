@@ -1,9 +1,15 @@
 import path from 'path'
 import CloudBase from '@cloudbase/manager-node'
 import { StorageService } from '@cloudbase/manager-node/types/storage'
-import { CloudApiService, firstLetterToLowerCase, checkPathExist, isDirectory } from './utils'
+import {
+    CloudApiService,
+    firstLetterToLowerCase,
+    checkPathExist,
+    isDirectory,
+    checkAndGetCredential,
+    getProxy
+} from './utils'
 import { CloudBaseError } from './error'
-import { checkAndGetCredential, getProxy } from './utils'
 
 async function getStorageService(envId: string): Promise<StorageService> {
     const { secretId, secretKey, token } = await checkAndGetCredential()
@@ -117,7 +123,7 @@ export async function destroyHosting(options: IBaseOptions) {
     const { envId } = options
     const files = await hostingList(options)
 
-    if (files && files.length) {
+    if (files?.length) {
         throw new CloudBaseError('静态网站文件不为空，无法销毁！', {
             code: 'INVALID_OPERATION'
         })

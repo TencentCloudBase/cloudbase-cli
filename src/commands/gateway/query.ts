@@ -13,7 +13,7 @@ export async function queryGw(ctx: GatewayContext, commandOptions) {
     }
 
     const loading = loadingFactory()
-    loading.start(`查询HTTP service中...`)
+    loading.start('查询HTTP service中...')
 
     try {
         const res = await queryGateway({
@@ -22,7 +22,7 @@ export async function queryGw(ctx: GatewayContext, commandOptions) {
             path: servicePath,
             gatewayId: serviceId
         })
-        loading.succeed(`查询HTTP service成功！`)
+        loading.succeed('查询HTTP service成功！')
 
         const head = ['Id', 'Path', 'FunctionName', 'CreateTime']
         const tableData = res.APISet.map(item => [

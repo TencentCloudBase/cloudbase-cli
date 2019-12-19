@@ -30,7 +30,7 @@ async function getFunctionContext(
         )
     }
 
-    let { functions } = cloudBaseConfig
+    let { functions = [] } = cloudBaseConfig
 
     const ctx: FunctionContext = {
         name: name,

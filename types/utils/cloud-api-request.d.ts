@@ -12,7 +12,7 @@ export declare class CloudApiService {
     payload: Record<string, any>;
     baseParams: Record<string, any>;
     constructor(service: string, baseParams?: Record<string, any>, version?: string);
-    readonly baseUrl: any;
+    get baseUrl(): any;
     request(action: string, data?: Record<string, any>, method?: 'POST' | 'GET'): Promise<any>;
     requestWithSign(): Promise<any>;
     getRequestSign(timestamp: number): string;

@@ -21,7 +21,7 @@ export async function deleteGw(ctx: GatewayContext, commandOptions) {
             path: servicePath,
             gatewayId: serviceId
         })
-        loading.succeed(`HTTP Service 删除成功！`)
+        loading.succeed('HTTP Service 删除成功！')
     } catch (e) {
         loading.stop()
         throw e

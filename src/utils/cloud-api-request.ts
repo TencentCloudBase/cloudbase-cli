@@ -70,7 +70,7 @@ export class CloudApiService {
     payload: Record<string, any>
     baseParams: Record<string, any>
 
-    constructor(service: string, baseParams?: Record<string, any>, version: string = '') {
+    constructor(service: string, baseParams?: Record<string, any>, version = '') {
         this.service = service
         this.version = ServiceVersionMap[service] || version
         this.timeout = 60000

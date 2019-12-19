@@ -5,7 +5,7 @@ import { batchDeleteTriggers, deleteFunctionTrigger } from '../../function'
 
 export async function triggerDelete(ctx: FunctionContext, triggerName: string) {
     const { name, envId, functions } = ctx
-    let isBtachDeleteTriggers
+    let isBatchDeleteTriggers
     let isBatchDeleteFunctionTriggers = false
 
     // 不指定云函数名称，删除配置文件中所有函数的所有触发器
@@ -26,16 +26,16 @@ export async function triggerDelete(ctx: FunctionContext, triggerName: string) {
                 message: '确定要删除配置文件中的【全部云函数】的全部触发器？',
                 default: false
             })
-            isBtachDeleteTriggers = reConfirm
+            isBatchDeleteTriggers = reConfirm
         }
 
-        if (!isBtachDeleteTriggers) {
+        if (!isBatchDeleteTriggers) {
             throw new CloudBaseError('请指定云函数名称以及触发器名称！')
         }
     }
 
-    if (isBtachDeleteTriggers) {
-        return await batchDeleteTriggers({
+    if (isBatchDeleteTriggers) {
+        return batchDeleteTriggers({
             envId,
             functions,
         })
@@ -59,7 +59,7 @@ export async function triggerDelete(ctx: FunctionContext, triggerName: string) {
 
     if (isBatchDeleteFunctionTriggers) {
         const func = functions.find(item => item.name === name)
-        return await batchDeleteTriggers({
+        return batchDeleteTriggers({
             envId,
             functions: [func],
         })

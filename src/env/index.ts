@@ -40,7 +40,7 @@ export async function getEnvInfo(envId: string) {
         EnvId: envId
     })
 
-    return EnvList && EnvList.length ? EnvList[0] : {}
+    return EnvList?.length ? EnvList[0] : {}
 }
 
 // 列出所有环境

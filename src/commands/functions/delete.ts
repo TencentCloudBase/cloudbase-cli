@@ -37,7 +37,7 @@ export async function deleteFunc(ctx: FunctionContext) {
 
     if (isBatchDelete) {
         const names: string[] = functions.map(item => item.name)
-        return await batchDeleteFunctions({
+        return batchDeleteFunctions({
             names,
             envId
         })

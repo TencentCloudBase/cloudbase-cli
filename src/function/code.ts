@@ -20,20 +20,19 @@ export async function downloadFunctionCode(options: IFunctionCodeOptions) {
     // 检验路径是否存在
     checkPathExist(destPath, true)
 
-    return new Promise(async resolve => {
-        // 获取下载链接
-        const { Url } = await scfService.request('GetFunctionAddress', {
-            FunctionName: functionName,
-            Namespace: envId,
-            CodeSecret: codeSecret
-        })
+    // 获取下载链接
+    const { Url } = await scfService.request('GetFunctionAddress', {
+        FunctionName: functionName,
+        Namespace: envId,
+        CodeSecret: codeSecret
+    })
 
-        // 下载文件
-        const res = await fetchStream(Url)
-        const zipPath = path.join(destPath, `${functionName}.zip`)
-        const dest = fs.createWriteStream(zipPath)
-        res.body.pipe(dest)
-
+    // 下载文件
+    const res = await fetchStream(Url)
+    const zipPath = path.join(destPath, `${functionName}.zip`)
+    const dest = fs.createWriteStream(zipPath)
+    res.body.pipe(dest)
+    return new Promise(resolve => {
         // 解压文件
         dest.on('close', () => {
             // 不解压 ZIP 文件

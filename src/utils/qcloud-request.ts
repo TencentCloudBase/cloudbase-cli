@@ -13,6 +13,7 @@ function deepRemoveVoid(obj) {
         return obj.map(deepRemoveVoid)
     } else if (isObject(obj)) {
         let result = {}
+        /* eslint-disable guard-for-in */
         for (let key in obj) {
             const value = obj[key]
             if (typeof value !== 'undefined' && value !== null) {
@@ -31,11 +32,7 @@ export class CloudService {
     sdkCredential: Record<string, string>
     baseParams: Record<string, string>
 
-    constructor(
-        service: string,
-        version: string,
-        baseParams?: Record<string, string>
-    ) {
+    constructor(service: string, version: string, baseParams?: Record<string, string>) {
         this.service = service
         // 将 2018-08-06 转换成 v20180806 形式
         this.version = `v${version.split('-').join('')}`
@@ -45,7 +42,7 @@ export class CloudService {
         this.baseParams = baseParams || {}
     }
 
-    async request(interfaceName: string, params: any = {}): Promise<any> {
+    async request(interfaceName: string, inParams: any = {}): Promise<any> {
         const { Credential, HttpProfile } = tencentcloud.common
 
         // 缓存 secret 信息
@@ -53,9 +50,7 @@ export class CloudService {
             const credential: AuthSecret = await getCredentialWithoutCheck()
 
             if (!credential) {
-                throw new CloudBaseError(
-                    '无有效身份信息，请使用 cloudbase login 登录'
-                )
+                throw new CloudBaseError('无有效身份信息，请使用 cloudbase login 登录')
             }
 
             const { secretId, secretKey, token } = credential
@@ -73,7 +68,8 @@ export class CloudService {
         let req = new models[`${interfaceName}Request`]()
 
         // 移除空值
-        params = deepRemoveVoid(params)
+
+        const params = deepRemoveVoid(inParams)
 
         const _params = {
             Region: 'ap-shanghai',

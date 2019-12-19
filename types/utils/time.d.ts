@@ -1,1 +1,1 @@
-export declare function formatDate(date: any, fmt: any): any;
+export declare function formatDate(dateParam: string | number | Date, fmtParam: string): string;

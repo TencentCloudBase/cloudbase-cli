@@ -3,7 +3,7 @@ import { CloudBaseError } from '../../error'
 
 export type SizeUnit = 'KB' | 'MB' | 'GB'
 
-export function checkPathExist(dest: string, throwError: boolean = false): boolean {
+export function checkPathExist(dest: string, throwError = false): boolean {
     const exist = fs.existsSync(dest)
 
     if (!exist && throwError) {

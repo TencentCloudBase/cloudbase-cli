@@ -37,7 +37,7 @@ export async function invoke(ctx: FunctionContext, jsonStringParams: string) {
     }
 
     if (isBatchInvoke) {
-        return await batchInvokeFunctions({
+        return batchInvokeFunctions({
             envId,
             functions,
             log: true
@@ -46,7 +46,7 @@ export async function invoke(ctx: FunctionContext, jsonStringParams: string) {
 
     const func = functions.find(item => item.name === name)
 
-    const configParams = func && func.params ? func.params : undefined
+    const configParams = func?.params ? func.params : undefined
 
     const result = await invokeFunction({
         envId,

@@ -9,7 +9,7 @@ const tcbService = new CloudApiService('tcb')
 // 调用 env:list 接口，检查密钥是否有效
 async function checkAuth(secretId, secretKey, token?) {
     tcbService.setCredential(secretId, secretKey, token)
-    return await tcbService.request('DescribeEnvs')
+    return tcbService.request('DescribeEnvs')
 }
 
 // 获取身份认证信息并校验、自动刷新

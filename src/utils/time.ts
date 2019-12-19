@@ -1,12 +1,11 @@
-export function formatDate(date, fmt) {
+export function formatDate(dateParam: string | number | Date, fmtParam: string) {
+    let date: Date
+    let fmt = fmtParam
     if (date instanceof Date === false) {
-        date = new Date(date)
+        date = new Date(dateParam)
     }
     if (/(y+)/.test(fmt)) {
-        fmt = fmt.replace(
-            RegExp.$1,
-            String(date.getFullYear()).substr(4 - RegExp.$1.length)
-        )
+        fmt = fmt.replace(RegExp.$1, String(date.getFullYear()).substr(4 - RegExp.$1.length))
     }
 
     let expMap = {
@@ -21,7 +20,7 @@ export function formatDate(date, fmt) {
         if (new RegExp('(' + exp + ')').test(fmt)) {
             fmt = fmt.replace(
                 RegExp.$1,
-                RegExp.$1.length == 1
+                RegExp.$1.length === 1
                     ? expMap[exp]
                     : ('00' + expMap[exp]).substr(String(expMap[exp]).length)
             )

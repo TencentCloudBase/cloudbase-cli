@@ -11,7 +11,7 @@ function checkServers(servers) {
             throw new CloudBaseError('Every server must have a name.')
         } else if (!server.path) {
             throw new CloudBaseError('未指定发布目录')
-        } else if (server.type != ServerLanguageType.node) {
+        } else if (server.type !== ServerLanguageType.node) {
             throw new CloudBaseError(`Unsupported deploy type: "${server.type}"`)
         } else if (names[server.name]) {
             throw new CloudBaseError(`Duplicated deploy name: "${server.name}"`)

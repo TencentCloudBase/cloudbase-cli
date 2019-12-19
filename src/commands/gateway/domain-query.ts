@@ -13,14 +13,14 @@ export async function queryGwDomain(ctx: GatewayContext, commandOptions) {
     }
 
     const loading = loadingFactory()
-    loading.start(`查询HTTP service域名中...`)
+    loading.start('查询HTTP service域名中...')
 
     try {
         const res = await queryGatewayDomain({
             envId,
             domain: domainName
         })
-        loading.succeed(`查询HTTP service域名成功！`)
+        loading.succeed('查询HTTP service域名成功！')
         const head = ['HTTP service domain', 'CreateTime']
         const tableData = res.ServiceSet.map(item => [
             item.Domain,

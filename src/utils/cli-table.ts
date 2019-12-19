@@ -3,7 +3,7 @@ import Table, { TableOptions, HorizontalTable } from 'cli-table3'
 // 打印水平方向的表格
 export function printHorizontalTable(
     head: string[],
-    data: string[][] = [],
+    data: (string | number)[][] = [],
     options?: TableOptions
 ) {
     const table: HorizontalTable = new Table({

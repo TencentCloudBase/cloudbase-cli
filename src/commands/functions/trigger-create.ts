@@ -27,7 +27,7 @@ export async function triggerCreate(ctx: FunctionContext) {
     }
 
     if (isBatchCreateTrigger) {
-        return await batchCreateTriggers({
+        return batchCreateTriggers({
             envId,
             functions
         })
