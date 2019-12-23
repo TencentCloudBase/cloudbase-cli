@@ -1,3 +1,4 @@
+import chalk from 'chalk'
 import { GatewayContext } from '../../types'
 import { CloudBaseError } from '../../error'
 import { createFunctionGateway } from '../../gateway'
@@ -8,16 +9,15 @@ export async function createGw(ctx: GatewayContext, servicePath: string, command
     const { envId } = ctx
 
     if (!servicePath) {
-        throw new CloudBaseError('请指定需要创建的HTTP service路径！')
+        throw new CloudBaseError('请指定需要创建的 HTTP service 路径！')
     }
 
     const { function: functionName } = commandOptions
 
-    
     // 创建云函数网关
     if (functionName) {
         const loading = loadingFactory()
-        loading.start(`[${functionName}] 云函数HTTP service创建中...`)
+        loading.start(`[${functionName}] 云函数 HTTP service 创建中...`)
 
         try {
             // step1: 判断云函数是否存在
@@ -36,7 +36,12 @@ export async function createGw(ctx: GatewayContext, servicePath: string, command
                 path: servicePath,
                 functionName
             })
-            loading.succeed(`云函数HTTP service [path: ${envId}.service.tcloudbase.com${servicePath}] [id: ${res.APIId}] 创建成功！`)
+
+            const endpoint = `https://${envId}.service.tcloudbase.com${servicePath}`
+
+            loading.succeed(
+                `云函数 HTTP service 创建成功！\n${chalk.bold.underline(endpoint)}`
+            )
         } catch (e) {
             loading.stop()
             throw e
@@ -44,5 +49,5 @@ export async function createGw(ctx: GatewayContext, servicePath: string, command
         return
     }
 
-    throw new CloudBaseError('请指定需要创建的HTTP service类型！')
+    throw new CloudBaseError('请指定需要创建的 HTTP service 类型！')
 }

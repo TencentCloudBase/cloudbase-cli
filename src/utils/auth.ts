@@ -1,4 +1,6 @@
 import os from 'os'
+import fs from 'fs'
+import path from 'path'
 import http, { Server, IncomingMessage, ServerResponse } from 'http'
 import crypto from 'crypto'
 import portfinder from 'portfinder'
@@ -13,8 +15,10 @@ import { ConfigItems } from '../constant'
 import Logger from '../logger'
 import { fetch, loadingFactory, getPlatformRelease } from '../utils'
 import { CloudBaseError } from '../error'
+import { CloudApiService } from './cloud-api-request'
 
 const logger = new Logger('Auth')
+const tcbService = new CloudApiService('tcb')
 
 const defaultPort = 9012
 const CliAuthBaseUrl = 'https://console.cloud.tencent.com/tcb/auth'
@@ -151,6 +155,30 @@ async function createLocalServer(): Promise<ServerRes> {
     })
 }
 
+function respondWithFile(req, res, statusCode, filename) {
+    return new Promise(function(resolve, reject) {
+        fs.readFile(path.join(__dirname, '../../templates', filename), function(err, response) {
+            if (err) {
+                return reject(err)
+            }
+            res.writeHead(statusCode, {
+                'Content-Length': response.length,
+                'Content-Type': 'text/html'
+            })
+            res.end(response)
+            req.socket.destroy()
+            return resolve()
+        })
+    })
+}
+
+// 调用 env:list 接口，检查密钥是否有效
+export async function checkAuth(credential: Credential) {
+    const { tmpSecretId, tmpSecretKey, tmpToken } = credential
+    tcbService.setCredential(tmpSecretId, tmpSecretKey, tmpToken)
+    return tcbService.request('DescribeEnvs')
+}
+
 // 打开云开发控制台，获取授权
 export async function getAuthTokenFromWeb(options: ILoginOptions): Promise<Credential> {
     const { getAuthUrl } = options
@@ -188,15 +216,33 @@ export async function getAuthTokenFromWeb(options: ILoginOptions): Promise<Crede
                 const { url } = req
                 const { query } = queryString.parseUrl(url)
 
-                // CORS
+                // 响应 HTML 文件
+                if (query?.html) {
+                    return checkAuth(query as Credential)
+                        .then(() => {
+                            return respondWithFile(req, res, 200, 'html/loginSuccess.html')
+                        })
+                        .then(() => {
+                            server.close()
+                            resolve(query as Credential)
+                        })
+                        .catch(e => {
+                            server.close()
+                            return respondWithFile(req, res, 502, 'html/loginFail.html')
+                        })
+                }
+
+                // CORS 响应普通文本
                 res.writeHead(200, {
                     'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': '*',
+                    'Access-Control-Allow-Headers': '*',
                     'Content-Type': 'text/plain',
                     // 立即关闭 http 连接
                     Connection: 'close'
                 })
 
-                res.end('ok')
+                res.end()
 
                 // 防止接受到异常请求导致本地服务关闭
                 if (query?.tmpToken) {

@@ -62,13 +62,11 @@ export class CloudApiService {
     url: string
     action: string
     method: 'POST' | 'GET'
-    secretId: string //
-    secretKey: string //
-    token: string //
     timeout: number
     data: Record<string, any>
     payload: Record<string, any>
     baseParams: Record<string, any>
+    credential: Record<string, any>
 
     constructor(service: string, baseParams?: Record<string, any>, version = '') {
         this.service = service
@@ -96,17 +94,14 @@ export class CloudApiService {
 
         this.url = this.baseUrl
 
-        const credential = await getCredentialWithoutCheck()
+        if (!this.credential?.secretId) {
+            const credential = await getCredentialWithoutCheck()
 
-        if (!credential) {
-            throw new CloudBaseError('无有效身份信息，请使用 cloudbase login 登录')
+            if (!credential) {
+                throw new CloudBaseError('无有效身份信息，请使用 cloudbase login 登录')
+            }
+            this.credential = credential
         }
-
-        const { secretId, secretKey, token } = credential
-
-        this.secretId = secretId
-        this.secretKey = secretKey
-        this.token = token
 
         try {
             const data: Record<string, any> = await this.requestWithSign()
@@ -157,8 +152,8 @@ export class CloudApiService {
             }
         }
 
-        if (this.token) {
-            config.headers['X-TC-Token'] = this.token
+        if (this.credential?.token) {
+            config.headers['X-TC-Token'] = this.credential?.token
         }
 
         if (method === 'GET') {
@@ -177,7 +172,8 @@ export class CloudApiService {
     }
 
     getRequestSign(timestamp: number) {
-        const { method = 'POST', url, service, secretId, secretKey } = this
+        const { method = 'POST', url, service } = this
+        const { secretId, secretKey } = this.credential
         const urlObj = new URL(url)
 
         // 通用头部
@@ -213,8 +209,10 @@ export class CloudApiService {
     }
 
     setCredential(secretId: string, secretKey: string, token: string) {
-        this.secretId = secretId
-        this.secretKey = secretKey
-        this.token = token
+        this.credential = {
+            secretId,
+            secretKey,
+            token
+        }
     }
 }

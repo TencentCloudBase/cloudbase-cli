@@ -26,7 +26,7 @@ async function getFunctionContext(
 
     if (!assignEnvId) {
         throw new CloudBaseError(
-            '未识别到有效的环境 Id 变量，请在项目根目录进行操作或通过 envId 参数指定环境 Id'
+            '未识别到有效的环境 Id 变量，请在项目根目录进行操作或通过 -e 参数指定环境 Id'
         )
     }
 

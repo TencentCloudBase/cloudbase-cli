@@ -1,7 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import { authStore } from './store'
-import { IConfig, CloudBaseConfig } from '../types'
+import { CloudBaseConfig } from '../types'
 import { CloudBaseError } from '../error'
 
 const DefaultFunctionDeployOptions = {
@@ -15,11 +14,6 @@ const DefaultFunctionDeployOptions = {
 const DefaultCloudBaseConfig = {
     functionRoot: './functions',
     functions: []
-}
-
-// 获取 cloudbase 存储在本地的配置
-export function getCloudBaseConfig(): Promise<IConfig> {
-    return authStore.all()
 }
 
 /**
@@ -86,7 +80,7 @@ export async function getEnvId(
     const assignEnvId = envId || cloudbaseConfig.envId
     if (!assignEnvId) {
         throw new CloudBaseError(
-            '未识别到有效的环境 Id 变量，请在项目根目录进行操作或通过 envId 参数指定环境 Id'
+            '未识别到有效的环境 Id 变量，请在项目根目录进行操作或通过 -e 参数指定环境 Id'
         )
     }
     return assignEnvId
