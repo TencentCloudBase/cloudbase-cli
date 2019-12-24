@@ -32,11 +32,15 @@ async function getGatewayContext(
 
 const commands = [
     {
-        cmd: 'service:create <servicePath>',
+        cmd: 'service:create',
         options: [
             {
                 flags: '-e, --envId [envId]',
                 desc: '环境 Id'
+            },
+            {
+                flags: '-p, --service-path <servicePath>',
+                desc: 'Service Path'
             },
             {
                 flags: '-f, --function <function>',
@@ -45,7 +49,6 @@ const commands = [
         ],
         desc: '创建HTTP service',
         handler: async (
-            servicePath:string,
             options
         ) => {
             const {
@@ -53,7 +56,7 @@ const commands = [
                 envId
             } = options
             const ctx = await getGatewayContext(envId, configFile)
-            await createGw(ctx, servicePath, options)
+            await createGw(ctx, options)
         }
     },
 

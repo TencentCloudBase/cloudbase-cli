@@ -1,2 +1,2 @@
 import { GatewayContext } from '../../types';
-export declare function createGw(ctx: GatewayContext, servicePath: string, commandOptions: any): Promise<void>;
+export declare function createGw(ctx: GatewayContext, commandOptions: any): Promise<void>;
