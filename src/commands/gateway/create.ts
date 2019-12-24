@@ -5,15 +5,15 @@ import { createFunctionGateway } from '../../gateway'
 import { listFunction } from '../../function'
 import { loadingFactory } from '../../utils'
 
-export async function createGw(ctx: GatewayContext, servicePath: string, commandOptions) {
+export async function createGw(ctx: GatewayContext, commandOptions) {
     const { envId } = ctx
+
+    const { function: functionName, servicePath } = commandOptions
 
     if (!servicePath) {
         throw new CloudBaseError('请指定需要创建的 HTTP service 路径！')
     }
-
-    const { function: functionName } = commandOptions
-
+    
     // 创建云函数网关
     if (functionName) {
         const loading = loadingFactory()
