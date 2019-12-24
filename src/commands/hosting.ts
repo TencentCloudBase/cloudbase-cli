@@ -26,7 +26,7 @@ const HostingStatusMap = {
 
 program
     .command('hosting:detail')
-    .option('-e, --envId [envId]', '环境 Id')
+    .option('-e, --envId <envId>', '环境 Id')
     .description('查看静态网站服务信息')
     .action(async (options: any) => {
         const {
@@ -54,7 +54,7 @@ program
 
 program
     .command('hosting:deploy [filePath] [cloudPath]')
-    .option('-e, --envId [envId]', '环境 Id')
+    .option('-e, --envId <envId>', '环境 Id')
     .description('部署静态网站文件')
     .action(async (filePath: string, cloudPath = '', options: any) => {
         const {
@@ -85,7 +85,7 @@ program
 
 program
     .command('hosting:delete [cloudPath]')
-    .option('-e, --envId [envId]', '环境 Id')
+    .option('-e, --envId <envId>', '环境 Id')
     .option('-d, --dir', '删除目标是否为文件夹')
     .description('删除静态网站文件/文件夹，文件夹需指定 --dir 选项')
     .action(async (cloudPath = '', options: any) => {
@@ -131,7 +131,7 @@ program
 
 program
     .command('hosting:list')
-    .option('-e, --envId [envId]', '环境 Id')
+    .option('-e, --envId <envId>', '环境 Id')
     .description('展示文件列表')
     .action(async (options: any) => {
         const {

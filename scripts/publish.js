@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const inquirer = require('inquirer')
 const semver = require('semver')
 const package = require('../package.json')

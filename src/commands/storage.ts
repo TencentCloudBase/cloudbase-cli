@@ -39,7 +39,7 @@ const AclMap = {
 
 program
     .command('storage:upload <localPath> [cloudPath]')
-    .option('-e, --envId [envId]', '环境 Id')
+    .option('-e, --envId <envId>', '环境 Id')
     .description('上传文件/文件夹')
     .action(async function(localPath: string, cloudPath = '', options) {
         const {
@@ -72,7 +72,7 @@ program
 
 program
     .command('storage:download <cloudPath> <localPath>')
-    .option('-e, --envId [envId]', '环境 Id')
+    .option('-e, --envId <envId>', '环境 Id')
     .option('-d, --dir', '下载目标是否为文件夹')
     .description('下载文件/文件夹，文件夹需指定 --dir 选项')
     .action(async function(cloudPath: string, localPath: string, options) {
@@ -106,7 +106,7 @@ program
 
 program
     .command('storage:delete <cloudPath>')
-    .option('-e, --envId [envId]', '环境 Id')
+    .option('-e, --envId <envId>', '环境 Id')
     .option('-d, --dir', '下载目标是否为文件夹')
     .description('删除文件/文件夹，文件夹需指定 --dir 选项')
     .action(async function(cloudPath: string, options) {
@@ -133,7 +133,7 @@ program
 
 program
     .command('storage:list [cloudPath]')
-    .option('-e, --envId [envId]', '环境 Id')
+    .option('-e, --envId <envId>', '环境 Id')
     .option('--max', '传输数据的最大条数')
     .option('--markder', '起始路径名，后（不含）按照 UTF-8 字典序返回条目')
     .description('获取文件存储的文件列表')
@@ -164,7 +164,7 @@ program
 
 program
     .command('storage:url <cloudPath>')
-    .option('-e, --envId [envId]', '环境 Id')
+    .option('-e, --envId <envId>', '环境 Id')
     .description('获取文件临时访问地址')
     .action(async function(cloudPath: string, options) {
         const {
@@ -181,7 +181,7 @@ program
 
 program
     .command('storage:detail <cloudPath>')
-    .option('-e, --envId [envId]', '环境 Id')
+    .option('-e, --envId <envId>', '环境 Id')
     .description('获取文件信息')
     .action(async function(cloudPath: string, options) {
         const {
@@ -201,7 +201,7 @@ program
 
 program
     .command('storage:get-acl')
-    .option('-e, --envId [envId]', '环境 Id')
+    .option('-e, --envId <envId>', '环境 Id')
     .description('获取文件存储权限信息')
     .action(async function(options) {
         const {
@@ -218,7 +218,7 @@ program
 
 program
     .command('storage:set-acl')
-    .option('-e, --envId [envId]', '环境 Id')
+    .option('-e, --envId <envId>', '环境 Id')
     .description('设置文件存储权限信息')
     .action(async function(options) {
         const {

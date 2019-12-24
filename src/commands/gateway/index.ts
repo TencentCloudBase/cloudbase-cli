@@ -35,7 +35,7 @@ const commands = [
         cmd: 'service:create',
         options: [
             {
-                flags: '-e, --envId [envId]',
+                flags: '-e, --envId <envId>',
                 desc: '环境 Id'
             },
             {
@@ -64,7 +64,7 @@ const commands = [
         cmd: 'service:delete',
         options: [
             {
-                flags: '-e, --envId [envId]',
+                flags: '-e, --envId <envId>',
                 desc: '环境 Id'
             },
             {
@@ -93,7 +93,7 @@ const commands = [
         cmd: 'service:list',
         options: [
             {
-                flags: '-e, --envId [envId]',
+                flags: '-e, --envId <envId>',
                 desc: '环境 Id'
             },
             {
@@ -126,7 +126,7 @@ const commands = [
         cmd: 'service:domain:bind <domain>',
         options: [
             {
-                flags: '-e, --envId [envId]',
+                flags: '-e, --envId <envId>',
                 desc: '环境 Id'
             }
         ],
@@ -148,7 +148,7 @@ const commands = [
         cmd: 'service:domain:unbind <domain>',
         options: [
             {
-                flags: '-e, --envId [envId]',
+                flags: '-e, --envId <envId>',
                 desc: '环境 Id'
             }
         ],
@@ -170,7 +170,7 @@ const commands = [
         cmd: 'service:domain:list',
         options: [
             {
-                flags: '-e, --envId [envId]',
+                flags: '-e, --envId <envId>',
                 desc: '环境 Id'
             },
             {

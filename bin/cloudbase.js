@@ -12,15 +12,10 @@ const pkg = require('../package.json')
 let processArgv = process.argv
 const isBeta = pkg.version.indexOf('-') > -1
 
-const userNodeVersion = Number(
-    process.versions.node
-        .split('.')
-        .slice(0, 2)
-        .join('.')
-)
+const [major, minor] = process.versions.node.split('.').slice(0, 2)
 
 // Node 版本检验提示
-if (userNodeVersion < 8.6) {
+if (Number(major) < 8 || (Number(major) === 8 && Number(minor) < 6)) {
     console.log(
         chalk.bold.red(
             '您的 Node 版本较低，CloudBase CLI 可能无法正常运行，请升级 Node 到 v8.6.0 以上！\n'
