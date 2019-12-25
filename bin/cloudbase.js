@@ -8,6 +8,8 @@ const logSymbols = require('log-symbols')
 const updateNotifier = require('update-notifier')
 const address = require('address')
 const pkg = require('../package.json')
+const store = require('../lib/utils/store')
+const { getProxy } = require('../lib/utils/proxy')
 
 let processArgv = process.argv
 const isBeta = pkg.version.indexOf('-') > -1
@@ -27,10 +29,15 @@ if (Number(major) < 8 || (Number(major) === 8 && Number(minor) < 6)) {
 Sentry.init({
     release: pkg.version,
     dsn: 'https://fff0077d06624655ad70d1ee25df419e@report.url.cn/sentry/1782',
-    httpsProxy: process.env.http_proxy || '',
-    serverName: os.hostname()
-    // 忽略错误，正则匹配
-    // ignoreErrors
+    httpsProxy: getProxy() || '',
+    serverName: os.hostname(),
+    // 忽略错误，正则匹配,
+    // ignoreErrors: [],
+    integrations: [
+        new Sentry.Integrations.OnUnhandledRejection({
+            mode: 'none'
+        })
+    ]
 })
 
 // 检查更新
@@ -87,8 +94,6 @@ hideArgs.forEach(arg => {
 // 注册命令
 require('../lib')
 
-const store = require('../lib/utils/store')
-
 // 设置 Sentry 上报的用户 uin
 Sentry.configureScope(scope => {
     try {
@@ -105,7 +110,7 @@ Sentry.configureScope(scope => {
 // 设置 options 选项
 program.option('--config-file <path>', '设置配置文件，默认为 ./cloudbaserc.js 或 .cloudbaserc.json')
 
-program.version(pkg.version, '-V, --version', '输出当前 CloudBase CLI 版本')
+program.version(pkg.version, '-v, --version', '输出当前 CloudBase CLI 版本')
 
 // 处理无效命令
 program.action(cmd => {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const Client = require('../../lib')
 
 const client = new Client()
