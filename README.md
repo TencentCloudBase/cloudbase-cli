@@ -16,10 +16,10 @@ npm install -g @cloudbase/cli
 yarn global add @cloudbase/cli
 ```
 
-安装完成后，你可以使用 `cloudbase -V` 验证是否安装成功，如果输出了类似下面的版本号，则表明 CloudBase CLI 被成功安装到您的计算机中。
+安装完成后，你可以使用 `cloudbase -v` 验证是否安装成功，如果输出了类似下面的版本号，则表明 CloudBase CLI 被成功安装到您的计算机中。
 
 ```text
-0.1.5
+0.5.0
 ```
 
 ## CloudBase CLI 运行要求
