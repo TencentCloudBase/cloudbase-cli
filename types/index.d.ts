@@ -1,4 +1,5 @@
 import './commands';
+import { logout } from './auth';
 import { listEnvs, createEnv, getEnvAuthDomains, createEnvDomain, deleteEnvDomain, getLoginConfigList, createLoginConfig, updateLoginConfig } from './env';
 import { createFunction, listFunction, deleteFunction, getFunctionDetail, getFunctionLog, updateFunctionConfig, createFunctionTriggers, deleteFunctionTrigger, invokeFunction, downloadFunctionCode, copyFunction, updateFunctionCode } from './function';
 import * as storage from './storage';
@@ -9,6 +10,7 @@ declare const _default: {
             code: string;
             msg: string;
         }>;
+        logout: typeof logout;
         env: {
             list: typeof listEnvs;
             create: typeof createEnv;

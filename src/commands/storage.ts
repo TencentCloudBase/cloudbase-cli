@@ -62,11 +62,17 @@ program
             successLog(`上传${fileText}成功！`)
         })
         if (isDir) {
-            await storageService.uploadDirectory(resolveLocalPath, cloudPath, {
+            await storageService.uploadDirectory({
+                localPath: resolveLocalPath,
+                cloudPath,
                 onProgress
             })
         } else {
-            await storageService.uploadFile(resolveLocalPath, cloudPath, onProgress)
+            await storageService.uploadFile({
+                localPath: resolveLocalPath,
+                cloudPath,
+                onProgress
+            })
         }
     })
 
@@ -96,9 +102,15 @@ program
         loading.start(`下载${fileText}中`)
 
         if (dir) {
-            await storageService.downloadDirectory(cloudPath, resolveLocalPath)
+            await storageService.downloadDirectory({
+                localPath: resolveLocalPath,
+                cloudPath
+            })
         } else {
-            await storageService.downloadFile(cloudPath, resolveLocalPath)
+            await storageService.downloadFile({
+                cloudPath,
+                localPath: resolveLocalPath
+            })
         }
 
         loading.succeed(`下载${fileText}成功！`)

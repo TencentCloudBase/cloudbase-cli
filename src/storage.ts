@@ -30,26 +30,38 @@ async function getStorageService(envId: string): Promise<StorageService> {
 export async function uploadFile(options: IStorageOptions) {
     const { envId, localPath, cloudPath } = options
     const storageService = await getStorageService(envId)
-    return storageService.uploadFile(localPath, cloudPath)
+    return storageService.uploadFile({
+        localPath,
+        cloudPath
+    })
 }
 
 export async function uploadDirectory(options: IStorageOptions) {
     const { envId, localPath, cloudPath } = options
     const storageService = await getStorageService(envId)
-    return storageService.uploadDirectory(localPath, cloudPath)
+    return storageService.uploadDirectory({
+        localPath,
+        cloudPath
+    })
 }
 
 export async function downloadFile(options: IStorageOptions) {
     const { envId, localPath, cloudPath } = options
     const storageService = await getStorageService(envId)
-    return storageService.downloadFile(cloudPath, localPath)
+    return storageService.downloadFile({
+        cloudPath,
+        localPath
+    })
 }
 
 export async function downloadDirectory(options: IStorageOptions) {
     const { envId, localPath, cloudPath } = options
     const storageService = await getStorageService(envId)
 
-    return storageService.downloadDirectory(cloudPath, localPath)
+    return storageService.downloadDirectory({
+        cloudPath,
+        localPath
+    })
 }
 
 export async function deleteFile(options: IStorageCloudOptions) {
@@ -102,9 +114,7 @@ export async function setAcl(options) {
     const { envId, acl } = options
     const validAcl = ['READONLY', 'PRIVATE', 'ADMINWRITE', 'ADMINONLY']
     if (!validAcl.includes(acl)) {
-        throw new CloudBaseError(
-            '非法的权限值，仅支持：READONLY, PRIVATE, ADMINWRITE, ADMINONLY'
-        )
+        throw new CloudBaseError('非法的权限值，仅支持：READONLY, PRIVATE, ADMINWRITE, ADMINONLY')
     }
     const storageService = await getStorageService(envId)
 

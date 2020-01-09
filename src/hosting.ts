@@ -114,7 +114,11 @@ export async function hostingList(options: IBaseOptions) {
     const { bucket, regoin } = hosting
     const storageService = await getStorageService(envId)
 
-    const list = await storageService.walkCloudDirCustom('', bucket, regoin)
+    const list = await storageService.walkCloudDirCustom({
+        prefix: '',
+        bucket,
+        region: regoin
+    })
 
     return list
 }
@@ -172,11 +176,19 @@ export async function hostingDeploy(options: IHostingFileOptions) {
     const storageService = await getStorageService(envId)
 
     if (isDirectory(resolvePath)) {
-        await storageService.uploadDirectoryCustom(resolvePath, cloudPath, bucket, regoin, {
+        await storageService.uploadDirectoryCustom({
+            localPath: resolvePath,
+            cloudPath,
+            bucket,
+            region: regoin,
             onProgress
         })
     } else {
-        await storageService.uploadFileCustom(resolvePath, cloudPath, bucket, regoin, {
+        await storageService.uploadFileCustom({
+            localPath: resolvePath,
+            cloudPath,
+            bucket,
+            region: regoin,
             onProgress
         })
     }
@@ -190,7 +202,11 @@ export async function hostingDelete(options: IHostingCloudOptions) {
     const storageService = await getStorageService(envId)
 
     if (isDir) {
-        await storageService.deleteDirectoryCustom(cloudPath, bucket, regoin)
+        await storageService.deleteDirectoryCustom({
+            cloudPath,
+            bucket,
+            region: regoin
+        })
     } else {
         await storageService.deleteFileCustom([cloudPath], bucket, regoin)
     }

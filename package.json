@@ -7,7 +7,8 @@
         "build": "rimraf lib types && tsc",
         "eslint": "eslint \"./**/*.ts\"",
         "test": "jest --runInBand --forceExit --detectOpenHandles --coverage --verbose --testTimeout=10000",
-        "publish": "node scripts/publish.js"
+        "publish": "node scripts/publish.js",
+        "pkg": "pkg ./bin/cloudbase.js --out-path ./pkg"
     },
     "repository": {
         "type": "git",
@@ -25,7 +26,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@cloudbase/manager-node": "^1.3.0",
+        "@cloudbase/manager-node": "^2.0.0",
         "@sentry/node": "^5.10.2",
         "address": "^1.1.2",
         "archiver": "^3.1.1",

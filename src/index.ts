@@ -1,5 +1,5 @@
 import './commands'
-import { login } from './auth'
+import { login, logout } from './auth'
 import {
     listEnvs,
     createEnv,
@@ -32,6 +32,8 @@ export = class CloudBase {
     login: (
         options: ILoginOptions
     ) => Promise<{ code: string; msg: string }> = login
+
+    logout = logout
 
     env = {
         list: listEnvs,
