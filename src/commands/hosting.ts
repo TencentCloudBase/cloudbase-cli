@@ -10,7 +10,8 @@ import {
     printHorizontalTable,
     formatDate,
     formateFileSize,
-    createOnProgressBar
+    createOnProgressBar,
+    genClickableLink
 } from '../utils'
 import { errorLog, successLog } from '../logger'
 
@@ -39,15 +40,16 @@ program
         const website = res.data && res.data[0]
 
         if (!website) {
+            const link = genClickableLink('https://console.cloud.tencent.com/tcb')
             throw new CloudBaseError(
-                '您还没有开启静态网站服务，请先到云开发控制台开启静态网站服务！\n 👉 https://console.cloud.tencent.com/tcb'
+                `您还没有开启静态网站服务，请先到云开发控制台开启静态网站服务！\n 👉 ${link}`
             )
         }
-        const url = `https://${website.cdnDomain}`
 
+        const link = genClickableLink(`https://${website.cdnDomain}`)
         // offline 状态不展示域名
         if (website.status !== 'offline') {
-            console.log(`静态网站域名：${chalk.bold.underline(url)}`)
+            console.log(`静态网站域名：${link}`)
         }
         console.log(`静态网站状态：【${HostingStatusMap[website.status]}】`)
     })
@@ -56,7 +58,7 @@ program
     .command('hosting:deploy [filePath] [cloudPath]')
     .option('-e, --envId <envId>', '环境 Id')
     .description('部署静态网站文件')
-    .action(async (filePath: string, cloudPath = '', options: any) => {
+    .action(async (filePath = '.', cloudPath = '', options: any) => {
         const {
             parent: { configFile },
             envId
@@ -64,7 +66,7 @@ program
         const assignEnvId = await getEnvId(envId, configFile)
         const isDir = isDirectory(filePath)
 
-        console.log('文件部署中...')
+        console.log('> 文件部署中...')
 
         try {
             const onProgress = createOnProgressBar(() => {

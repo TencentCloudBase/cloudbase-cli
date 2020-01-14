@@ -3,7 +3,7 @@ import { GatewayContext } from '../../types'
 import { CloudBaseError } from '../../error'
 import { createFunctionGateway } from '../../gateway'
 import { listFunction } from '../../function'
-import { loadingFactory } from '../../utils'
+import { loadingFactory, genClickableLink } from '../../utils'
 
 export async function createGw(ctx: GatewayContext, commandOptions) {
     const { envId } = ctx
@@ -13,7 +13,7 @@ export async function createGw(ctx: GatewayContext, commandOptions) {
     if (!servicePath) {
         throw new CloudBaseError('请指定需要创建的 HTTP service 路径！')
     }
-    
+
     // 创建云函数网关
     if (functionName) {
         const loading = loadingFactory()
@@ -36,12 +36,8 @@ export async function createGw(ctx: GatewayContext, commandOptions) {
                 path: servicePath,
                 functionName
             })
-
-            const endpoint = `https://${envId}.service.tcloudbase.com${servicePath}`
-
-            loading.succeed(
-                `云函数 HTTP service 创建成功！\n${chalk.bold.underline(endpoint)}`
-            )
+            const link = genClickableLink(`https://${envId}.service.tcloudbase.com${servicePath}`)
+            loading.succeed(`云函数 HTTP service 创建成功！\n点击访问> ${link})}`)
         } catch (e) {
             loading.stop()
             throw e

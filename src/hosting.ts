@@ -7,7 +7,8 @@ import {
     checkPathExist,
     isDirectory,
     checkAndGetCredential,
-    getProxy
+    getProxy,
+    genClickableLink
 } from './utils'
 import { CloudBaseError } from './error'
 
@@ -63,9 +64,11 @@ export async function getHostingInfo(options: IBaseOptions) {
 async function checkHostingStatus(envId: string) {
     const hostings = await getHostingInfo({ envId })
 
+    const link = genClickableLink('https://console.cloud.tencent.com/tcb')
+
     if (!hostings.data || !hostings.data.length) {
         throw new CloudBaseError(
-            '您还没有开启静态网站服务，请先到云开发控制台开启静态网站服务！\n 👉 https://console.cloud.tencent.com/tcb',
+            `您还没有开启静态网站服务，请先到云开发控制台开启静态网站服务！\n👉 ${link}`,
             {
                 code: 'INVALID_OPERATION'
             }

@@ -8,11 +8,10 @@ import program from 'commander'
 import { CloudBaseError } from '../error'
 import { successLog } from '../logger'
 import { listEnvs } from '../env'
-import { fetch, fetchStream, loadingFactory } from '../utils'
+import { fetch, fetchStream, loadingFactory, genClickableLink } from '../utils'
 
 // 云函数
-const listUrl =
-    'https://service-lqbcazn1-1252710547.ap-shanghai.apigateway.myqcloud.com/release/'
+const listUrl = 'https://service-lqbcazn1-1252710547.ap-shanghai.apigateway.myqcloud.com/release/'
 
 async function extractTemplate(projectPath: string, templatePath: string) {
     // 文件下载链接
@@ -36,11 +35,7 @@ async function extractTemplate(projectPath: string, templatePath: string) {
 
 async function copyServerTemplate(projectPath: string) {
     // 模板目录
-    const templatePath = path.resolve(
-        __dirname,
-        '../../templates',
-        'server/node'
-    )
+    const templatePath = path.resolve(__dirname, '../../templates', 'server/node')
     fse.copySync(templatePath, projectPath)
 }
 
@@ -48,11 +43,11 @@ async function copyServerTemplate(projectPath: string) {
 function initSuccessOutput(projectName) {
     successLog(`创建项目 ${projectName} 成功！\n`)
     const command = chalk.bold.cyan(`cd ${projectName}`)
-    console.log(`👉 运行 ${command} 开始您的项目！\n`)
+    console.log(`👉 执行命令 ${command} 进入项目文件夹！\n`)
+    console.log(`👉 执行命令 ${chalk.bold.cyan('cloudbase functions:deploy app')} 部署云函数\n`)
 
-    console.log(
-        '🎉 欢迎贡献你的模板 👉 https://github.com/TencentCloudBase/cloudbase-templates'
-    )
+    const link = genClickableLink('https://github.com/TencentCloudBase/cloudbase-templates')
+    console.log(`🎉 欢迎贡献你的模板 👉 ${link}`)
 }
 
 program
@@ -70,16 +65,18 @@ program
             throw e
         }
         loading.stop()
+
         const envs: { name: string; value: string }[] = envData
+            .filter(item => item.Status === 'NORMAL')
             .map(item => ({
-                name: `${item.Alias} - [${item.EnvId}:${item.PackageName}]`,
+                name: `${item.Alias} - [${item.EnvId}:${item.PackageName || '空'}]`,
                 value: item.EnvId
             }))
             .sort()
 
         if (!envs.length) {
             throw new CloudBaseError(
-                '没有可以使用的环境，请先开通云开发服务并创建环境（https://console.cloud.tencent.com/tcb）'
+                '没有可以使用的环境，请使用 cloudbase env:create $name 命令创建免费环境！'
             )
         }
 
@@ -100,7 +97,7 @@ program
         const { lang } = await inquirer.prompt({
             type: 'list',
             name: 'lang',
-            message: '选择模板语言',
+            message: '选择开发语言',
             choices: ['PHP', 'Java', 'Node']
         })
 
@@ -119,9 +116,7 @@ program
             choices: templates.map(item => item.name)
         })
 
-        const selectedTemplate = templates.find(
-            item => item.name === selectTemplateName
-        )
+        const selectedTemplate = templates.find(item => item.name === selectTemplateName)
 
         // 项目目录
         const projectPath = path.join(process.cwd(), projectName)
@@ -161,8 +156,8 @@ program
         // 写入 envId
         const configFileJSONPath = path.join(projectPath, 'cloudbaserc.json')
         const configFileJSPath = path.join(projectPath, 'cloudbaserc.js')
-        const configFilePath = [configFileJSPath, configFileJSONPath].find(
-            item => fs.existsSync(item)
+        const configFilePath = [configFileJSPath, configFileJSONPath].find(item =>
+            fs.existsSync(item)
         )
 
         // 配置文件未找到
@@ -173,9 +168,6 @@ program
 
         const configContent = fs.readFileSync(configFilePath).toString()
 
-        fs.writeFileSync(
-            configFilePath,
-            configContent.replace('{{envId}}', env)
-        )
+        fs.writeFileSync(configFilePath, configContent.replace('{{envId}}', env))
         initSuccessOutput(projectName)
     })

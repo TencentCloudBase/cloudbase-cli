@@ -1,5 +1,4 @@
-import { random, CloudApiService } from '../utils'
-import { CloudBaseError } from '../error'
+import { CloudApiService, getMangerService } from '../utils'
 export * from './domain'
 export * from './login'
 
@@ -15,23 +14,14 @@ export async function initTcb(skey: string) {
 }
 
 // 创建新环境
-export async function createEnv({ alias }) {
-    const params = {
-        Alias: alias,
-        EnvId: `${alias}-${random()}`,
-        Source: 'qcloud'
-    }
+export async function createEnv({ alias, paymentMode }) {
+    const { env } = await getMangerService()
 
-    try {
-        const res: any = await tcbService.request(
-            'CreateEnvAndResource',
-            params
-        )
-        res.EnvId = params.EnvId
-        return res
-    } catch (e) {
-        throw new CloudBaseError(`创建环境失败：${e.message}`)
-    }
+    return env.createEnv({
+        paymentMode,
+        name: alias,
+        channel: 'web'
+    })
 }
 
 // 获取环境信息
@@ -60,5 +50,12 @@ export async function updateEnvInfo({ envId, alias }) {
     await tcbService.request('ModifyEnv', {
         EnvId: envId,
         Alias: alias
+    })
+}
+
+// 获取 Qcloud 环境数量上限
+export async function getEnvLimit(source = 'qcloud') {
+    return tcbService.request('DescribeEnvLimit', {
+        Source: source
     })
 }

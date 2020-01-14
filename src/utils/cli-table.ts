@@ -6,6 +6,9 @@ export function printHorizontalTable(
     data: (string | number)[][] = [],
     options?: TableOptions
 ) {
+    if (!data?.length) {
+        console.log('列表数据为空')
+    }
     const table: HorizontalTable = new Table({
         head,
         style: { head: ['yellow'] },

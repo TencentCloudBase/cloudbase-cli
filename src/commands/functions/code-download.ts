@@ -3,19 +3,29 @@ import fse from 'fs-extra'
 import inquirer from 'inquirer'
 import { FunctionContext } from '../../types'
 import { CloudBaseError } from '../../error'
-import { downloadFunctionCode } from '../../function/code'
+import { downloadFunctionCode, getFunctionDetail } from '../../function'
 import { loadingFactory, checkPathExist, delSync } from '../../utils'
 
-export async function codeDownload(
-    ctx: FunctionContext,
-    dest: string,
-    options: any
-) {
+export async function codeDownload(ctx: FunctionContext, dest: string, options: any) {
     const { name, envId, config } = ctx
     const { codeSecret } = options
 
     if (!name) {
         throw new CloudBaseError('请指定云函数名称！')
+    }
+
+    // 检查函数是否存在
+    try {
+        await getFunctionDetail({
+            envId,
+            codeSecret,
+            functionName: name
+        })
+    } catch (e) {
+        if (e.code === 'ResourceNotFound.FunctionName') {
+            throw new CloudBaseError(`云函数 [${name}] 不存在！`)
+        }
+        return
     }
 
     let destPath = dest

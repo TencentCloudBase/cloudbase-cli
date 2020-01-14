@@ -4,13 +4,12 @@ import { login } from '../auth'
 import { listEnvs, initTcb } from '../env'
 import { CloudBaseError } from '../error'
 import { checkAndGetCredential, loadingFactory } from '../utils'
-import { warnLog } from '../logger'
+import { warnLog, errorLog } from '../logger'
 
 // 登录
 program
     .command('login')
     .option('-k, --key', '使用永久密钥登录')
-    .option('--skey', '使用永久密钥 + skey 登录')
     .description('登录腾讯云账号')
     .action(async function(options) {
         const loading = loadingFactory()
@@ -22,9 +21,9 @@ program
         } else {
             loading.stop()
         }
+
         // 兼容临时密钥和永久密钥登录
-        let skey
-        if (options.key || options.skey) {
+        if (options.key) {
             // 使用永久密钥登录
             const { secretId } = await inquirer.prompt({
                 type: 'input',
@@ -37,15 +36,6 @@ program
                 name: 'secretKey',
                 message: '请输入腾讯云 SecretKey：'
             })
-
-            if (options.skey) {
-                const { skey: _skey } = await inquirer.prompt({
-                    type: 'input',
-                    name: 'skey',
-                    message: '请输入腾讯云 skey（选填）：'
-                })
-                skey = _skey
-            }
 
             if (!secretId || !secretKey) {
                 throw new CloudBaseError('SecretID 或 SecretKey 不能为空')
@@ -86,15 +76,13 @@ program
             const envs = await listEnvs()
             if (!envs.length) {
                 warnLog(
-                    '你还没有可用的环境，请使用 cloudbase env:create alias 创建环境'
+                    '您还没有可用的环境，请使用 cloudbase env:create $name 创建环境'
                 )
             }
         } catch (e) {
             // 用户不存在
             if (e.code === 'ResourceNotFound.UserNotExists') {
-                loading.start('初始化云开发服务')
-                await initTcb(skey)
-                loading.succeed('初始化成功！')
+                errorLog('您还没有初始化云开发服务！')
             } else {
                 throw e
             }
