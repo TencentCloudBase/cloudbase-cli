@@ -1,23 +1,23 @@
-import {GatewayContext} from '../../types'
+import { GatewayContext } from '../../types'
 import { CloudBaseError } from '../../error'
 import { deleteGateway } from '../../gateway'
-import { loadingFactory } from '../../utils'
+import { loadingFactory, genClickableLink } from '../../utils'
 
 export async function deleteGw(ctx: GatewayContext, commandOptions) {
     const { envId } = ctx
 
-    const { servicePath, serviceId } = commandOptions
-
-    if (!servicePath && !serviceId) {
-        throw new CloudBaseError('请指定需要删除的 HTTP Service 路径或 ID！')
+    const { servicePath, serviceId, name } = commandOptions
+    if (!servicePath && !serviceId && !name) {
+        throw new CloudBaseError('请指定需要删除的 HTTP Service 的信息，如 Path、Id 或云函数名称')
     }
 
     const loading = loadingFactory()
-    loading.start(`[${servicePath || serviceId}] HTTP Service 删除中...`)
+    loading.start('HTTP Service 删除中...')
 
     try {
         await deleteGateway({
             envId,
+            name,
             path: servicePath,
             gatewayId: serviceId
         })

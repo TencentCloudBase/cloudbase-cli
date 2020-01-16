@@ -1,7 +1,7 @@
 import os from 'os'
 import fs from 'fs'
 import path from 'path'
-import { getAuthDB } from './db'
+import { getAuthDB } from './auth'
 import { ConfigItems } from '../../constant'
 
 class AuthStore {

@@ -7,7 +7,7 @@ export async function copy(ctx, newFunctionName, targentEnvId, options) {
 
     const { force, codeSecret } = options
 
-    if (!name || !newFunctionName) {
+    if (!name) {
         throw new CloudBaseError('请指定函数名称！')
     }
 
@@ -15,8 +15,8 @@ export async function copy(ctx, newFunctionName, targentEnvId, options) {
         force,
         envId,
         codeSecret,
-        newFunctionName,
         functionName: name,
+        newFunctionName: newFunctionName || name,
         targetEnvId: targentEnvId || envId
     })
 

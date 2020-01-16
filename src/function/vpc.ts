@@ -1,6 +1,6 @@
-import { CloudService } from '../utils'
+import { CloudApiService } from '../utils'
 
-const vpcService = new CloudService('vpc', '2017-03-12')
+const vpcService = new CloudApiService('vpc')
 
 // 获取 vpc 信息
 export async function getVpcs() {

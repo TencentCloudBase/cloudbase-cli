@@ -209,7 +209,7 @@ export async function getAuthTokenFromWeb(options: ILoginOptions): Promise<Crede
 
         await open(cliAuthUrl)
 
-        loading.succeed('已打开云开发 CLI 授权页面，请在云开发 CLI 授权页面同意授权！')
+        loading.succeed('已打开云开发 CLI 授权页面，请在云开发 CLI 授权页面同意授权')
 
         return new Promise(resolve => {
             server.on('request', (req: IncomingMessage, res: ServerResponse) => {

@@ -1,6 +1,8 @@
 import chalk from 'chalk'
 import { FunctionContext } from '../../types'
 import { batchGetFunctionsDetail, getFunctionDetail } from '../../function'
+import { loadingFactory } from '../../utils'
+import { CloudBaseError } from '../../error'
 
 const StatusMap = {
     Active: '部署完成',
@@ -9,7 +11,6 @@ const StatusMap = {
     Updating: '更新中',
     UpdateFailed: '更新失败'
 }
-
 
 function logDetail(info, name) {
     const ResMap = {
@@ -35,9 +36,7 @@ function logDetail(info, name) {
             }
             // 将环境变量数组转换成 key=value 的形式
             if (key === 'Environment') {
-                const data = info[key].Variables.map(
-                    item => `${item.Key}=${item.Value}`
-                ).join('; ')
+                const data = info[key].Variables.map(item => `${item.Key}=${item.Value}`).join('; ')
                 return `${ResMap[key]}：${data} \n`
             }
 
@@ -51,7 +50,9 @@ function logDetail(info, name) {
 
             if (key === 'VpcConfig') {
                 const { vpc, subnet }: any = info[key]
-                if (vpc && subnet) {
+                if (typeof vpc === 'string') {
+                    return `${ResMap[key]}：${vpc}/${subnet}\n`
+                } else if (vpc && subnet) {
                     return `${ResMap[key]}：${vpc.VpcId}(${vpc.VpcName} | ${subnet.CidrBlock}) / ${subnet.SubnetId}(${subnet.SubnetName})\n`
                 } else {
                     return `${ResMap[key]}：无\n`
@@ -70,8 +71,10 @@ function logDetail(info, name) {
 
 export async function detail(ctx: FunctionContext, options) {
     const { envId, name, functions } = ctx
-
     const { codeSecret } = options
+
+    const loading = loadingFactory()
+    loading.start('获取函数信息中...')
 
     // 不指定云函数名称，获取配置文件中的所有函数信息
     if (!name) {
@@ -85,10 +88,19 @@ export async function detail(ctx: FunctionContext, options) {
         return
     }
 
-    const data = await getFunctionDetail({
-        envId,
-        functionName: name,
-        codeSecret
-    })
-    logDetail(data, name)
+    try {
+        const data = await getFunctionDetail({
+            envId,
+            functionName: name,
+            codeSecret
+        })
+        logDetail(data, name)
+    } catch (e) {
+        if (e.code === 'ResourceNotFound.FunctionName') {
+            throw new CloudBaseError(`[${name}] 函数不存在`)
+        }
+        throw e
+    } finally {
+        loading.stop()
+    }
 }

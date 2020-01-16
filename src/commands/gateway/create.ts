@@ -11,13 +11,13 @@ export async function createGw(ctx: GatewayContext, commandOptions) {
     const { function: functionName, servicePath } = commandOptions
 
     if (!servicePath) {
-        throw new CloudBaseError('请指定需要创建的 HTTP service 路径！')
+        throw new CloudBaseError('请指定需要创建的 HTTP Service 路径！')
     }
 
     // 创建云函数网关
     if (functionName) {
         const loading = loadingFactory()
-        loading.start(`[${functionName}] 云函数 HTTP service 创建中...`)
+        loading.start(`[${functionName}] 云函数 HTTP Service 创建中...`)
 
         try {
             // step1: 判断云函数是否存在
@@ -37,7 +37,7 @@ export async function createGw(ctx: GatewayContext, commandOptions) {
                 functionName
             })
             const link = genClickableLink(`https://${envId}.service.tcloudbase.com${servicePath}`)
-            loading.succeed(`云函数 HTTP service 创建成功！\n点击访问> ${link})}`)
+            loading.succeed(`云函数 HTTP Service 创建成功！\n点击访问> ${link}`)
         } catch (e) {
             loading.stop()
             throw e
@@ -45,5 +45,5 @@ export async function createGw(ctx: GatewayContext, commandOptions) {
         return
     }
 
-    throw new CloudBaseError('请指定需要创建的 HTTP service 类型！')
+    throw new CloudBaseError('请指定需要创建的 HTTP Service 类型！')
 }

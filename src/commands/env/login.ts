@@ -1,13 +1,14 @@
 import program from 'commander'
 import inquirer from 'inquirer'
 import { printHorizontalTable, getEnvId } from '../../utils'
-import { successLog } from '../../logger'
+import { successLog, errorLog } from '../../logger'
 import { getLoginConfigList, updateLoginConfig, createLoginConfig } from '../../env'
 import { CloudBaseError } from '../../error'
 
 const platformMap = {
     'WECHAT-OPEN': '微信开放平台',
-    'WECHAT-PUBLIC': '微信公众平台'
+    'WECHAT-PUBLIC': '微信公众平台',
+    ANONYMOUS: '匿名登录'
 }
 
 program
@@ -15,11 +16,7 @@ program
     .option('-e, --envId <envId>', '环境 Id')
     .description('列出环境登录配置')
     .action(async function(options?: any) {
-        const {
-            envId,
-            parent: { configFile }
-        } = options
-        const assignEnvId = await getEnvId(envId, configFile)
+        const assignEnvId = await getEnvId(options)
 
         const configList = await getLoginConfigList({
             envId: assignEnvId
@@ -38,15 +35,11 @@ program
 program
     .command('env:login:create')
     .option('-e, --envId <envId>', '环境 Id')
-    .description('创建环境登录配置')
+    .description('添加环境登录方式配置')
     .action(async function(options?: any) {
-        const {
-            envId,
-            parent: { configFile }
-        } = options
-        const assignEnvId = await getEnvId(envId, configFile)
+        const assignEnvId = await getEnvId(options)
 
-        const { platform, status, appId, appSecret } = await inquirer.prompt([
+        const { platform } = await inquirer.prompt([
             {
                 type: 'list',
                 name: 'platform',
@@ -58,52 +51,63 @@ program
                     {
                         name: '微信开放平台',
                         value: 'WECHAT-OPEN'
+                    },
+                    {
+                        name: '匿名登录',
+                        value: 'ANONYMOUS'
                     }
                 ],
                 message: '请选择登录方式：',
                 default: 'WECHAT-PUBLIC'
-            },
-            {
-                type: 'list',
-                name: 'status',
-                choices: [
-                    {
-                        name: '启用',
-                        value: 'ENABLE'
-                    },
-                    {
-                        name: '禁用',
-                        value: 'DISABLE'
-                    }
-                ],
-                message: '请选择登录方式状态：',
-                default: 'ENABLE'
-            },
-            {
-                type: 'input',
-                name: 'appId',
-                message: '请输入 AppId：'
-            },
-            {
-                type: 'input',
-                name: 'appSecret',
-                message: '请输入 AppSecret：'
             }
         ])
 
-        if (!appId || !appSecret) {
-            throw new CloudBaseError('appId 和 appSecret 不能为空！')
+        let appId
+        let appSecret
+
+        // 微信登录，需要配置 AppId 和 AppSecret
+        if (platform === 'WECHAT-OPEN' || platform === 'WECHAT-PUBLIC') {
+            const input = await inquirer.prompt([
+                {
+                    type: 'input',
+                    name: 'appId',
+                    message: '请输入 AppId：'
+                },
+                {
+                    type: 'input',
+                    name: 'appSecret',
+                    message: '请输入 AppSecret：'
+                }
+            ])
+
+            appId = input?.appId
+            appSecret = input?.appSecret
+
+            if (!appId || !appSecret) {
+                throw new CloudBaseError('appId 和 appSecret 不能为空！')
+            }
         }
 
-        await createLoginConfig({
-            envId: assignEnvId,
-            appId,
-            appSecret,
-            platform,
-            status
-        })
+        // 匿名登录
+        if (platform === 'ANONYMOUS') {
+            appId = 'anonymous'
+            appSecret = 'anonymous'
+        }
 
-        successLog('创建登录方式成功！')
+        try {
+            await createLoginConfig({
+                envId: assignEnvId,
+                appId,
+                appSecret,
+                platform
+            })
+
+            successLog('创建登录方式成功！')
+        } catch (e) {
+            if (e.code === 'ResourceInUse') {
+                errorLog('登录方式已开启')
+            }
+        }
     })
 
 program
@@ -111,11 +115,7 @@ program
     .option('-e, --envId <envId>', '环境 Id')
     .description('更新环境登录方式配置')
     .action(async function(options?: any) {
-        const {
-            envId,
-            parent: { configFile }
-        } = options
-        const assignEnvId = await getEnvId(envId, configFile)
+        const assignEnvId = await getEnvId(options)
 
         const configList = await getLoginConfigList({
             envId: assignEnvId
@@ -125,14 +125,14 @@ program
             name: `${platformMap[item.Platform]}：${item.PlatformId} [${
                 item.Status === 'ENABLE' ? '启用' : '禁用'
             }]`,
-            value: item.Id,
+            value: item,
             short: `${platformMap[item.Platform]}：${item.PlatformId}`
         }))
 
-        const { configId, status, appId, appSecret } = await inquirer.prompt([
+        const { config, status } = await inquirer.prompt([
             {
                 type: 'list',
-                name: 'configId',
+                name: 'config',
                 choices: configChoices,
                 message: '请选择需要配置的条目：'
             },
@@ -151,23 +151,36 @@ program
                 ],
                 message: '请选择登录方式状态：',
                 default: '启用'
-            },
-            {
-                type: 'input',
-                name: 'appId',
-                message: '请输入 AppId（配置状态时可不填）：'
-            },
-            {
-                type: 'input',
-                name: 'appSecret',
-                message: '请输入 AppSecret（配置状态时可不填）：'
             }
         ])
+
+        const platform = config.Platform
+
+        let appId
+        let appSecret
+
+        if (platform === 'WECHAT-OPEN' || platform === 'WECHAT-PUBLIC') {
+            const input = await inquirer.prompt([
+                {
+                    type: 'input',
+                    name: 'appId',
+                    message: '请输入 AppId（配置状态时可不填）：'
+                },
+                {
+                    type: 'input',
+                    name: 'appSecret',
+                    message: '请输入 AppSecret（配置状态时可不填）：'
+                }
+            ])
+
+            appId = input?.appId
+            appSecret = input?.appSecret
+        }
 
         // 检查平台配置是否存在，若存在则更新配置，否则创建配置
         await updateLoginConfig({
             envId: assignEnvId,
-            configId,
+            configId: config.Id,
             appId,
             appSecret,
             status

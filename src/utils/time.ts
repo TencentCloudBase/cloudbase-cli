@@ -28,3 +28,11 @@ export function formatDate(dateParam: string | number | Date, fmtParam: string) 
     }
     return fmt
 }
+
+export async function sleep(time: number) {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve()
+        }, time)
+    })
+}

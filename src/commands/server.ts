@@ -37,9 +37,9 @@ async function getServers(
 program
     .command('server:deploy [name]')
     .description('部署 node 服务')
-    .action(async function(name: string) {
+    .action(async function(name: string, options) {
         const servers = await getServers(name)
-        const envId = await getEnvId('')
+        const envId = await getEnvId(options)
         const credential = await checkAndGetCredential()
         const sshConfig = await getSSH()
 

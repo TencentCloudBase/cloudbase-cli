@@ -33,12 +33,12 @@ export async function list(ctx: FunctionContext, options) {
     })
 
     const head: string[] = [
-        'Id',
-        'Name',
-        'Runtime',
-        'AddTime',
-        'ModTime',
-        'Status'
+        '函数 Id',
+        '函数名称',
+        '运行时',
+        '创建时间',
+        '修改时间',
+        '状态'
     ]
 
     const tableData = data.map(item => [

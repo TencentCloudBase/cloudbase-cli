@@ -1,5 +1,5 @@
 import crypto from 'crypto'
-import { CloudService } from '../utils'
+import { CloudApiService } from '../utils'
 import { CloudBaseError } from '../error'
 
 const publicRsaKey = `
@@ -22,43 +22,35 @@ function rsaEncrypt(data: string): string {
     return encrypted.toString('base64')
 }
 
-const tcbService = new CloudService('tcb', '2018-06-08')
+const tcbService = new CloudApiService('tcb')
 
 // 拉取登录配置列表
 export async function getLoginConfigList({ envId }) {
-    const { ConfigList = [] }: any = await tcbService.request(
-        'DescribeLoginConfigs',
-        {
-            EnvId: envId
-        }
-    )
+    const { ConfigList = [] }: any = await tcbService.request('DescribeLoginConfigs', {
+        EnvId: envId
+    })
 
     return ConfigList
 }
 
 // 创建登录方式
-export async function createLoginConfig({
-    envId,
-    platform,
-    appId,
-    appSecret,
-    status
-}) {
-    const validPlatform = ['WECHAT-OPEN', 'WECHAT-PUBLIC']
+export async function createLoginConfig({ envId, platform, appId, appSecret }) {
+    const validPlatform = ['WECHAT-OPEN', 'WECHAT-PUBLIC', 'ANONYMOUS']
     if (!validPlatform.includes(platform)) {
         throw new CloudBaseError(
-            `Invalid platform value: ${platform}. Now only support 'WECHAT-OPEN', 'WECHAT-PUBLIC'`
+            `Invalid platform value: ${platform}. Now only support 'WECHAT-OPEN', 'WECHAT-PUBLIC', 'ANONYMOUS`
         )
     }
-
-    await tcbService.request('CreateLoginConfig', {
+    const params: any = {
         EnvId: envId,
-        // 平台， “QQ" "WECHAT-OPEN" "WECHAT-PUBLIC"
+        // 平台 “ANONYMOUS" "WECHAT-OPEN" "WECHAT-PUBLIC"
         Platform: platform,
         PlatformId: appId,
         PlatformSecret: rsaEncrypt(appSecret),
-        Status: status
-    })
+        Status: 'ENABLE'
+    }
+
+    await tcbService.request('CreateLoginConfig', params)
 }
 
 // 更新登录方式

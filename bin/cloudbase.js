@@ -57,9 +57,9 @@ notifier.notify({
 })
 
 // 测试模式
-if (processArgv.includes('--deb')) {
+if (processArgv.includes('-debug')) {
     console.log(
-        chalk.bold.yellow('====\n您已经进入 debug 模式！\n移除 --deb 选项退出 debug 模式！\n====')
+        chalk.bold.yellow('====\n您已经进入 debug 模式！\n移除 -debug 选项退出 debug 模式！\n====')
     )
 }
 
@@ -80,10 +80,10 @@ if (processArgv.includes('--tcb-test')) {
 }
 
 // debug 模式
-process.IS_DEBUG = processArgv.includes('--deb')
+process.IS_DEBUG = processArgv.includes('-debug')
 
 // 需要隐藏的选项
-const hideArgs = ['--deb', '--tcb-test']
+const hideArgs = ['-debug', '--tcb-test']
 hideArgs.forEach(arg => {
     const index = processArgv.indexOf(arg)
     if (index > -1) {
@@ -123,6 +123,10 @@ program._helpDescription = '输出帮助信息'
 program.on('--help', function() {
     const tips = `\nTips:
 
+${chalk.gray('–')} 简写
+
+  ${chalk.cyan('使用 tcb 替代 cloudbase')}
+
 ${chalk.gray('–')} 登录
 
   ${chalk.cyan('$ cloudbase login')}
@@ -137,7 +141,7 @@ ${chalk.gray('–')} 部署云函数
 
 ${chalk.gray('–')} 查看命令使用介绍
 
-  ${chalk.cyan('$ cloudbase functions:log -h')}`
+  ${chalk.cyan('$ cloudbase env:list -h')}`
     console.log(tips)
 })
 
@@ -149,11 +153,12 @@ if (process.argv.length < 3) {
 try {
     program.parse(processArgv)
 } catch (e) {
-    const errMsg = `${logSymbols.error} ${e.message || '参数异常，请检查您是否输入了正确的命令！'}`
+    const errMsg = `${logSymbols.error} ${e.message || '参数异常，请检查您是否使用了正确的命令！'}`
     console.log(errMsg)
 }
 
 function errorHandler(err) {
+    process.emit('tcbError')
     const stackIngoreErrors = ['TencentCloudSDKHttpException', 'CloudBaseError']
     // 忽略自定义错误的错误栈
     if (err.stack && !stackIngoreErrors.includes(err.name)) {

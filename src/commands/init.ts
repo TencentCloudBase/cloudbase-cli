@@ -56,7 +56,7 @@ program
     .description('创建并初始化一个新的项目')
     .action(async function(cmd) {
         const loading = loadingFactory()
-        loading.start('拉取环境列表')
+        loading.start('拉取环境列表中')
         let envData = []
         try {
             envData = (await listEnvs()) || []

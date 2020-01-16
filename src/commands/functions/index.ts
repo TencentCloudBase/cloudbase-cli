@@ -1,5 +1,5 @@
 import program from 'commander'
-import { resolveCloudBaseConfig } from '../../utils'
+import { resolveCloudBaseConfig, getEnvId } from '../../utils'
 import { deploy } from './deploy'
 import { FunctionContext } from '../../types'
 import { CloudBaseError } from '../../error'
@@ -16,13 +16,10 @@ import { copy } from './copy'
 import { codeDownload } from './code-download'
 import { debugFunctionByPath, debugByConfig } from './run'
 
-async function getFunctionContext(
-    name: string,
-    envId: string,
-    configPath: string
-): Promise<FunctionContext> {
+async function getFunctionContext(name: string, options): Promise<FunctionContext> {
+    const configPath = options?.parent?.configFile
     const cloudBaseConfig = await resolveCloudBaseConfig(configPath)
-    const assignEnvId = envId || cloudBaseConfig.envId
+    const assignEnvId = await getEnvId(options)
 
     if (!assignEnvId) {
         throw new CloudBaseError(
@@ -33,7 +30,7 @@ async function getFunctionContext(
     let { functions = [] } = cloudBaseConfig
 
     const ctx: FunctionContext = {
-        name: name,
+        name,
         functions,
         envId: assignEnvId,
         config: cloudBaseConfig
@@ -64,11 +61,7 @@ const commands = [
         ],
         desc: '展示云函数列表',
         handler: async options => {
-            const {
-                envId,
-                parent: { configFile }
-            } = options
-            const ctx = await getFunctionContext('', envId, configFile)
+            const ctx = await getFunctionContext('', options)
             await list(ctx, options)
         }
     },
@@ -87,11 +80,7 @@ const commands = [
         ],
         desc: '下载云函数代码',
         handler: async (name: string, dest: string, options) => {
-            const {
-                envId,
-                parent: { configFile }
-            } = options
-            const ctx = await getFunctionContext(name, envId, configFile)
+            const ctx = await getFunctionContext(name, options)
             await codeDownload(ctx, dest, options)
         }
     },
@@ -113,11 +102,7 @@ const commands = [
         ],
         desc: '部署云函数',
         handler: async (name: string, options) => {
-            const {
-                envId,
-                parent: { configFile }
-            } = options
-            const ctx = await getFunctionContext(name, envId, configFile)
+            const ctx = await getFunctionContext(name, options)
             await deploy(ctx, options)
         }
     },
@@ -131,11 +116,7 @@ const commands = [
         ],
         desc: '删除云函数',
         handler: async (name: string, options) => {
-            const {
-                envId,
-                parent: { configFile }
-            } = options
-            const ctx = await getFunctionContext(name, envId, configFile)
+            const ctx = await getFunctionContext(name, options)
             await deleteFunc(ctx)
         }
     },
@@ -153,11 +134,7 @@ const commands = [
         ],
         desc: '获取云函数信息',
         handler: async (name: string, options) => {
-            const {
-                envId,
-                parent: { configFile }
-            } = options
-            const ctx = await getFunctionContext(name, envId, configFile)
+            const ctx = await getFunctionContext(name, options)
             await detail(ctx, options)
         }
     },
@@ -175,11 +152,7 @@ const commands = [
         ],
         desc: '更新云函数代码',
         handler: async (name: string, options) => {
-            const {
-                envId,
-                parent: { configFile }
-            } = options
-            const ctx = await getFunctionContext(name, envId, configFile)
+            const ctx = await getFunctionContext(name, options)
             await codeUpdate(ctx, options)
         }
     },
@@ -193,16 +166,12 @@ const commands = [
         ],
         desc: '更新云函数配置',
         handler: async (name: string, options) => {
-            const {
-                envId,
-                parent: { configFile }
-            } = options
-            const ctx = await getFunctionContext(name, envId, configFile)
+            const ctx = await getFunctionContext(name, options)
             await configUpdate(ctx)
         }
     },
     {
-        cmd: 'functions:copy <functionName> <newFunctionName>',
+        cmd: 'functions:copy <functionName> [newFunctionName]',
         options: [
             {
                 flags: '-e, --envId <envId>',
@@ -212,10 +181,10 @@ const commands = [
                 flags: '-t, --target <targetEnvId>',
                 desc: '目标环境 Id'
             },
-            {
-                flags: '--code-secret <codeSecret>',
-                desc: '代码加密的函数的 CodeSecret'
-            },
+            // {
+            //     flags: '--code-secret <codeSecret>',
+            //     desc: '代码加密的函数的 CodeSecret'
+            // },
             {
                 flags: '--force',
                 desc: '如果目标环境下存在同名函数，覆盖原函数'
@@ -223,13 +192,9 @@ const commands = [
         ],
         desc: '拷贝云函数',
         handler: async (functionName: string, newFunctionName: string, options?) => {
-            const {
-                envId,
-                targentEnvId,
-                parent: { configFile }
-            } = options
-            const ctx = await getFunctionContext(functionName, envId, configFile)
-            await copy(ctx, newFunctionName, targentEnvId, options)
+            const { target } = options
+            const ctx = await getFunctionContext(functionName, options)
+            await copy(ctx, newFunctionName, target, options)
         }
     },
     {
@@ -270,11 +235,7 @@ const commands = [
         ],
         desc: '打印云函数日志',
         handler: async (name: string, options) => {
-            const {
-                envId,
-                parent: { configFile }
-            } = options
-            const ctx = await getFunctionContext(name, envId, configFile)
+            const ctx = await getFunctionContext(name, options)
             await log(ctx, options)
         }
     },
@@ -288,11 +249,7 @@ const commands = [
         ],
         desc: '创建云函数触发器',
         handler: async (name: string, options) => {
-            const {
-                envId,
-                parent: { configFile }
-            } = options
-            const ctx = await getFunctionContext(name, envId, configFile)
+            const ctx = await getFunctionContext(name, options)
             await triggerCreate(ctx)
         }
     },
@@ -306,11 +263,7 @@ const commands = [
         ],
         desc: '删除云函数触发器',
         handler: async (functionName: string, triggerName: string, options) => {
-            const {
-                envId,
-                parent: { configFile }
-            } = options
-            const ctx = await getFunctionContext(functionName, envId, configFile)
+            const ctx = await getFunctionContext(functionName, options)
             await triggerDelete(ctx, triggerName)
         }
     },
@@ -328,12 +281,8 @@ const commands = [
         ],
         desc: '触发云端部署的云函数',
         handler: async (name: string, options) => {
-            const {
-                envId,
-                params,
-                parent: { configFile }
-            } = options
-            const ctx = await getFunctionContext(name, envId, configFile)
+            const { params } = options
+            const ctx = await getFunctionContext(name, options)
             await invoke(ctx, params)
         }
     },
@@ -369,8 +318,7 @@ const commands = [
                 await debugFunctionByPath(path, options)
             } else {
                 const { name } = options
-                const { configFile } = options.parent
-                const ctx = await getFunctionContext(name, '', configFile)
+                const ctx = await getFunctionContext(name, options)
                 await debugByConfig(ctx, options)
             }
         }

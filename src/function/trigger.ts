@@ -1,17 +1,12 @@
-import { CloudService } from '../utils'
+import { CloudApiService } from '../utils'
 import { successLog } from '../logger'
 import { IFunctionTriggerOptions, IFunctionBatchOptions } from '../types'
 import { CloudBaseError } from '../error'
 
-const scfService = new CloudService('scf', '2018-04-16', {
-    Role: 'TCB_QcsRole',
-    Stamp: 'MINI_QCBASE'
-})
+const scfService = new CloudApiService('scf')
 
 // 创建函数触发器
-export async function createFunctionTriggers(
-    options: IFunctionTriggerOptions
-): Promise<void> {
+export async function createFunctionTriggers(options: IFunctionTriggerOptions): Promise<void> {
     const { functionName, triggers = [], envId } = options
 
     const parsedTriggers = triggers.map(item => {
@@ -35,14 +30,15 @@ export async function createFunctionTriggers(
             Count: parsedTriggers.length
         })
     } catch (e) {
-        throw new CloudBaseError(`[${functionName}] 创建触发器失败：${e.message}`)
+        throw new CloudBaseError(`[${functionName}] 创建触发器失败：${e.message}`, {
+            action: e.action,
+            code: e.code
+        })
     }
 }
 
 // 批量部署函数触发器
-export async function batchCreateTriggers(
-    options: IFunctionBatchOptions
-): Promise<void> {
+export async function batchCreateTriggers(options: IFunctionBatchOptions): Promise<void> {
     const { functions, envId } = options
 
     const promises = functions.map(func =>
@@ -64,9 +60,7 @@ export async function batchCreateTriggers(
 }
 
 // 删除函数触发器
-export async function deleteFunctionTrigger(
-    options: IFunctionTriggerOptions
-): Promise<void> {
+export async function deleteFunctionTrigger(options: IFunctionTriggerOptions): Promise<void> {
     const { functionName, triggerName, envId } = options
     try {
         await scfService.request('DeleteTrigger', {
@@ -81,9 +75,7 @@ export async function deleteFunctionTrigger(
     }
 }
 
-export async function batchDeleteTriggers(
-    options: IFunctionBatchOptions
-): Promise<void> {
+export async function batchDeleteTriggers(options: IFunctionBatchOptions): Promise<void> {
     const { functions, envId } = options
     const promises = functions.map(func =>
         (async () => {

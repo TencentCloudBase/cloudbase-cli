@@ -30,11 +30,7 @@ program
     .option('-e, --envId <envId>', '环境 Id')
     .description('查看静态网站服务信息')
     .action(async (options: any) => {
-        const {
-            parent: { configFile },
-            envId
-        } = options
-        const assignEnvId = await getEnvId(envId, configFile)
+        const assignEnvId = await getEnvId(options)
         const res = await getHostingInfo({ envId: assignEnvId })
 
         const website = res.data && res.data[0]
@@ -59,11 +55,7 @@ program
     .option('-e, --envId <envId>', '环境 Id')
     .description('部署静态网站文件')
     .action(async (filePath = '.', cloudPath = '', options: any) => {
-        const {
-            parent: { configFile },
-            envId
-        } = options
-        const assignEnvId = await getEnvId(envId, configFile)
+        const assignEnvId = await getEnvId(options)
         const isDir = isDirectory(filePath)
 
         console.log('> 文件部署中...')
@@ -91,11 +83,6 @@ program
     .option('-d, --dir', '删除目标是否为文件夹')
     .description('删除静态网站文件/文件夹，文件夹需指定 --dir 选项')
     .action(async (cloudPath = '', options: any) => {
-        const {
-            parent: { configFile },
-            envId
-        } = options
-
         let isDir = options.dir
 
         // 删除所有文件，危险操作，需要提示
@@ -113,7 +100,7 @@ program
         }
         const fileText = isDir ? '文件夹' : '文件'
 
-        const assignEnvId = await getEnvId(envId, configFile)
+        const assignEnvId = await getEnvId(options)
 
         const loading = loadingFactory()
         loading.start(`删除${fileText}中...`)
@@ -136,11 +123,7 @@ program
     .option('-e, --envId <envId>', '环境 Id')
     .description('展示文件列表')
     .action(async (options: any) => {
-        const {
-            parent: { configFile },
-            envId
-        } = options
-        const assignEnvId = await getEnvId(envId, configFile)
+        const assignEnvId = await getEnvId(options)
 
         const loading = loadingFactory()
         loading.start('获取文件列表中...')

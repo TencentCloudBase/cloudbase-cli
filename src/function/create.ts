@@ -1,12 +1,27 @@
-import { CloudService, FunctionPacker, CodeType, loadingFactory, getMangerService } from '../utils'
+import { FunctionPacker, CodeType, loadingFactory, CloudApiService, sleep } from '../utils'
 import { CloudBaseError } from '../error'
 import { ICreateFunctionOptions } from '../types'
 import { createFunctionTriggers } from './trigger'
+import { deleteFunction } from './delete'
 
-const scfService = new CloudService('scf', '2018-04-16', {
+const scfService = new CloudApiService('scf', {
     Role: 'TCB_QcsRole',
     Stamp: 'MINI_QCBASE'
 })
+
+async function retryCreateTrigger(options, count = 0) {
+    console.log(count)
+    try {
+        await createFunctionTriggers(options)
+    } catch (e) {
+        if (count < 3) {
+            await sleep(500)
+            await retryCreateTrigger(options, count + 1)
+        } else {
+            throw e
+        }
+    }
+}
 
 /* eslint-disable complexity */
 // 创建云函数
@@ -98,7 +113,7 @@ export async function createFunction(options: ICreateFunctionOptions): Promise<v
         // 创建云函数
         await scfService.request('CreateFunction', params)
         // 创建函数触发器
-        await createFunctionTriggers({
+        await retryCreateTrigger({
             functionName: funcName,
             triggers: func.triggers,
             envId
@@ -106,14 +121,14 @@ export async function createFunction(options: ICreateFunctionOptions): Promise<v
     } catch (e) {
         // 已存在同名函数，强制更新
         if (e.code === 'ResourceInUse.FunctionName' && force) {
-            params.ZipFile = base64
-            // 更新函数配置和代码
-            await scfService.request('UpdateFunctionConfiguration', params)
-            delete params.Code
-            await scfService.request('UpdateFunctionCode', params)
-
+            await deleteFunction({
+                envId,
+                functionName: funcName
+            })
+            // 创建云函数
+            await scfService.request('CreateFunction', params)
             // 创建函数触发器
-            await createFunctionTriggers({
+            await retryCreateTrigger({
                 functionName: funcName,
                 triggers: func.triggers,
                 envId

@@ -6,6 +6,8 @@ class Loading {
     constructor() {
         // @ts-ignore
         process.on('tcbExit', this.stop.bind(this))
+        // @ts-ignore
+        process.on('tcbError', this.stop.bind(this))
         this.spinner = ora({
             discardStdin: false
         })

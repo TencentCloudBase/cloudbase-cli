@@ -9,7 +9,7 @@ program
     .description('展示云开发环境信息')
     .action(async function() {
         const data = await listEnvs()
-        const head = ['Alias', 'EnvId', 'PackageName', 'Source', 'CreateTime', 'Status']
+        const head = ['名称', '环境 Id', '套餐版本', '来源', '创建时间', '环境状态']
 
         const sortData = data.sort((prev, next) => {
             if (prev.Alias > next.Alias) {
@@ -43,13 +43,10 @@ program
     .option('-e, --envId <envId>', '环境 Id')
     .description('修改云开发环境别名')
     .action(async function(name: string, options) {
-        const { envId } = options
         if (!name) {
             throw new CloudBaseError('环境名称不能为空！')
         }
-
-        const { configFile } = options.parent
-        const assignEnvId = await getEnvId(envId, configFile)
+        const assignEnvId = await getEnvId(options)
 
         await updateEnvInfo({
             envId: assignEnvId,

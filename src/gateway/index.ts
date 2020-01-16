@@ -11,9 +11,7 @@ import {
 const tcbService = new CloudApiService('tcb')
 
 // 创建云函数网关
-export async function createFunctionGateway(
-    options: ICreateFunctionGatewayOptions
-) {
+export async function createFunctionGateway(options: ICreateFunctionGatewayOptions) {
     const { envId, path, functionName } = options
 
     const res: any = await tcbService.request('CreateCloudBaseGWAPI', {
@@ -26,9 +24,7 @@ export async function createFunctionGateway(
 }
 
 // 查询网关信息
-export async function queryGateway(
-    options: IQueryGatewayOptions
-) {
+export async function queryGateway(options: IQueryGatewayOptions) {
     const { envId, domain, path, gatewayId } = options
 
     const res: any = await tcbService.request('DescribeCloudBaseGWAPI', {
@@ -41,23 +37,21 @@ export async function queryGateway(
 }
 
 // 删除网关
-export async function deleteGateway(
-    options: IDeleteGatewayOptions
-) {
-    const { envId, path, gatewayId } = options
+export async function deleteGateway(options: IDeleteGatewayOptions) {
+    const { envId, path, name, gatewayId } = options
 
     const res: any = await tcbService.request('DeleteCloudBaseGWAPI', {
         ServiceId: envId,
         Path: path,
-        APIId: gatewayId
+        APIId: gatewayId,
+        Type: 1,
+        Name: name
     })
     return res
 }
 
 // 绑定网关域名
-export async function bindGatewayDomain(
-    options: IBindGatewayDomainOptions
-) {
+export async function bindGatewayDomain(options: IBindGatewayDomainOptions) {
     const { envId, domain } = options
 
     const res: any = await tcbService.request('BindCloudBaseGWDomain', {
@@ -68,9 +62,7 @@ export async function bindGatewayDomain(
 }
 
 // 查询网关域名信息
-export async function queryGatewayDomain(
-    options: IQueryGatewayDomainOptions
-) {
+export async function queryGatewayDomain(options: IQueryGatewayDomainOptions) {
     const { envId, domain } = options
 
     const res: any = await tcbService.request('DescribeCloudBaseGWService', {
@@ -81,9 +73,7 @@ export async function queryGatewayDomain(
 }
 
 // 删除网关域名
-export async function unbindGatewayDomain(
-    options: IUnbindGatewayDomainOptions
-) {
+export async function unbindGatewayDomain(options: IUnbindGatewayDomainOptions) {
     const { envId, domain } = options
 
     const res: any = await tcbService.request('DeleteCloudBaseGWDomain', {

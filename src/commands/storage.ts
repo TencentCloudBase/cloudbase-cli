@@ -10,11 +10,13 @@ import {
     formatDate,
     createOnProgressBar,
     formateFileSize,
-    getMangerService
+    getMangerService,
+    isDirectory
 } from '../utils'
 
 import { CloudBaseError } from '../error'
-import { successLog } from '../logger'
+import { successLog, errorLog } from '../logger'
+import logSymbols from 'log-symbols'
 
 const AclMap = {
     READONLY: '所有用户可读，仅创建者和管理员可写',
@@ -24,9 +26,7 @@ const AclMap = {
 }
 
 async function getStorageService(options: any): Promise<StorageService> {
-    const envId = options?.envId
-    const configFile = options?.parent.configFile
-    const assignEnvId = await getEnvId(envId, configFile)
+    const assignEnvId = await getEnvId(options)
     const { storage } = await getMangerService(assignEnvId)
     return storage
 }
@@ -42,25 +42,89 @@ program
     .option('-e, --envId <envId>', '环境 Id')
     .description('上传文件/文件夹')
     .action(async function(localPath: string, cloudPath = '', options) {
-        const storageService = await getStorageService(options)
         const resolveLocalPath = path.resolve(localPath)
-
         if (!fs.existsSync(resolveLocalPath)) {
             throw new CloudBaseError('文件未找到！')
         }
 
+        const loading = loadingFactory()
+        loading.start('文件检测中...')
+        const storageService = await getStorageService(options)
         const isDir = fs.statSync(resolveLocalPath).isDirectory()
-        const fileText = isDir ? '文件夹' : '文件'
+
+        let totalFiles = 0
+
+        if (isDir) {
+            let files = await storageService.walkLocalDir(resolveLocalPath)
+            files = files.filter(item => !isDirectory(item))
+            totalFiles = files.length
+        }
+
+        loading.stop()
+
+        if (totalFiles > 1000) {
+            const { confirm } = await inquirer.prompt({
+                type: 'confirm',
+                name: 'confirm',
+                message: '上传文件数量大于 1000，是否继续',
+                default: false
+            })
+
+            if (!confirm) {
+                throw new CloudBaseError('上传中止')
+            }
+        }
+
         // 上传进度条
         const onProgress = createOnProgressBar(() => {
-            successLog(`上传${fileText}成功！`)
+            !isDir && successLog('上传文件成功！')
         })
+
+        const successFiles = []
+        const failedFiles = []
+
         if (isDir) {
             await storageService.uploadDirectory({
                 localPath: resolveLocalPath,
                 cloudPath,
-                onProgress
+                onProgress,
+                onFileFinish: (...args) => {
+                    const error = args[0]
+                    const fileInfo = (args as any)[2]
+                    if (error) {
+                        failedFiles.push(fileInfo.Key)
+                    } else {
+                        successFiles.push(fileInfo.Key)
+                    }
+                }
             })
+
+            successLog(`所有文件共计 ${totalFiles} 个`)
+            successLog(`上传成功文件 ${successFiles.length} 个`)
+            // 上传成功的文件
+            if (totalFiles <= 50) {
+                printHorizontalTable(
+                    ['状态', '文件'],
+                    successFiles.map(item => [logSymbols.success, item])
+                )
+            }
+
+            // 上传失败的文件
+            if (failedFiles.length) {
+                errorLog(`上传失败文件（${failedFiles.length}）个`)
+                if (totalFiles <= 50) {
+                    printHorizontalTable(
+                        ['状态', '文件'],
+                        failedFiles.map(item => [logSymbols.error, item])
+                    )
+                } else {
+                    // 写入文件到本地
+                    const errorLogPath = path.resolve('./cloudbase-error.log')
+                    errorLog('上传失败文件：')
+                    console.log(errorLogPath)
+                    fs.writeFileSync(errorLogPath, failedFiles.join('\n'))
+                }
+            }
         } else {
             await storageService.uploadFile({
                 localPath: resolveLocalPath,

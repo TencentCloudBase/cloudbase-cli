@@ -7,7 +7,6 @@ import { ConfigItems } from '../constant'
 export { printHorizontalTable } from './cli-table'
 
 export * from './uuid'
-export * from './qcloud-request'
 export * from './http-request'
 export * from './output'
 export * from './function-packer'

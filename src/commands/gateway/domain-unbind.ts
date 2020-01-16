@@ -7,18 +7,18 @@ export async function unbindGwDomain(ctx: GatewayContext, domain: string) {
     const { envId } = ctx
 
     if (!domain) {
-        throw new CloudBaseError('请指定需要解绑的HTTP service域名！')
+        throw new CloudBaseError('请指定需要解绑的HTTP Service域名！')
     }
 
     const loading = loadingFactory()
-    loading.start(`HTTP service域名 [${domain}] 解绑中...`)
+    loading.start(`HTTP Service域名 [${domain}] 解绑中...`)
 
     try {
         await unbindGatewayDomain({
             envId,
             domain
         })
-        loading.succeed(`HTTP service域名 [${domain}] 解绑成功！`)
+        loading.succeed(`HTTP Service域名 [${domain}] 解绑成功！`)
     } catch (e) {
         loading.stop()
         throw e

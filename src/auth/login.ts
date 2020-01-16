@@ -1,8 +1,8 @@
-import { CloudService, authStore, checkAndGetCredential, getAuthTokenFromWeb } from '../utils'
+import { CloudApiService, authStore, checkAndGetCredential, getAuthTokenFromWeb } from '../utils'
 import { ConfigItems } from '../constant'
 import { Credential, ILoginOptions } from '../types'
 
-const tcbService = new CloudService('tcb', '2018-06-08')
+const tcbService = new CloudApiService('tcb')
 
 // 调用 env:list 接口，检查密钥是否有效
 async function checkAuth(credential: Credential) {

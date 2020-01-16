@@ -9,11 +9,11 @@ export async function queryGw(ctx: GatewayContext, commandOptions) {
     const { domain: domainName, servicePath, serviceId } = commandOptions
 
     if (!envId && !domainName) {
-        throw new CloudBaseError('请指定需要查询的环境ID或HTTP service域名！')
+        throw new CloudBaseError('请指定需要查询的环境ID或HTTP Service域名！')
     }
 
     const loading = loadingFactory()
-    loading.start('查询HTTP service中...')
+    loading.start('查询HTTP Service中...')
 
     try {
         const res = await queryGateway({
@@ -22,7 +22,7 @@ export async function queryGw(ctx: GatewayContext, commandOptions) {
             path: servicePath,
             gatewayId: serviceId
         })
-        loading.succeed('查询HTTP service成功！')
+        loading.succeed('查询HTTP Service成功！')
 
         const head = ['Id', 'Path', 'FunctionName', 'CreateTime']
         const tableData = res.APISet.map(item => [

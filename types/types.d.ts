@@ -178,6 +178,7 @@ export interface IDeleteGatewayOptions {
     envId: string;
     path?: string;
     gatewayId?: string;
+    name?: string;
 }
 export interface IBindGatewayDomainOptions {
     envId: string;

@@ -1,10 +1,27 @@
+import chalk from 'chalk'
 import program from 'commander'
 import inquirer from 'inquirer'
 import { login } from '../auth'
-import { listEnvs, initTcb } from '../env'
+import { listEnvs } from '../env'
 import { CloudBaseError } from '../error'
 import { checkAndGetCredential, loadingFactory } from '../utils'
 import { warnLog, errorLog } from '../logger'
+
+function printSuggestion() {
+    const tips = `
+${chalk.gray('–')} 初始化云开发项目
+
+  ${chalk.cyan('$ cloudbase init')}
+
+${chalk.gray('–')} 部署云函数
+
+  ${chalk.cyan('$ cloudbase functions:deploy')}
+
+${chalk.gray('–')} 查看命令使用介绍
+
+  ${chalk.cyan('$ cloudbase -h')}`
+    console.log(tips)
+}
 
 // 登录
 program
@@ -52,9 +69,7 @@ program
             if (res.code === 'SUCCESS') {
                 loading.succeed('登录成功！')
             } else {
-                loading.fail(
-                    '腾讯云密钥验证失败，请检查密钥是否正确或终端网络是否可用！'
-                )
+                loading.fail('腾讯云密钥验证失败，请检查密钥是否正确或终端网络是否可用！')
                 return
             }
         } else {
@@ -64,8 +79,10 @@ program
 
             if (res.code === 'SUCCESS') {
                 loading.succeed('登录成功！')
+                printSuggestion()
             } else {
                 loading.fail(res.msg)
+                console.log('请检查你的网络，尝试重新运行 cloudbase login 命令！')
                 return
             }
             return
@@ -75,9 +92,7 @@ program
         try {
             const envs = await listEnvs()
             if (!envs.length) {
-                warnLog(
-                    '您还没有可用的环境，请使用 cloudbase env:create $name 创建环境'
-                )
+                warnLog('您还没有可用的环境，请使用 cloudbase env:create $name 创建环境')
             }
         } catch (e) {
             // 用户不存在

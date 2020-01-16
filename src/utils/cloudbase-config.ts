@@ -23,9 +23,7 @@ const DefaultCloudBaseConfig = {
  * 3. 指定配置文件
  * @param configPath
  */
-export async function resolveCloudBaseConfig(
-    configPath = ''
-): Promise<CloudBaseConfig> {
+export async function resolveCloudBaseConfig(configPath = ''): Promise<CloudBaseConfig> {
     const tcbrcPath = path.resolve('tcbrc.json')
     if (fs.existsSync(tcbrcPath)) {
         throw new CloudBaseError(
@@ -38,17 +36,11 @@ export async function resolveCloudBaseConfig(
     // 只有 configPath 不为空时才解析，防止解析到文件夹
     const customConfigPath = (configPath && path.resolve(configPath)) || null
 
-    const cloudbasePath = [
-        customConfigPath,
-        cloudbaseJSPath,
-        cloudbaseJSONPath
-    ].find(item => item && fs.existsSync(item))
+    const cloudbasePath = [customConfigPath, cloudbaseJSPath, cloudbaseJSONPath].find(
+        item => item && fs.existsSync(item)
+    )
     // 检查配置文件路径
-    if (
-        !cloudbasePath ||
-        !fs.existsSync(cloudbasePath) ||
-        !cloudbasePath.match(/.js$|.json$/g)
-    ) {
+    if (!cloudbasePath || !fs.existsSync(cloudbasePath) || !cloudbasePath.match(/.js$|.json$/g)) {
         return {}
     }
     const localCloudBaseConfig = await import(cloudbasePath)
@@ -71,10 +63,10 @@ export async function resolveCloudBaseConfig(
 }
 
 // 从命令行和配置文件中获取 envId
-export async function getEnvId(
-    envId?: string,
-    configPath?: string
-): Promise<string> {
+export async function getEnvId(commandOptions): Promise<string> {
+    const envId = commandOptions?.envId
+    const configPath = commandOptions?.parent?.configFile
+
     const cloudbaseConfig = await resolveCloudBaseConfig(configPath)
     // 命令行 envId 可以覆盖配置文件 envId
     const assignEnvId = envId || cloudbaseConfig.envId

@@ -10,11 +10,7 @@ program
     .option('-e, --envId <envId>', '环境 Id')
     .description('列出环境的安全域名列表')
     .action(async function(options?: any) {
-        const {
-            envId,
-            parent: { configFile }
-        } = options
-        const assignEnvId = await getEnvId(envId, configFile)
+        const assignEnvId = await getEnvId(options)
         const domains = await getEnvAuthDomains({
             envId: assignEnvId
         })
@@ -38,11 +34,7 @@ program
     .option('-e, --envId <envId>', '环境 Id')
     .description('添加环境安全域名，多个以斜杠 / 分隔')
     .action(async function(domain: string, options?: any) {
-        const {
-            envId,
-            parent: { configFile }
-        } = options
-        const assignEnvId = await getEnvId(envId, configFile)
+        const assignEnvId = await getEnvId(options)
 
         const domains = domain.split('/')
 
@@ -76,7 +68,6 @@ program
             envId: assignEnvId,
             domains: domains
         })
-
         successLog('添加安全域名成功！')
     })
 
@@ -85,11 +76,7 @@ program
     .option('-e, --envId <envId>', '环境 Id')
     .description('删除环境的安全域名')
     .action(async function(options?: any) {
-        const {
-            envId,
-            parent: { configFile }
-        } = options
-        const assignEnvId = await getEnvId(envId, configFile)
+        const assignEnvId = await getEnvId(options)
         const loading = loadingFactory()
 
         loading.start('拉取环境安全域名中')

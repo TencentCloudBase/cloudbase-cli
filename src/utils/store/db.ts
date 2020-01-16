@@ -8,13 +8,13 @@ import xdgBasedir from 'xdg-basedir'
 // 系统配置目录
 const configDir = xdgBasedir.config || path.join(os.tmpdir(), '.config')
 // cloudbase 配置目录
-const cloudbaseConfigDir = path.join(configDir, '.cloudbase')
+export const cloudbaseConfigDir = path.join(configDir, '.cloudbase')
 
 // 确保目录存在
 fse.ensureDirSync(cloudbaseConfigDir)
 
-export function getAuthDB() {
-    const dbPath = path.join(cloudbaseConfigDir, 'auth.json')
+export function getDB(file: string) {
+    const dbPath = path.join(cloudbaseConfigDir, `${file}.json`)
     const adapter = new FileSync(dbPath)
     const db = low(adapter)
     return db
