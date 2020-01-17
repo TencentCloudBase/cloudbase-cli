@@ -1,9 +1,7 @@
 import { CloudBaseError } from '../../error'
-import {
-    listFunction
-} from '../../function'
+import { listFunction } from '../../function'
 import { FunctionContext } from '../../types'
-import { printHorizontalTable } from '../../utils'
+import { printHorizontalTable, loadingFactory } from '../../utils'
 
 const StatusMap = {
     Active: '部署完成',
@@ -26,20 +24,19 @@ export async function list(ctx: FunctionContext, options) {
         throw new CloudBaseError('limit 和 offset 必须为大于 0 的整数')
     }
 
+    const loading = loadingFactory()
+
+    loading.start('加载列表中...')
+
     const data = await listFunction({
         envId,
         limit: Number(limit),
         offset: Number(offset)
     })
 
-    const head: string[] = [
-        '函数 Id',
-        '函数名称',
-        '运行时',
-        '创建时间',
-        '修改时间',
-        '状态'
-    ]
+    loading.stop()
+
+    const head: string[] = ['函数 Id', '函数名称', '运行时', '创建时间', '修改时间', '状态']
 
     const tableData = data.map(item => [
         item.FunctionId,

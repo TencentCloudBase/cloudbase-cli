@@ -2,7 +2,7 @@ import path from 'path'
 import { spawn, SpawnOptionsWithoutStdio } from 'child_process'
 import { FunctionContext } from '../../types'
 import { CloudBaseError } from '../../error'
-import { checkPathExist, isDirectory, findAndFlattenFunConfig } from '../../utils'
+import { checkPathExist, isDirectory } from '../../utils'
 
 // 启动文件
 const bootstrapFilePath = path.join(__dirname, '../../../runtime/nodejs/bootstrap.js')
@@ -123,9 +123,9 @@ export async function debugByConfig(ctx: FunctionContext, options: Record<string
     checkPathExist(filePath, !debug)
 
     let debugDirname
-    const funcConfig = findAndFlattenFunConfig(config, name)
+    const funcConfig = config.functions.find(item => item.name === name)
 
-    const handlers = (funcConfig.handler || 'index.js').split('.')
+    const handlers = (funcConfig?.handler || 'index.js').split('.')
     const indexFileName = handlers[0]
     const indexFile = `${indexFileName}.js`
     const mainFunction = handlers[1]
@@ -161,11 +161,11 @@ export async function debugByConfig(ctx: FunctionContext, options: Record<string
     spawnNodeProcess(args, {
         env: {
             ...process.env,
-            SCF_FUNCTION_HANDLER: funcConfig.handler || 'index.main',
-            SCF_FUNCTION_NAME: funcConfig.name || 'main',
+            SCF_FUNCTION_HANDLER: funcConfig?.handler || 'index.main',
+            SCF_FUNCTION_NAME: funcConfig?.name || 'main',
             GLOBAL_USER_FILE_PATH: path.join(debugDirname, path.sep),
-            SCF_EVENT_BODY: params || JSON.stringify(funcConfig.params || {}),
-            ...funcConfig.envVariables
+            SCF_EVENT_BODY: params || JSON.stringify(funcConfig?.params || {}),
+            ...funcConfig?.envVariables
         }
     })
 }

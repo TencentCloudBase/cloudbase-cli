@@ -35,11 +35,11 @@ program
             name: 'payment',
             choices: [
                 {
-                    name: '按量计费',
+                    name: '按量计费（免费配额）',
                     value: 'postpay'
                 },
                 {
-                    name: '包年包月',
+                    name: '包年包月（免费版本）',
                     value: 'prepay'
                 }
             ],
@@ -60,5 +60,6 @@ program
             throw e
         }
 
-        loading.succeed('创建环境成功，初始化预计需要花费 3 分钟！')
+        loading.succeed('创建环境成功，初始化预计需要花费 3 分钟')
+        console.log('你可以使用 cloudbase init 创建云开发项目')
     })

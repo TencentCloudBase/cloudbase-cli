@@ -48,7 +48,7 @@ program
         }
 
         const loading = loadingFactory()
-        loading.start('文件检测中...')
+        loading.start('准备上传中...')
         const storageService = await getStorageService(options)
         const isDir = fs.statSync(resolveLocalPath).isDirectory()
 
@@ -59,8 +59,6 @@ program
             files = files.filter(item => !isDirectory(item))
             totalFiles = files.length
         }
-
-        loading.stop()
 
         if (totalFiles > 1000) {
             const { confirm } = await inquirer.prompt({
@@ -75,10 +73,17 @@ program
             }
         }
 
+        let loadingStoped = false
+
         // 上传进度条
-        const onProgress = createOnProgressBar(() => {
-            !isDir && successLog('上传文件成功！')
-        })
+        const onProgress = createOnProgressBar(
+            () => {
+                !isDir && successLog('上传文件成功！')
+            },
+            () => {
+                loading.stop()
+            }
+        )
 
         const successFiles = []
         const failedFiles = []
@@ -99,8 +104,8 @@ program
                 }
             })
 
-            successLog(`所有文件共计 ${totalFiles} 个`)
-            successLog(`上传成功文件 ${successFiles.length} 个`)
+            successLog(`文件共计 ${totalFiles} 个`)
+            successLog(`文件上传成功 ${successFiles.length} 个`)
             // 上传成功的文件
             if (totalFiles <= 50) {
                 printHorizontalTable(
@@ -110,8 +115,8 @@ program
             }
 
             // 上传失败的文件
+            errorLog(`文件上传失败 ${failedFiles.length} 个`)
             if (failedFiles.length) {
-                errorLog(`上传失败文件（${failedFiles.length}）个`)
                 if (totalFiles <= 50) {
                     printHorizontalTable(
                         ['状态', '文件'],

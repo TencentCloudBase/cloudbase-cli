@@ -1,15 +1,23 @@
 import path from 'path'
 import inquirer from 'inquirer'
-import { loadingFactory } from '../../utils'
+import { loadingFactory, genClickableLink, highlightCommand } from '../../utils'
 import { CloudBaseError } from '../../error'
 import { batchCreateFunctions, createFunction } from '../../function'
 import { FunctionContext } from '../../types'
 
+function printSuccessTips(envId: string) {
+    const link = genClickableLink(`https://console.cloud.tencent.com/tcb/scf?envId=${envId}`)
+    console.log(`\n控制台查看函数详情：${link}`)
+
+    console.log(`\n使用 ${highlightCommand('cloudbase functions:list')} 命令查看已部署云函数`)
+}
+
 // TODO: 支持部署多个云函数
+// TODO: 生成 HTTP 调用链接 - 随机 Path
 export async function deploy(ctx: FunctionContext, commandOptions) {
     const { name, envId, config, functions } = ctx
 
-    const { force, codeSecret } = commandOptions
+    const { force, codeSecret, verbose } = commandOptions
 
     let isBatchCreating = false
 
@@ -81,6 +89,7 @@ export async function deploy(ctx: FunctionContext, commandOptions) {
             functionRootPath: path.join(process.cwd(), config.functionRoot)
         })
         loading.succeed(`[${newFunction.name}] 云函数部署成功！`)
+        printSuccessTips(envId)
     } catch (e) {
         // 询问是否覆盖同名函数
         loading.stop()
@@ -103,6 +112,7 @@ export async function deploy(ctx: FunctionContext, commandOptions) {
                         functionRootPath: path.join(process.cwd(), config.functionRoot)
                     })
                     loading.succeed(`[${newFunction.name}] 云函数部署成功！`)
+                    printSuccessTips(envId)
                 } catch (e) {
                     loading.stop()
                     throw e

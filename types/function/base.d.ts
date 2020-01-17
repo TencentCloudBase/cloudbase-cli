@@ -8,6 +8,7 @@ interface ICopyFunctionOptions {
     copyConfig?: boolean;
     codeSecret?: string;
 }
+export declare function getFunctionService(envId: string): Promise<import("@cloudbase/manager-node/types/function").FunctionService>;
 export declare function listFunction(options: IListFunctionOptions): Promise<Record<string, string>[]>;
 export declare function getFunctionDetail(options: any): Promise<Record<string, string>>;
 export declare function batchGetFunctionsDetail({ names, envId, codeSecret }: {

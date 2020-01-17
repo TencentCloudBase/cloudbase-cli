@@ -8,7 +8,12 @@ import { checkAndGetCredential, loadingFactory } from '../utils'
 import { warnLog, errorLog } from '../logger'
 
 function printSuggestion() {
-    const tips = `
+    const tips = `可使用下面命令继续操作：
+
+${chalk.gray('–')} 创建免费环境
+
+  ${chalk.cyan('$ cloudbase env:create envName')}
+
 ${chalk.gray('–')} 初始化云开发项目
 
   ${chalk.cyan('$ cloudbase init')}
@@ -19,7 +24,9 @@ ${chalk.gray('–')} 部署云函数
 
 ${chalk.gray('–')} 查看命令使用介绍
 
-  ${chalk.cyan('$ cloudbase -h')}`
+  ${chalk.cyan('$ cloudbase -h')}
+
+Tips：可以使用简写命令 tcb 代替 cloudbase`
     console.log(tips)
 }
 
@@ -68,6 +75,7 @@ program
 
             if (res.code === 'SUCCESS') {
                 loading.succeed('登录成功！')
+                printSuggestion()
             } else {
                 loading.fail('腾讯云密钥验证失败，请检查密钥是否正确或终端网络是否可用！')
                 return

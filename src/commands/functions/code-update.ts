@@ -10,13 +10,10 @@ export async function codeUpdate(ctx: FunctionContext, options) {
     const { codeSecret } = options
 
     if (!name) {
-        throw new CloudBaseError('请指定函数名称！')
+        throw new CloudBaseError('请指定云函数名称！')
     }
 
-    const func = functions.find(item => item.name === name)
-    if (!func || !func.name) {
-        throw new CloudBaseError(`函数 ${name} 配置不存在`)
-    }
+    const func = functions.find(item => item.name === name) || { name }
 
     const loading = loadingFactory()
 

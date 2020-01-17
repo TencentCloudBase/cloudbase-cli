@@ -43,7 +43,7 @@ export async function configUpdate(ctx: FunctionContext) {
     await updateFunctionConfig({
         envId,
         functionName: name,
-        config: functionItem.config
+        config: functionItem
     })
 
     successLog(`[${name}] 更新云函数配置成功！`)

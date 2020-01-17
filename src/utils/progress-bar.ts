@@ -1,12 +1,17 @@
 import ProgressBar from 'progress'
 
 // 打印文件传输进度条
-export function createOnProgressBar(onFinished: Function) {
+export function createOnProgressBar(onFinished: Function, onStart?: Function) {
     let bar
     let lastLoaded = 0
     let finished = false
+
     return function(data) {
         const { total, loaded, percent } = data
+        if (lastLoaded === 0 && onStart) {
+            onStart()
+        }
+
         if (+percent === 1) {
             if (finished) return
             finished = true

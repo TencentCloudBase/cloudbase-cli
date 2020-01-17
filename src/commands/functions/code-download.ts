@@ -4,7 +4,7 @@ import inquirer from 'inquirer'
 import { FunctionContext } from '../../types'
 import { CloudBaseError } from '../../error'
 import { downloadFunctionCode, getFunctionDetail } from '../../function'
-import { loadingFactory, checkPathExist, delSync } from '../../utils'
+import { loadingFactory, checkPathExist, delSync, highlightCommand } from '../../utils'
 
 export async function codeDownload(ctx: FunctionContext, dest: string, options: any) {
     const { name, envId, config } = ctx
@@ -23,7 +23,11 @@ export async function codeDownload(ctx: FunctionContext, dest: string, options: 
         })
     } catch (e) {
         if (e.code === 'ResourceNotFound.FunctionName') {
-            throw new CloudBaseError(`云函数 [${name}] 不存在！`)
+            throw new CloudBaseError(
+                `云函数 [${name}] 不存在！\n\n使用 ${highlightCommand(
+                    'cloudbase functions:list'
+                )} 命令查看已部署云函数`
+            )
         }
         return
     }

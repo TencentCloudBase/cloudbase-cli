@@ -49,8 +49,8 @@ export interface IConfig {
     ssh?: SSH
 }
 
-export interface CloudBaseConfig {
-    envId?: string
+export interface ICloudBaseConfig {
+    envId: string
     functionRoot?: string
     functions?: ICloudFunction[]
     servers?: ServerConfig[]
@@ -91,8 +91,8 @@ export interface ICloudFunctionConfig {
     envVariables?: Record<string, string | number | boolean>
     runtime?: string
     vpc?: IFunctionVPC
-    l5?: boolean
     installDependency?: boolean
+    l5?: boolean
 }
 
 export interface ICloudFunctionTrigger {
@@ -103,14 +103,21 @@ export interface ICloudFunctionTrigger {
 
 export interface ICloudFunction {
     name: string
-    config: ICloudFunctionConfig
+    config?: ICloudFunctionConfig
     triggers?: ICloudFunctionTrigger[]
     params?: Record<string, string>
     handler?: string
     ignore?: string | string[]
+    timeout?: number
+    envVariables?: Record<string, string | number | boolean>
+    runtime?: string
+    vpc?: IFunctionVPC
+    l5?: boolean
+    installDependency?: boolean
 }
 
 export interface ICreateFunctionOptions {
+    // 函数配置信息
     func?: ICloudFunction
     functions?: ICloudFunction[]
     functionRootPath?: string
@@ -178,30 +185,16 @@ export interface FunctionContext {
     // 环境 id
     envId: string
     // 整体配置
-    config: CloudBaseConfig
+    config: ICloudBaseConfig
     // 配置文件中所有的函数
     functions?: ICloudFunction[]
-}
-
-export interface IFlattenFunctionConfig {
-    name: string
-    triggers?: ICloudFunctionTrigger[]
-    params?: Record<string, string>
-    handler?: string
-    ignore?: string | string[]
-    timeout?: number
-    envVariables?: Record<string, string | number | boolean>
-    runtime?: string
-    vpc?: IFunctionVPC
-    l5?: boolean
-    installDependency?: boolean
 }
 
 export interface GatewayContext {
     // 环境 id
     envId: string
     // 整体配置
-    config: CloudBaseConfig
+    config: ICloudBaseConfig
 }
 
 export interface ICreateFunctionGatewayOptions {

@@ -38,8 +38,8 @@ export interface IConfig {
     credential?: Credential;
     ssh?: SSH;
 }
-export interface CloudBaseConfig {
-    envId?: string;
+export interface ICloudBaseConfig {
+    envId: string;
     functionRoot?: string;
     functions?: ICloudFunction[];
     servers?: ServerConfig[];
@@ -71,8 +71,8 @@ export interface ICloudFunctionConfig {
     envVariables?: Record<string, string | number | boolean>;
     runtime?: string;
     vpc?: IFunctionVPC;
-    l5?: boolean;
     installDependency?: boolean;
+    l5?: boolean;
 }
 export interface ICloudFunctionTrigger {
     name: string;
@@ -81,11 +81,17 @@ export interface ICloudFunctionTrigger {
 }
 export interface ICloudFunction {
     name: string;
-    config: ICloudFunctionConfig;
+    config?: ICloudFunctionConfig;
     triggers?: ICloudFunctionTrigger[];
     params?: Record<string, string>;
     handler?: string;
     ignore?: string | string[];
+    timeout?: number;
+    envVariables?: Record<string, string | number | boolean>;
+    runtime?: string;
+    vpc?: IFunctionVPC;
+    l5?: boolean;
+    installDependency?: boolean;
 }
 export interface ICreateFunctionOptions {
     func?: ICloudFunction;
@@ -143,25 +149,12 @@ export interface ILoginOptions {
 export interface FunctionContext {
     name: string;
     envId: string;
-    config: CloudBaseConfig;
+    config: ICloudBaseConfig;
     functions?: ICloudFunction[];
-}
-export interface IFlattenFunctionConfig {
-    name: string;
-    triggers?: ICloudFunctionTrigger[];
-    params?: Record<string, string>;
-    handler?: string;
-    ignore?: string | string[];
-    timeout?: number;
-    envVariables?: Record<string, string | number | boolean>;
-    runtime?: string;
-    vpc?: IFunctionVPC;
-    l5?: boolean;
-    installDependency?: boolean;
 }
 export interface GatewayContext {
     envId: string;
-    config: CloudBaseConfig;
+    config: ICloudBaseConfig;
 }
 export interface ICreateFunctionGatewayOptions {
     envId: string;

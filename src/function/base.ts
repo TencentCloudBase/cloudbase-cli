@@ -1,4 +1,5 @@
-import { CloudApiService, loadingFactory } from '../utils'
+import CloudBase from '@cloudbase/manager-node'
+import { CloudApiService, loadingFactory, checkAndGetCredential, getProxy } from '../utils'
 import { successLog } from '../logger'
 import {
     IListFunctionOptions,
@@ -21,6 +22,18 @@ interface ICopyFunctionOptions {
 }
 
 const scfService = new CloudApiService('scf')
+
+export async function getFunctionService(envId: string) {
+    const { secretId, secretKey, token } = await checkAndGetCredential()
+    const app = new CloudBase({
+        secretId,
+        secretKey,
+        token,
+        envId,
+        proxy: getProxy()
+    })
+    return app.functions
+}
 
 // 列出函数
 export async function listFunction(
@@ -60,32 +73,10 @@ export async function getFunctionDetail(options): Promise<Record<string, string>
         CodeSecret: codeSecret
     })
 
-    const data: Record<string, any> = {}
-    // 提取信息的键
-    const validKeys = [
-        'Status',
-        'CodeInfo',
-        'CodeSize',
-        'Environment',
-        'FunctionName',
-        'Handler',
-        'MemorySize',
-        'ModTime',
-        'Namespace',
-        'Runtime',
-        'Timeout',
-        'Triggers',
-        'VpcConfig'
-    ]
+    const data: Record<string, any> = res
 
-    // 响应字段为 Duration 首字母大写形式，将字段转换成驼峰命名
-    Object.keys(res).forEach(key => {
-        if (!validKeys.includes(key)) return
-        data[key] = res[key]
-    })
-
+    // 获取 VPC 信息
     const { VpcId = '', SubnetId = '' } = data.VpcConfig || {}
-
     if (VpcId && SubnetId) {
         try {
             const vpcs = await getVpcs()
@@ -104,7 +95,6 @@ export async function getFunctionDetail(options): Promise<Record<string, string>
             }
         }
     }
-
     return data
 }
 
@@ -158,42 +148,12 @@ export async function getFunctionLog(
 // 更新函数配置
 export async function updateFunctionConfig(options: IUpdateFunctionConfigOptions): Promise<void> {
     const { functionName, config, envId } = options
-    const envVariables = Object.keys(config.envVariables || {}).map(key => ({
-        Key: key,
-        Value: config.envVariables[key]
-    }))
 
-    // 当不存在 L5 配置时，不修改 L5 状态，否则根据 true/false 进行修改
-    const l5Enable = typeof config.l5 === 'undefined' ? null : config.l5 ? 'TRUE' : 'FALSE'
-
-    const params: any = {
-        FunctionName: functionName,
-        Namespace: envId,
-        L5Enable: l5Enable
-    }
-
-    // 修复参数存在 undefined 字段时，会出现鉴权失败的情况
-    // Environment 为覆盖式修改，不保留已有字段
-    envVariables.length && (params.Environment = { Variables: envVariables })
-    // 不设默认超时时间，防止覆盖已有配置
-    config.timeout && (params.Timeout = config.timeout)
-    // 运行时
-    config.runtime && (params.Runtime = config.runtime)
-    // VPC 网络
-    params.VpcConfig = {
-        SubnetId: (config.vpc && config.vpc.subnetId) || '',
-        VpcId: (config.vpc && config.vpc.vpcId) || ''
-    }
-
-    // 自动安装依赖
-    params.InstallDependency =
-        typeof config.installDependency === 'undefined'
-            ? null
-            : config.installDependency
-            ? 'TRUE'
-            : 'FALSE'
-
-    await scfService.request('UpdateFunctionConfiguration', params)
+    const functionService = await getFunctionService(envId)
+    await functionService.updateFunctionConfig({
+        name: functionName,
+        ...config
+    })
 }
 
 // 批量更新函数配置
@@ -204,7 +164,7 @@ export async function batchUpdateFunctionConfig(options: IFunctionBatchOptions):
             try {
                 await updateFunctionConfig({
                     functionName: func.name,
-                    config: func.config,
+                    config: func,
                     envId
                 })
                 log && successLog(`[${func.name}] 更新云函数配置成功！`)

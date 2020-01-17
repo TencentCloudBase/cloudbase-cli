@@ -98,6 +98,10 @@ const commands = [
             {
                 flags: '--force',
                 desc: '如果存在同名函数，上传后覆盖同名函数'
+            },
+            {
+                flags: '--verbose',
+                desc: '输出云函数部署细节'
             }
         ],
         desc: '部署云函数',
@@ -312,14 +316,18 @@ const commands = [
         ],
         desc: '本地运行云函数（当前仅支持 Node）',
         handler: async (options: any) => {
-            const { path } = options
+            const { path, name } = options
             // 指定函数路径，以默认配置运行函数
             if (path) {
                 await debugFunctionByPath(path, options)
-            } else {
+            } else if (typeof name === 'string') {
                 const { name } = options
                 const ctx = await getFunctionContext(name, options)
                 await debugByConfig(ctx, options)
+            } else {
+                throw new CloudBaseError(
+                    '请指定运行函数的名称或函数的路径\n\n例如 cloudbase functions:run --name app'
+                )
             }
         }
     }
