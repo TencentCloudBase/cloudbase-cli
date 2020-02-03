@@ -1,12 +1,14 @@
-
 import inquirer from 'inquirer'
-import { FunctionContext } from '../../types'
 import { CloudBaseError } from '../../error'
 import { deleteFunction, batchDeleteFunctions } from '../../function'
 import { successLog } from '../../logger'
+import { ICommandContext } from '../command'
 
-export async function deleteFunc(ctx: FunctionContext) {
-    const { name, envId, functions } = ctx
+export async function deleteFunc(ctx: ICommandContext, name: string) {
+    const {
+        envId,
+        config: { functions }
+    } = ctx
 
     let isBatchDelete = false
 

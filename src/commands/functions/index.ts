@@ -1,7 +1,4 @@
-import program from 'commander'
-import { resolveCloudBaseConfig, getEnvId } from '../../utils'
 import { deploy } from './deploy'
-import { FunctionContext } from '../../types'
 import { CloudBaseError } from '../../error'
 import { codeUpdate } from './code-update'
 import { list } from './list'
@@ -15,35 +12,7 @@ import { invoke } from './invoke'
 import { copy } from './copy'
 import { codeDownload } from './code-download'
 import { debugFunctionByPath, debugByConfig } from './run'
-
-async function getFunctionContext(name: string, options): Promise<FunctionContext> {
-    const configPath = options?.parent?.configFile
-    const cloudBaseConfig = await resolveCloudBaseConfig(configPath)
-    const assignEnvId = await getEnvId(options)
-
-    if (!assignEnvId) {
-        throw new CloudBaseError(
-            '未识别到有效的环境 Id 变量，请在项目根目录进行操作或通过 -e 参数指定环境 Id'
-        )
-    }
-
-    let { functions = [] } = cloudBaseConfig
-
-    const ctx: FunctionContext = {
-        name,
-        functions,
-        envId: assignEnvId,
-        config: cloudBaseConfig
-    }
-
-    return ctx
-}
-
-const validOptions = options => {
-    if (!options || !options.parent) {
-        throw new CloudBaseError('参数异常，请检查您是否输入了正确的命令！')
-    }
-}
+import { Command } from '../command'
 
 const commands = [
     {
@@ -60,13 +29,10 @@ const commands = [
             }
         ],
         desc: '展示云函数列表',
-        handler: async options => {
-            const ctx = await getFunctionContext('', options)
-            await list(ctx, options)
-        }
+        handler: list
     },
     {
-        cmd: 'functions:download <functionName> [dest]',
+        cmd: 'functions:download <name> [dest]',
         options: [
             {
                 flags: '-e, --envId <envId>',
@@ -79,13 +45,10 @@ const commands = [
             }
         ],
         desc: '下载云函数代码',
-        handler: async (name: string, dest: string, options) => {
-            const ctx = await getFunctionContext(name, options)
-            await codeDownload(ctx, dest, options)
-        }
+        handler: codeDownload
     },
     {
-        cmd: 'functions:deploy [functionName]',
+        cmd: 'functions:deploy [name]',
         options: [
             {
                 flags: '-e, --envId <envId>',
@@ -105,13 +68,10 @@ const commands = [
             }
         ],
         desc: '部署云函数',
-        handler: async (name: string, options) => {
-            const ctx = await getFunctionContext(name, options)
-            await deploy(ctx, options)
-        }
+        handler: deploy
     },
     {
-        cmd: 'functions:delete [functionName]',
+        cmd: 'functions:delete [name]',
         options: [
             {
                 flags: '-e, --envId <envId>',
@@ -119,13 +79,10 @@ const commands = [
             }
         ],
         desc: '删除云函数',
-        handler: async (name: string, options) => {
-            const ctx = await getFunctionContext(name, options)
-            await deleteFunc(ctx)
-        }
+        handler: deleteFunc
     },
     {
-        cmd: 'functions:detail [functionName]',
+        cmd: 'functions:detail <name>',
         options: [
             {
                 flags: '-e, --envId <envId>',
@@ -137,13 +94,10 @@ const commands = [
             }
         ],
         desc: '获取云函数信息',
-        handler: async (name: string, options) => {
-            const ctx = await getFunctionContext(name, options)
-            await detail(ctx, options)
-        }
+        handler: detail
     },
     {
-        cmd: 'functions:code:update <functionName>',
+        cmd: 'functions:code:update <name>',
         options: [
             {
                 flags: '-e, --envId <envId>',
@@ -155,13 +109,10 @@ const commands = [
             }
         ],
         desc: '更新云函数代码',
-        handler: async (name: string, options) => {
-            const ctx = await getFunctionContext(name, options)
-            await codeUpdate(ctx, options)
-        }
+        handler: codeUpdate
     },
     {
-        cmd: 'functions:config:update [functionName]',
+        cmd: 'functions:config:update [name]',
         options: [
             {
                 flags: '-e, --envId <envId>',
@@ -169,13 +120,10 @@ const commands = [
             }
         ],
         desc: '更新云函数配置',
-        handler: async (name: string, options) => {
-            const ctx = await getFunctionContext(name, options)
-            await configUpdate(ctx)
-        }
+        handler: configUpdate
     },
     {
-        cmd: 'functions:copy <functionName> [newFunctionName]',
+        cmd: 'functions:copy <name> [newFunctionName]',
         options: [
             {
                 flags: '-e, --envId <envId>',
@@ -195,14 +143,10 @@ const commands = [
             }
         ],
         desc: '拷贝云函数',
-        handler: async (functionName: string, newFunctionName: string, options?) => {
-            const { target } = options
-            const ctx = await getFunctionContext(functionName, options)
-            await copy(ctx, newFunctionName, target, options)
-        }
+        handler: copy
     },
     {
-        cmd: 'functions:log <functionName>',
+        cmd: 'functions:log <name>',
         options: [
             {
                 flags: '-e, --envId <envId>',
@@ -238,10 +182,7 @@ const commands = [
             { flags: '-s, --success', desc: '只返回正确类型的日志' }
         ],
         desc: '打印云函数日志',
-        handler: async (name: string, options) => {
-            const ctx = await getFunctionContext(name, options)
-            await log(ctx, options)
-        }
+        handler: log
     },
     {
         cmd: 'functions:trigger:create [functionName]',
@@ -252,10 +193,7 @@ const commands = [
             }
         ],
         desc: '创建云函数触发器',
-        handler: async (name: string, options) => {
-            const ctx = await getFunctionContext(name, options)
-            await triggerCreate(ctx)
-        }
+        handler: triggerCreate
     },
     {
         cmd: 'functions:trigger:delete [functionName] [triggerName]',
@@ -266,13 +204,10 @@ const commands = [
             }
         ],
         desc: '删除云函数触发器',
-        handler: async (functionName: string, triggerName: string, options) => {
-            const ctx = await getFunctionContext(functionName, options)
-            await triggerDelete(ctx, triggerName)
-        }
+        handler: triggerDelete
     },
     {
-        cmd: 'functions:invoke [functionName]',
+        cmd: 'functions:invoke [name]',
         options: [
             {
                 flags: '-e, --envId <envId>',
@@ -284,11 +219,7 @@ const commands = [
             }
         ],
         desc: '触发云端部署的云函数',
-        handler: async (name: string, options) => {
-            const { params } = options
-            const ctx = await getFunctionContext(name, options)
-            await invoke(ctx, params)
-        }
+        handler: invoke
     },
     {
         cmd: 'functions:run',
@@ -315,15 +246,14 @@ const commands = [
             }
         ],
         desc: '本地运行云函数（当前仅支持 Node）',
-        handler: async (options: any) => {
+        handler: async ctx => {
+            const { options } = ctx
             const { path, name } = options
             // 指定函数路径，以默认配置运行函数
             if (path) {
                 await debugFunctionByPath(path, options)
             } else if (typeof name === 'string') {
-                const { name } = options
-                const ctx = await getFunctionContext(name, options)
-                await debugByConfig(ctx, options)
+                await debugByConfig(ctx, name)
             } else {
                 throw new CloudBaseError(
                     '请指定运行函数的名称或函数的路径\n\n例如 cloudbase functions:run --name app'
@@ -335,17 +265,6 @@ const commands = [
 
 // 注册命令
 commands.forEach(item => {
-    let instance = program.command(item.cmd)
-    // option
-    item.options.forEach(option => {
-        instance = instance.option(option.flags, option.desc)
-    })
-
-    instance.description(item.desc)
-    instance.action((...args) => {
-        const option = args.slice(-1)[0]
-        // 校验 option 是否正确
-        validOptions(option)
-        item.handler.apply(null, args)
-    })
+    const command = new Command(item)
+    command.init()
 })

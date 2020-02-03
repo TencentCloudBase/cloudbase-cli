@@ -1,2 +1,2 @@
-import { FunctionContext } from '../../types';
-export declare function triggerDelete(ctx: FunctionContext, triggerName: string): Promise<void>;
+import { ICommandContext } from '../command';
+export declare function triggerDelete(ctx: ICommandContext, name: string, triggerName: string): Promise<void>;

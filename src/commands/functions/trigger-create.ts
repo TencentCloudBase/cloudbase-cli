@@ -1,11 +1,14 @@
 import inquirer from 'inquirer'
-import { FunctionContext } from '../../types'
 import { CloudBaseError } from '../../error'
 import { successLog } from '../../logger'
 import { createFunctionTriggers, batchCreateTriggers } from '../../function'
+import { ICommandContext } from '../command'
 
-export async function triggerCreate(ctx: FunctionContext) {
-    const { name, envId, functions } = ctx
+export async function triggerCreate(ctx: ICommandContext, name: string) {
+    const {
+        envId,
+        config: { functions }
+    } = ctx
 
     let isBatchCreateTrigger = false
 
@@ -14,8 +17,7 @@ export async function triggerCreate(ctx: FunctionContext) {
         const { isBatch } = await inquirer.prompt({
             type: 'confirm',
             name: 'isBatch',
-            message:
-                '无云函数名称，是否需要部署配置文件中的【全部云函数】的全部触发器？',
+            message: '无云函数名称，是否需要部署配置文件中的【全部云函数】的全部触发器？',
             default: false
         })
 

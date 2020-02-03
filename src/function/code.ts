@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import unzipper from 'unzipper'
-import { CloudApiService, fetchStream, delSync, checkPathExist } from '../utils'
+import { CloudApiService, fetchStream, delSync, checkFullAccess } from '../utils'
 
 interface IFunctionCodeOptions {
     envId: string
@@ -18,7 +18,7 @@ export async function downloadFunctionCode(options: IFunctionCodeOptions) {
     const { destPath, envId, functionName, codeSecret, unzip = false } = options
 
     // 检验路径是否存在
-    checkPathExist(destPath, true)
+    checkFullAccess(destPath, true)
 
     // 获取下载链接
     const { Url } = await scfService.request('GetFunctionAddress', {

@@ -4,11 +4,11 @@ import { StorageService } from '@cloudbase/manager-node/types/storage'
 import {
     CloudApiService,
     firstLetterToLowerCase,
-    checkPathExist,
     isDirectory,
     checkAndGetCredential,
     getProxy,
-    genClickableLink
+    genClickableLink,
+    checkReadable
 } from './utils'
 import { CloudBaseError } from './error'
 
@@ -32,7 +32,8 @@ interface IHostingFileOptions extends IBaseOptions {
     filePath: string
     cloudPath: string
     isDir: boolean
-    onProgress: (data: any) => void
+    onProgress?: (data: any) => void
+    onFileFinish?: (...args) => void
 }
 
 interface IHostingCloudOptions extends IBaseOptions {
@@ -169,10 +170,10 @@ export async function destroyHosting(options: IBaseOptions) {
 
 // 上传文件
 export async function hostingDeploy(options: IHostingFileOptions) {
-    const { envId, filePath, cloudPath, onProgress } = options
+    const { envId, filePath, cloudPath, onProgress, onFileFinish } = options
     const resolvePath = path.resolve(filePath)
     // 检查路径是否存在
-    checkPathExist(resolvePath, true)
+    checkReadable(resolvePath, true)
 
     const hosting = await checkHostingStatus(envId)
     const { bucket, regoin } = hosting
@@ -184,12 +185,14 @@ export async function hostingDeploy(options: IHostingFileOptions) {
             cloudPath,
             bucket,
             region: regoin,
-            onProgress
+            onProgress,
+            onFileFinish
         })
     } else {
+        const assignCloudPath = cloudPath || path.parse(resolvePath).base
         await storageService.uploadFileCustom({
             localPath: resolvePath,
-            cloudPath,
+            cloudPath: assignCloudPath,
             bucket,
             region: regoin,
             onProgress
@@ -213,4 +216,10 @@ export async function hostingDelete(options: IHostingCloudOptions) {
     } else {
         await storageService.deleteFileCustom([cloudPath], bucket, regoin)
     }
+}
+
+// 删除文件
+export async function walkLocalDir(envId: string, dir: string) {
+    const storageService = await getStorageService(envId)
+    return storageService.walkLocalDir(dir)
 }

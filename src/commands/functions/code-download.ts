@@ -1,13 +1,13 @@
 import path from 'path'
 import fse from 'fs-extra'
 import inquirer from 'inquirer'
-import { FunctionContext } from '../../types'
 import { CloudBaseError } from '../../error'
 import { downloadFunctionCode, getFunctionDetail } from '../../function'
-import { loadingFactory, checkPathExist, delSync, highlightCommand } from '../../utils'
+import { loadingFactory, checkFullAccess, delSync, highlightCommand } from '../../utils'
+import { ICommandContext } from '../command'
 
-export async function codeDownload(ctx: FunctionContext, dest: string, options: any) {
-    const { name, envId, config } = ctx
+export async function codeDownload(ctx: ICommandContext, name: string, dest: string) {
+    const { envId, config, options } = ctx
     const { codeSecret } = options
 
     if (!name) {
@@ -38,7 +38,7 @@ export async function codeDownload(ctx: FunctionContext, dest: string, options: 
     if (!destPath) {
         destPath = path.resolve(config.functionRoot, name)
         // 路径已存在，询问是否覆盖
-        if (checkPathExist(destPath)) {
+        if (checkFullAccess(destPath)) {
             const { override } = await inquirer.prompt({
                 type: 'confirm',
                 name: 'override',

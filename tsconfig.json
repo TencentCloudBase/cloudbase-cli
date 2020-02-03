@@ -1,5 +1,4 @@
 {
-    "compileOnSave": true,
     "compilerOptions": {
         "module": "commonjs",
         "target": "es2015",
@@ -9,7 +8,9 @@
         "types": ["node"],
         "esModuleInterop": true,
         "declaration": true,
-        "declarationDir": "./types"
+        "declarationDir": "./types",
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true
     },
     "include": ["src/**/*"],
     "exclude": ["node_modules", "test"]

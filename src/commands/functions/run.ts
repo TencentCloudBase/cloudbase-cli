@@ -1,8 +1,8 @@
 import path from 'path'
 import { spawn, SpawnOptionsWithoutStdio } from 'child_process'
-import { FunctionContext } from '../../types'
 import { CloudBaseError } from '../../error'
-import { checkPathExist, isDirectory } from '../../utils'
+import { checkFullAccess, isDirectory } from '../../utils'
+import { ICommandContext } from '../command'
 
 // 启动文件
 const bootstrapFilePath = path.join(__dirname, '../../../runtime/nodejs/bootstrap.js')
@@ -69,12 +69,13 @@ export async function debugFunctionByPath(functionPath: string, options: Record<
 
     // 检查路径是否存在
     const filePath = path.resolve(functionPath)
-    checkPathExist(filePath)
+    checkFullAccess(filePath)
 
     let debugDirname
+    const isDir = isDirectory(filePath)
 
-    if (isDirectory(filePath)) {
-        const exists = checkPathExist(path.join(filePath, 'index.js'))
+    if (isDir) {
+        const exists = checkFullAccess(path.join(filePath, 'index.js'))
         if (!exists) {
             errorLog('index.js 文件不存在！', debug)
         }
@@ -112,15 +113,15 @@ export async function debugFunctionByPath(functionPath: string, options: Record<
     })
 }
 
-export async function debugByConfig(ctx: FunctionContext, options: Record<string, any>) {
-    const { name, config } = ctx
+export async function debugByConfig(ctx: ICommandContext, name: string) {
+    const { config, options } = ctx
     const { params, debug, port } = options
     params && checkJSON(params)
 
     // 检查路径是否存在
     let functionPath = path.resolve(config.functionRoot, name)
     const filePath = path.resolve(functionPath)
-    checkPathExist(filePath, !debug)
+    checkFullAccess(filePath, !debug)
 
     let debugDirname
     const funcConfig = config.functions.find(item => item.name === name)
@@ -130,8 +131,10 @@ export async function debugByConfig(ctx: FunctionContext, options: Record<string
     const indexFile = `${indexFileName}.js`
     const mainFunction = handlers[1]
 
-    if (isDirectory(filePath)) {
-        const exists = checkPathExist(path.join(filePath, indexFile))
+    const isDir = isDirectory(filePath)
+
+    if (isDir) {
+        const exists = checkFullAccess(path.join(filePath, indexFile))
         if (!exists) {
             errorLog(`${indexFile} 文件不存在！`, debug)
         }

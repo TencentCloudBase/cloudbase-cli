@@ -30,7 +30,7 @@ export async function resolveCloudBaseConfig(configPath = ''): Promise<ICloudBas
         configPath
     })
 
-    if (!localCloudBaseConfig?.envId) {
+    if (localCloudBaseConfig && !localCloudBaseConfig.envId) {
         throw new CloudBaseError('无效的配置文件，配置文件必须包含含环境 Id')
     }
 
@@ -62,10 +62,5 @@ export async function getEnvId(commandOptions): Promise<string> {
     const cloudbaseConfig = await resolveCloudBaseConfig(configPath)
     // 命令行 envId 可以覆盖配置文件 envId
     const assignEnvId = envId || cloudbaseConfig.envId
-    if (!assignEnvId) {
-        throw new CloudBaseError(
-            '未识别到有效的环境 Id 变量，请使用 cloudbase 配置文件或通过 -e 参数指定环境 Id'
-        )
-    }
     return assignEnvId
 }

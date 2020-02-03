@@ -1,7 +1,7 @@
 import { CloudBaseError } from '../../error'
 import { listFunction } from '../../function'
-import { FunctionContext } from '../../types'
 import { printHorizontalTable, loadingFactory } from '../../utils'
+import { ICommandContext } from '../command'
 
 const StatusMap = {
     Active: '部署完成',
@@ -11,8 +11,8 @@ const StatusMap = {
     UpdateFailed: '更新失败'
 }
 
-export async function list(ctx: FunctionContext, options) {
-    const { envId } = ctx
+export async function list(ctx: ICommandContext) {
+    const { envId, options } = ctx
     let { limit = 20, offset = 0 } = options
     limit = Number(limit)
     offset = Number(offset)

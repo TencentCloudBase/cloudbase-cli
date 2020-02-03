@@ -1,2 +1,2 @@
-import { GatewayContext } from '../../types';
-export declare function deleteGw(ctx: GatewayContext, commandOptions: any): Promise<void>;
+import { ICommandContext } from '../command';
+export declare function deleteService(ctx: ICommandContext): Promise<void>;

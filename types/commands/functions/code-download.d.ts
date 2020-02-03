@@ -1,2 +1,2 @@
-import { FunctionContext } from '../../types';
-export declare function codeDownload(ctx: FunctionContext, dest: string, options: any): Promise<void>;
+import { ICommandContext } from '../command';
+export declare function codeDownload(ctx: ICommandContext, name: string, dest: string): Promise<void>;

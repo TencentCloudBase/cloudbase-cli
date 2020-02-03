@@ -158,6 +158,7 @@ try {
 }
 
 function errorHandler(err) {
+    console.log(err)
     process.emit('tcbError')
     const stackIngoreErrors = ['TencentCloudSDKHttpException', 'CloudBaseError']
     // 忽略自定义错误的错误栈

@@ -1,2 +1,2 @@
-import { FunctionContext } from '../../types';
-export declare function detail(ctx: FunctionContext, options: any): Promise<void>;
+import { ICommandContext } from '../command';
+export declare function detail(ctx: ICommandContext, name: string): Promise<void>;

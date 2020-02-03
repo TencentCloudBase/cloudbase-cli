@@ -1,4 +1,4 @@
-import { cosmiconfig, cosmiconfigSync } from 'cosmiconfig'
+import { cosmiconfig } from 'cosmiconfig'
 import { CloudBaseError } from '../../error'
 
 const MODULE_NAME = 'cloudbase'
@@ -26,7 +26,6 @@ export async function loadConfig(options: { moduleName?: string; configPath?: st
             const { config, filepath, isEmpty } = result
             return config
         } catch (e) {
-            // TODO: check
             throw new CloudBaseError(e.message)
         }
     }
@@ -38,9 +37,28 @@ export async function loadConfig(options: { moduleName?: string; configPath?: st
         const { config, filepath, isEmpty } = result
         return config
     } catch (e) {
-        // TODO: check
-        throw new CloudBaseError(e.message)
+        throw new CloudBaseError('配置文件解析失败！')
     }
 }
 
-// loadConfig().then(console.log)
+export async function searchConfig(dest: string) {
+    const moduleName = MODULE_NAME
+    const explorer = cosmiconfig(moduleName, {
+        searchPlaces: [
+            'package.json',
+            `${moduleName}rc`,
+            `${moduleName}rc.json`,
+            `${moduleName}rc.yaml`,
+            `${moduleName}rc.yml`,
+            `${moduleName}rc.js`,
+            `${moduleName}.config.js`
+        ]
+    })
+
+    // 搜索配置文件
+    try {
+        return explorer.search(dest || process.cwd())
+    } catch (e) {
+        return null
+    }
+}

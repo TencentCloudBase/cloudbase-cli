@@ -2,8 +2,8 @@ import path from 'path'
 import inquirer from 'inquirer'
 import { loadingFactory, genClickableLink, highlightCommand } from '../../utils'
 import { CloudBaseError } from '../../error'
-import { batchCreateFunctions, createFunction } from '../../function'
-import { FunctionContext } from '../../types'
+import { createFunction } from '../../function'
+import { ICommandContext } from '../command'
 
 function printSuccessTips(envId: string) {
     const link = genClickableLink(`https://console.cloud.tencent.com/tcb/scf?envId=${envId}`)
@@ -14,10 +14,11 @@ function printSuccessTips(envId: string) {
 
 // TODO: 支持部署多个云函数
 // TODO: 生成 HTTP 调用链接 - 随机 Path
-export async function deploy(ctx: FunctionContext, commandOptions) {
-    const { name, envId, config, functions } = ctx
-
-    const { force, codeSecret, verbose } = commandOptions
+export async function deploy(ctx: ICommandContext, name: string) {
+    const { envId, config, options } = ctx
+    const { functions } = config
+    const { force, codeSecret, verbose } = options
+    const functionRootPath = path.join(process.cwd(), config.functionRoot)
 
     let isBatchCreating = false
 
@@ -37,14 +38,27 @@ export async function deploy(ctx: FunctionContext, commandOptions) {
 
     // 批量部署云函数
     if (isBatchCreating) {
-        return batchCreateFunctions({
-            envId,
-            force,
-            functions,
-            log: true,
-            codeSecret,
-            functionRootPath: path.join(process.cwd(), config.functionRoot)
-        })
+        const promises = functions.map(func =>
+            (async () => {
+                const loading = loadingFactory()
+                loading.start('云函数部署中')
+                try {
+                    await createFunction({
+                        func,
+                        envId,
+                        force,
+                        codeSecret,
+                        functionRootPath
+                    })
+                    loading.succeed(`[${func.name}] 函数部署成功`)
+                } catch (e) {
+                    loading.fail(`[${func.name}] 函数部署失败`)
+                    throw new CloudBaseError(e.message)
+                }
+            })()
+        )
+        await Promise.all(promises)
+        return
     }
 
     let newFunction
@@ -86,7 +100,7 @@ export async function deploy(ctx: FunctionContext, commandOptions) {
             envId,
             func: newFunction,
             codeSecret,
-            functionRootPath: path.join(process.cwd(), config.functionRoot)
+            functionRootPath
         })
         loading.succeed(`[${newFunction.name}] 云函数部署成功！`)
         printSuccessTips(envId)
@@ -97,7 +111,7 @@ export async function deploy(ctx: FunctionContext, commandOptions) {
             const { force } = await inquirer.prompt({
                 type: 'confirm',
                 name: 'force',
-                message: '存在同名云函数，是否覆盖（覆盖操作将删除原函数）',
+                message: '存在同名云函数，是否覆盖原函数代码与配置',
                 default: false
             })
 
@@ -109,7 +123,7 @@ export async function deploy(ctx: FunctionContext, commandOptions) {
                         force: true,
                         func: newFunction,
                         codeSecret,
-                        functionRootPath: path.join(process.cwd(), config.functionRoot)
+                        functionRootPath
                     })
                     loading.succeed(`[${newFunction.name}] 云函数部署成功！`)
                     printSuccessTips(envId)

@@ -179,17 +179,6 @@ export interface ILoginOptions {
     getAuthUrl?: (url: string) => string
 }
 
-export interface FunctionContext {
-    // 函数名称
-    name: string
-    // 环境 id
-    envId: string
-    // 整体配置
-    config: ICloudBaseConfig
-    // 配置文件中所有的函数
-    functions?: ICloudFunction[]
-}
-
 export interface GatewayContext {
     // 环境 id
     envId: string

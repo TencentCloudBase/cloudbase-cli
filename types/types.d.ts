@@ -146,12 +146,6 @@ export interface ILoginOptions {
     secretKey?: string;
     getAuthUrl?: (url: string) => string;
 }
-export interface FunctionContext {
-    name: string;
-    envId: string;
-    config: ICloudBaseConfig;
-    functions?: ICloudFunction[];
-}
 export interface GatewayContext {
     envId: string;
     config: ICloudBaseConfig;

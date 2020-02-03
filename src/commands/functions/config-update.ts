@@ -1,11 +1,14 @@
 import inquirer from 'inquirer'
-import { FunctionContext } from '../../types'
 import { CloudBaseError } from '../../error'
 import { batchUpdateFunctionConfig, updateFunctionConfig } from '../../function'
 import { successLog } from '../../logger'
+import { ICommandContext } from '../command'
 
-export async function configUpdate(ctx: FunctionContext) {
-    const { name, envId, functions } = ctx
+export async function configUpdate(ctx: ICommandContext, name: string) {
+    const {
+        envId,
+        config: { functions }
+    } = ctx
     let isBathUpdate = false
 
     // 不指定云函数名称，更新配置文件中所有函数的配置
@@ -13,8 +16,7 @@ export async function configUpdate(ctx: FunctionContext) {
         const { isBatch } = await inquirer.prompt({
             type: 'confirm',
             name: 'isBatch',
-            message:
-                '无云函数名称，是否需要更新配置文件中的【全部云函数】的配置？',
+            message: '无云函数名称，是否需要更新配置文件中的【全部云函数】的配置？',
             default: false
         })
 

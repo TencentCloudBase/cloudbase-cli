@@ -1,2 +1,2 @@
-import { FunctionContext } from '../../types';
-export declare function log(ctx: FunctionContext, options: any): Promise<void>;
+import { ICommandContext } from '../command';
+export declare function log(ctx: ICommandContext, name: string): Promise<void>;

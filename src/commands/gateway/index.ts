@@ -1,33 +1,8 @@
-import program from 'commander'
-import { resolveCloudBaseConfig, getEnvId } from '../../utils'
-import { GatewayContext } from '../../types'
-import { CloudBaseError } from '../../error'
-import { createGw } from './create'
-import { deleteGw } from './delete'
-import { queryGw } from './query'
-import { bindGwDomain } from './domain-bind'
-import { unbindGwDomain } from './domain-unbind'
-import { queryGwDomain } from './domain-query'
-
-async function getGatewayContext(options: any): Promise<GatewayContext> {
-    const configPath = options?.parent?.configFile
-    const cloudBaseConfig = await resolveCloudBaseConfig(configPath)
-
-    const assignEnvId = await getEnvId(options)
-
-    if (!assignEnvId) {
-        throw new CloudBaseError(
-            '未识别到有效的环境 Id 变量，请在项目根目录进行操作或通过 -e 参数指定环境 Id'
-        )
-    }
-
-    const ctx: GatewayContext = {
-        envId: assignEnvId,
-        config: cloudBaseConfig
-    }
-
-    return ctx
-}
+import { createService } from './create'
+import { deleteService } from './delete'
+import { listService } from './list'
+import { bindCustomDomain, getCustomDomain, unbindCustomDomain } from './domain'
+import { Command } from '../command'
 
 const commands = [
     {
@@ -42,15 +17,12 @@ const commands = [
                 desc: 'Service Path，必须以 "/" 开头'
             },
             {
-                flags: '-f, --function <function>',
+                flags: '-f, --function <name>',
                 desc: 'HTTP Service 路径绑定的云函数名称'
             }
         ],
         desc: '创建 HTTP Service',
-        handler: async options => {
-            const ctx = await getGatewayContext(options)
-            await createGw(ctx, options)
-        }
+        handler: createService
     },
     {
         cmd: 'service:delete',
@@ -73,10 +45,7 @@ const commands = [
             }
         ],
         desc: '删除 HTTP Service',
-        handler: async options => {
-            const ctx = await getGatewayContext(options)
-            await deleteGw(ctx, options)
-        }
+        handler: deleteService
     },
     {
         cmd: 'service:list',
@@ -99,10 +68,7 @@ const commands = [
             }
         ],
         desc: '获取 HTTP Service 列表',
-        handler: async options => {
-            const ctx = await getGatewayContext(options)
-            await queryGw(ctx, options)
-        }
+        handler: listService
     },
     {
         cmd: 'service:domain:bind <domain>',
@@ -113,10 +79,7 @@ const commands = [
             }
         ],
         desc: '绑定自定义 HTTP Service 域名',
-        handler: async (domain: string, options) => {
-            const ctx = await getGatewayContext(options)
-            await bindGwDomain(ctx, domain)
-        }
+        handler: bindCustomDomain
     },
     {
         cmd: 'service:domain:unbind <domain>',
@@ -127,10 +90,7 @@ const commands = [
             }
         ],
         desc: '解绑自定义 HTTP Service 域名',
-        handler: async (domain: string, options) => {
-            const ctx = await getGatewayContext(options)
-            await unbindGwDomain(ctx, domain)
-        }
+        handler: unbindCustomDomain
     },
     {
         cmd: 'service:domain:list',
@@ -145,21 +105,12 @@ const commands = [
             }
         ],
         desc: '查询自定义 HTTP Service 域名',
-        handler: async options => {
-            const ctx = await getGatewayContext(options)
-            await queryGwDomain(ctx, options)
-        }
+        handler: getCustomDomain
     }
 ]
 
 // 注册命令
 commands.forEach(item => {
-    let instance = program.command(item.cmd)
-    // option
-    item.options.forEach(option => {
-        instance = instance.option(option.flags, option.desc)
-    })
-
-    instance.description(item.desc)
-    instance.action(item.handler)
+    const command = new Command(item)
+    command.init()
 })

@@ -1,10 +1,10 @@
 import chalk from 'chalk'
-import { FunctionContext } from '../../types'
 import { CloudBaseError } from '../../error'
 import { getFunctionLog } from '../../function'
+import { ICommandContext } from '../command'
 
-export async function log(ctx: FunctionContext, options: any) {
-    const { name, envId } = ctx
+export async function log(ctx: ICommandContext, name: string) {
+    const { envId, options } = ctx
 
     let {
         offset,
@@ -30,9 +30,7 @@ export async function log(ctx: FunctionContext, options: any) {
         typeof endTime !== 'undefined' &&
         (startTime.length !== TimeLength || endTime.length !== TimeLength)
     ) {
-        throw new CloudBaseError(
-            '时间格式错误，必须为 2019-05-16 20:59:59 类型'
-        )
+        throw new CloudBaseError('时间格式错误，必须为 2019-05-16 20:59:59 类型')
     }
 
     if (new Date(endTime).getTime() < new Date(startTime).getTime()) {
@@ -76,7 +74,7 @@ export async function log(ctx: FunctionContext, options: any) {
         RetMsg: '返回结果'
     }
 
-    console.log(chalk.green(`函数：${name} 调用日志：`) + '\n\n')
+    console.log(chalk.green(`函数：${name} 调用日志：\n`))
 
     if (logs.length === 0) {
         return console.log('无调用日志')
@@ -86,14 +84,10 @@ export async function log(ctx: FunctionContext, options: any) {
         const info = Object.keys(ResMap)
             .map(key => {
                 if (key === 'RetCode') {
-                    return `${ResMap[key]}：${
-                        Number(log[key]) === 0 ? '成功' : '失败'
-                    }\n`
+                    return `${ResMap[key]}：${Number(log[key]) === 0 ? '成功' : '失败'}\n`
                 }
                 if (key === 'MemUsage') {
-                    const str = Number(Number(log[key]) / 1024 / 1024).toFixed(
-                        3
-                    )
+                    const str = Number(Number(log[key]) / 1024 / 1024).toFixed(3)
                     return `${ResMap[key]}：${str} MB\n`
                 }
                 return `${ResMap[key]}：${log[key]} \n`

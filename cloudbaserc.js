@@ -1,5 +1,5 @@
 module.exports = {
-    envId: 'tcli',
+    envId: 'test-6df222',
     functionRoot: './cloudbase/functions',
     functions: [
         {

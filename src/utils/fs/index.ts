@@ -3,18 +3,57 @@ import { CloudBaseError } from '../../error'
 
 export type SizeUnit = 'KB' | 'MB' | 'GB'
 
-export function checkPathExist(dest: string, throwError = false): boolean {
-    const exist = fs.existsSync(dest)
-
-    if (!exist && throwError) {
-        throw new CloudBaseError(`路径不存在：${dest}`)
+// 检查路径是否可以访问（读、写）
+export function checkFullAccess(dest: string, throwError = false): boolean {
+    try {
+        // 可见、可写
+        fs.accessSync(dest, fs.constants.F_OK)
+        fs.accessSync(dest, fs.constants.W_OK)
+        fs.accessSync(dest, fs.constants.R_OK)
+        return true
+    } catch (e) {
+        if (throwError) {
+            throw new CloudBaseError(`路径不存在或没有权限访问：${dest}`)
+        } else {
+            return false
+        }
     }
+}
 
-    return exist
+// 检查路径是否可以读
+export function checkWritable(dest: string, throwError = false): boolean {
+    try {
+        // 可见、可写
+        fs.accessSync(dest, fs.constants.F_OK)
+        fs.accessSync(dest, fs.constants.W_OK)
+        return true
+    } catch (e) {
+        if (throwError) {
+            throw new CloudBaseError(`路径不存在或没有权限访问：${dest}`)
+        } else {
+            return false
+        }
+    }
+}
+
+// 检查路径是否可以写
+export function checkReadable(dest: string, throwError = false): boolean {
+    try {
+        // 可见、可读
+        fs.accessSync(dest, fs.constants.F_OK)
+        fs.accessSync(dest, fs.constants.R_OK)
+        return true
+    } catch (e) {
+        if (throwError) {
+            throw new CloudBaseError(`路径不存在或没有权限访问：${dest}`)
+        } else {
+            return false
+        }
+    }
 }
 
 export function isDirectory(dest: string) {
-    checkPathExist(dest, true)
+    checkFullAccess(dest, true)
     return fs.statSync(dest).isDirectory()
 }
 

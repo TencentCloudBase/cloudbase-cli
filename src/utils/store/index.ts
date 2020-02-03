@@ -3,6 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import { getAuthDB } from './auth'
 import { ConfigItems } from '../../constant'
+import { checkFullAccess } from '../fs'
 
 class AuthStore {
     db: any
@@ -38,7 +39,7 @@ class AuthStore {
             'cli.json'
         )
 
-        if (fs.existsSync(oldConfigPath)) {
+        if (checkFullAccess(oldConfigPath)) {
             try {
                 const content = JSON.parse(fs.readFileSync(oldConfigPath, 'utf8'))
                 const { credential, ssh } = content

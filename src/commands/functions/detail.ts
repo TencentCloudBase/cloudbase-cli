@@ -1,8 +1,8 @@
 import chalk from 'chalk'
-import { FunctionContext } from '../../types'
-import { batchGetFunctionsDetail, getFunctionDetail } from '../../function'
+import { getFunctionDetail } from '../../function'
 import { loadingFactory, printHorizontalTable } from '../../utils'
 import { CloudBaseError } from '../../error'
+import { ICommandContext } from '../command'
 
 const StatusMap = {
     Active: '部署完成',
@@ -13,7 +13,6 @@ const StatusMap = {
 }
 
 function logDetail(info, name) {
-    console.log(info)
     const ResMap = {
         Namespace: '环境 Id',
         FunctionName: '函数名称',
@@ -73,14 +72,14 @@ function logDetail(info, name) {
         tableData.push(['状态描述', info.StatusDesc])
     }
 
-    console.log(chalk.green(`函数 [${name}] 信息：`) + '\n\n')
+    console.log(chalk.green(`云函数 [${name}] 详情：\n`))
     printHorizontalTable(head, tableData)
     console.log('\n函数代码（Java 函数以及入口大于 1 M 的函数不会显示）\n')
     console.log(info['CodeInfo'])
 }
 
-export async function detail(ctx: FunctionContext, options) {
-    const { envId, name } = ctx
+export async function detail(ctx: ICommandContext, name: string) {
+    const { envId, options } = ctx
     const { codeSecret } = options
 
     if (!name) {
@@ -97,6 +96,7 @@ export async function detail(ctx: FunctionContext, options) {
             codeSecret
         })
 
+        loading.stop()
         logDetail(data, name)
     } catch (e) {
         if (e.code === 'ResourceNotFound.FunctionName') {

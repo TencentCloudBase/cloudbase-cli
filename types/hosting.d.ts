@@ -5,7 +5,8 @@ interface IHostingFileOptions extends IBaseOptions {
     filePath: string;
     cloudPath: string;
     isDir: boolean;
-    onProgress: (data: any) => void;
+    onProgress?: (data: any) => void;
+    onFileFinish?: (...args: any[]) => void;
 }
 interface IHostingCloudOptions extends IBaseOptions {
     cloudPath: string;
@@ -23,4 +24,5 @@ export declare function destroyHosting(options: IBaseOptions): Promise<{
 }>;
 export declare function hostingDeploy(options: IHostingFileOptions): Promise<void>;
 export declare function hostingDelete(options: IHostingCloudOptions): Promise<void>;
+export declare function walkLocalDir(envId: string, dir: string): Promise<string[]>;
 export {};

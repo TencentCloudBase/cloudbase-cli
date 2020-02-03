@@ -1,1 +1,2 @@
-export declare function copy(ctx: any, newFunctionName: any, targentEnvId: any, options: any): Promise<void>;
+import { ICommandContext } from '../command';
+export declare function copy(ctx: ICommandContext, name: string, newFunctionName: string): Promise<void>;

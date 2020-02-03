@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import del from 'del'
 import makeDir from 'make-dir'
-import { zipDir, random } from '../utils'
+import { zipDir, random, checkFullAccess } from '../utils'
 import { CloudBaseError } from '../error'
 
 export enum CodeType {
@@ -37,7 +37,7 @@ export class FunctionPacker {
     }
 
     validPath(path: string) {
-        if (!fs.existsSync(path)) {
+        if (!checkFullAccess(path)) {
             throw new CloudBaseError('file not exist')
         }
     }
@@ -64,8 +64,8 @@ export class FunctionPacker {
     getJavaFileCode() {
         const { funcPath } = this
         // Java 代码为 jar 或 zip 包
-        const jarExist = fs.existsSync(`${funcPath}.jar`)
-        const zipExist = fs.existsSync(`${funcPath}.zip`)
+        const jarExist = checkFullAccess(`${funcPath}.jar`)
+        const zipExist = checkFullAccess(`${funcPath}.zip`)
         if (!jarExist && !zipExist) {
             return null
         }

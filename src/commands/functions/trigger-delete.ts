@@ -1,10 +1,13 @@
 import inquirer from 'inquirer'
-import { FunctionContext } from '../../types'
 import { CloudBaseError } from '../../error'
 import { batchDeleteTriggers, deleteFunctionTrigger } from '../../function'
+import { ICommandContext } from '../command'
 
-export async function triggerDelete(ctx: FunctionContext, triggerName: string) {
-    const { name, envId, functions } = ctx
+export async function triggerDelete(ctx: ICommandContext, name: string, triggerName: string) {
+    const {
+        envId,
+        config: { functions }
+    } = ctx
     let isBatchDeleteTriggers
     let isBatchDeleteFunctionTriggers = false
 
@@ -13,8 +16,7 @@ export async function triggerDelete(ctx: FunctionContext, triggerName: string) {
         const answer = await inquirer.prompt({
             type: 'confirm',
             name: 'isBatch',
-            message:
-                '无云函数名称，是否需要删除配置文件中的【全部云函数】的全部触发器？',
+            message: '无云函数名称，是否需要删除配置文件中的【全部云函数】的全部触发器？',
             default: false
         })
 
@@ -37,7 +39,7 @@ export async function triggerDelete(ctx: FunctionContext, triggerName: string) {
     if (isBatchDeleteTriggers) {
         return batchDeleteTriggers({
             envId,
-            functions,
+            functions
         })
     }
 
@@ -61,7 +63,7 @@ export async function triggerDelete(ctx: FunctionContext, triggerName: string) {
         const func = functions.find(item => item.name === name)
         return batchDeleteTriggers({
             envId,
-            functions: [func],
+            functions: [func]
         })
     }
 
@@ -73,6 +75,6 @@ export async function triggerDelete(ctx: FunctionContext, triggerName: string) {
     deleteFunctionTrigger({
         envId,
         functionName: name,
-        triggerName,
+        triggerName
     })
 }

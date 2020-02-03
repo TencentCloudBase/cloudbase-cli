@@ -1,2 +1,2 @@
-import { FunctionContext } from '../../types';
-export declare function configUpdate(ctx: FunctionContext): Promise<void>;
+import { ICommandContext } from '../command';
+export declare function configUpdate(ctx: ICommandContext, name: string): Promise<void>;

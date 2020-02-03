@@ -1,10 +1,9 @@
 import path from 'path'
 import makeDir from 'make-dir'
 import Logger from '../../logger'
-import { zipDir } from '../../utils/index.js'
+import { zipDir, checkFullAccess } from '../../utils'
 
 import del from 'del'
-import fs from 'fs'
 import { ServerConfig } from '../../types'
 
 const logger = new Logger('NodeZipBuilder')
@@ -44,7 +43,7 @@ export default class NodeZipBuilder {
         return {
             success: true,
             assets: [zipPath, zipFileName],
-            vemo: fs.existsSync(path.resolve(entry, 'vemofile.js'))
+            vemo: checkFullAccess(path.resolve(entry, 'vemofile.js'))
         }
     }
 

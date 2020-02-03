@@ -1,2 +1,2 @@
-import { FunctionContext } from '../../types';
-export declare function deploy(ctx: FunctionContext, commandOptions: any): Promise<void>;
+import { ICommandContext } from '../command';
+export declare function deploy(ctx: ICommandContext, name: string): Promise<void>;

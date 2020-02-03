@@ -1,11 +1,11 @@
 import path from 'path'
-import { FunctionContext } from '../../types'
 import { CloudBaseError } from '../../error'
 import { updateFunctionCode } from '../../function'
 import { loadingFactory } from '../../utils'
+import { ICommandContext } from '../command'
 
-export async function codeUpdate(ctx: FunctionContext, options) {
-    const { name, envId, config, functions } = ctx
+export async function codeUpdate(ctx: ICommandContext, name: string) {
+    const { envId, config, options } = ctx
 
     const { codeSecret } = options
 
@@ -13,7 +13,7 @@ export async function codeUpdate(ctx: FunctionContext, options) {
         throw new CloudBaseError('请指定云函数名称！')
     }
 
-    const func = functions.find(item => item.name === name) || { name }
+    const func = config.functions.find(item => item.name === name) || { name }
 
     const loading = loadingFactory()
 
