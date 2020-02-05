@@ -1,8 +1,8 @@
 import inquirer from 'inquirer'
-import { CloudBaseError } from '../../error'
-import { deleteFunction, batchDeleteFunctions } from '../../function'
-import { successLog } from '../../logger'
 import { ICommandContext } from '../command'
+import { CloudBaseError } from '../../error'
+import { loadingFactory } from '../../utils'
+import { deleteFunction, batchDeleteFunctions } from '../../function'
 
 export async function deleteFunc(ctx: ICommandContext, name: string) {
     const {
@@ -45,10 +45,13 @@ export async function deleteFunc(ctx: ICommandContext, name: string) {
         })
     }
 
+    const loading = loadingFactory()
+    loading.start(`删除函数 [${name}] 中...`)
+
     await deleteFunction({
         envId,
         functionName: name
     })
 
-    successLog(`删除函数 [${name}] 成功！`)
+    loading.succeed(`删除函数 [${name}] 成功！`)
 }

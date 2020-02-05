@@ -1,23 +1,8 @@
-import { loadingFactory, sleep } from '../utils'
+import { loadingFactory } from '../utils'
 import { CloudBaseError } from '../error'
 import { ICreateFunctionOptions } from '../types'
-import { createFunctionTriggers } from './trigger'
 import { getFunctionService } from './base'
 
-async function retryCreateTrigger(options, count = 0) {
-    try {
-        await createFunctionTriggers(options)
-    } catch (e) {
-        if (count < 3) {
-            await sleep(500)
-            await retryCreateTrigger(options, count + 1)
-        } else {
-            throw e
-        }
-    }
-}
-
-/* eslint-disable complexity */
 // 创建云函数
 export async function createFunction(options: ICreateFunctionOptions): Promise<void> {
     const { functionRootPath = '', envId, force = false, base64Code = '', codeSecret } = options

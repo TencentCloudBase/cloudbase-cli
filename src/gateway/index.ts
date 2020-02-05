@@ -11,27 +11,29 @@ import {
 const tcbService = new CloudApiService('tcb')
 
 // 创建云函数网关
-export async function createFunctionGateway(options: ICreateFunctionGatewayOptions) {
-    const { envId, path, functionName } = options
+export async function createGateway(options: ICreateFunctionGatewayOptions) {
+    const { envId, path, name } = options
 
     const res: any = await tcbService.request('CreateCloudBaseGWAPI', {
         ServiceId: envId,
         Path: path,
         Type: 1,
-        Name: functionName
+        Name: name
     })
     return res
 }
 
 // 查询网关信息
 export async function queryGateway(options: IQueryGatewayOptions) {
-    const { envId, domain, path, gatewayId } = options
+    const { envId, domain, path, gatewayId, name } = options
 
     const res: any = await tcbService.request('DescribeCloudBaseGWAPI', {
         ServiceId: envId,
         Domain: domain,
         Path: path,
-        APIId: gatewayId
+        APIId: gatewayId,
+        Type: 1,
+        Name: name
     })
     return res
 }

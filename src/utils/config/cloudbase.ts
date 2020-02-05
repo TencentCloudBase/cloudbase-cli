@@ -1,17 +1,8 @@
 import { loadConfig } from './cosmiconfig'
-import { ICloudBaseConfig } from '../../types'
 import { CloudBaseError } from '../../error'
+import { ICloudBaseConfig } from '../../types'
+import { DefaultCloudBaseConfig } from '../../constant'
 
-const DefaultFunctionDeployOptions = {
-    timeout: 5,
-    runtime: 'Nodejs8.9',
-    handler: 'index.main'
-}
-
-const DefaultCloudBaseConfig = {
-    functionRoot: './functions',
-    functions: []
-}
 
 /**
  * 从配置文件中解析 cloudbase 配置

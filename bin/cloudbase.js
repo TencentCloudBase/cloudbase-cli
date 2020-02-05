@@ -2,14 +2,17 @@
 const os = require('os')
 const path = require('path')
 const chalk = require('chalk')
-const Sentry = require('@sentry/node')
-const program = require('commander')
-const logSymbols = require('log-symbols')
-const updateNotifier = require('update-notifier')
 const address = require('address')
+const program = require('commander')
+const Sentry = require('@sentry/node')
+const logSymbols = require('log-symbols')
+const didYouMean = require('didyoumean')
+const updateNotifier = require('update-notifier')
+
 const pkg = require('../package.json')
 const store = require('../lib/utils/store')
-const { getProxy } = require('../lib/utils/proxy')
+const { ALL_COMMANDS } = require('../lib/constant')
+const { getProxy } = require('../lib/utils/tools/proxy')
 const { handleCompletion } = require('../lib/completion')
 
 let processArgv = process.argv
@@ -121,6 +124,12 @@ program.version(pkg.version, '-v, --version', '输出当前 CloudBase CLI 版本
 // 处理无效命令
 program.action(cmd => {
     console.log(chalk.bold.red('Error: ') + `${cmd} 不是有效的命令！`)
+    didYouMean.threshold = 0.5
+    didYouMean.caseSensitive = false
+    const suggest = didYouMean(cmd, ALL_COMMANDS)
+    if (suggest) {
+        console.log(chalk.bold(`\n您是不是想使用命令：cloudbase ${suggest}\n`))
+    }
     console.log(`使用 ${chalk.bold('cloudbase -h')} 查看所有命令~`)
 })
 

@@ -1,21 +1,28 @@
-
-import { CloudApiService, loadingFactory } from '../utils'
 import { successLog } from '../logger'
 import { CloudBaseError } from '../error'
+import { CloudApiService } from '../utils'
+import { queryGateway, deleteGateway } from '../gateway'
 
 const scfService = new CloudApiService('scf')
 
 // 删除函数
 export async function deleteFunction({ functionName, envId }): Promise<void> {
-    // TODO: 删除网关路径
-    try {
-        await scfService.request('DeleteFunction', {
-            FunctionName: functionName,
-            Namespace: envId
+    // 检测是否绑定了 API 网关
+    const res = await queryGateway({
+        envId,
+        name: functionName
+    })
+    // 删除绑定的 API 网关
+    if (res?.APISet?.length > 0) {
+        await deleteGateway({
+            envId,
+            name: functionName
         })
-    } catch (e) {
-        throw new CloudBaseError(`[${functionName}] 删除操作失败：${e.message}！`)
     }
+    await scfService.request('DeleteFunction', {
+        FunctionName: functionName,
+        Namespace: envId
+    })
 }
 
 // 批量删除云函数

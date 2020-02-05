@@ -153,13 +153,14 @@ export interface GatewayContext {
 export interface ICreateFunctionGatewayOptions {
     envId: string;
     path: string;
-    functionName: string;
+    name: string;
 }
 export interface IQueryGatewayOptions {
     envId: string;
     domain?: string;
     path?: string;
     gatewayId?: string;
+    name?: string;
 }
 export interface IDeleteGatewayOptions {
     envId: string;

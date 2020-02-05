@@ -1,19 +1,45 @@
 import path from 'path'
 import inquirer from 'inquirer'
-import { loadingFactory, genClickableLink, highlightCommand } from '../../utils'
+import { ICommandContext } from '../command'
 import { CloudBaseError } from '../../error'
 import { createFunction } from '../../function'
-import { ICommandContext } from '../command'
+import { queryGateway, createGateway } from '../../gateway'
+import { loadingFactory, genClickableLink, highlightCommand, random } from '../../utils'
+import { DefaultFunctionDeployConfig } from '../../constant'
 
 function printSuccessTips(envId: string) {
     const link = genClickableLink(`https://console.cloud.tencent.com/tcb/scf?envId=${envId}`)
     console.log(`\n控制台查看函数详情：${link}`)
+    console.log(`\n使用 ${highlightCommand('cloudbase functions:list')} 命令查看已部署云函数\n`)
+}
 
-    console.log(`\n使用 ${highlightCommand('cloudbase functions:list')} 命令查看已部署云函数`)
+// 创建函数 API 网关
+async function genApiGateway(envId: string, name: string) {
+    const loading = loadingFactory()
+    loading.start('生成云函数 HTTP Service 中...')
+    // 检查是否绑定了 HTTP 网关
+    const res = await queryGateway({
+        name,
+        envId
+    })
+    if (res?.EnableService === false) return
+    let path
+    if (res?.APISet?.length > 0) {
+        path = res.APISet[0]?.Path
+    } else {
+        path = `/${random(12)}`
+        await createGateway({
+            envId,
+            name,
+            path
+        })
+    }
+    loading.stop()
+    const link = genClickableLink(`https://${envId}.service.tcloudbase.com${path}`)
+    console.log(`\n云函数 HTTP Service 链接：${link}`)
 }
 
 // TODO: 支持部署多个云函数
-// TODO: 生成 HTTP 调用链接 - 随机 Path
 export async function deploy(ctx: ICommandContext, name: string) {
     const { envId, config, options } = ctx
     const { functions } = config
@@ -67,23 +93,17 @@ export async function deploy(ctx: ICommandContext, name: string) {
     }
 
     if (!newFunction || !newFunction.name) {
-        const { useDefaultFunctionDeployOptions } = await inquirer.prompt({
+        const { useDefaultConfig } = await inquirer.prompt({
             type: 'confirm',
-            name: 'useDefaultFunctionDeployOptions',
-            message: '未找到函数发布配置，使用默认配置（仅适用于 Node.js 云函数）',
+            name: 'useDefaultConfig',
+            message: '未找到函数发布配置，是否使用默认配置（仅适用于 Node.js 云函数）',
             default: false
         })
 
-        if (useDefaultFunctionDeployOptions) {
+        if (useDefaultConfig) {
             newFunction = {
                 name,
-                config: {
-                    timeout: 5,
-                    runtime: 'Nodejs8.9',
-                    installDependency: true
-                },
-                handler: 'index.main',
-                ignore: ['node_modules', 'node_modules/**/*', '.git']
+                ...DefaultFunctionDeployConfig
             }
         } else {
             throw new CloudBaseError(`函数 ${name} 配置不存在`)
@@ -103,6 +123,7 @@ export async function deploy(ctx: ICommandContext, name: string) {
             functionRootPath
         })
         loading.succeed(`[${newFunction.name}] 云函数部署成功！`)
+        await genApiGateway(envId, name)
         printSuccessTips(envId)
     } catch (e) {
         // 询问是否覆盖同名函数
@@ -126,6 +147,7 @@ export async function deploy(ctx: ICommandContext, name: string) {
                         functionRootPath
                     })
                     loading.succeed(`[${newFunction.name}] 云函数部署成功！`)
+                    await genApiGateway(envId, name)
                     printSuccessTips(envId)
                 } catch (e) {
                     loading.stop()

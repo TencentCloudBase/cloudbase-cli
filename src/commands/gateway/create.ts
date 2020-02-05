@@ -1,5 +1,5 @@
 import { CloudBaseError } from '../../error'
-import { createFunctionGateway } from '../../gateway'
+import { createGateway } from '../../gateway'
 import { listFunction } from '../../function'
 import { loadingFactory, genClickableLink } from '../../utils'
 import { ICommandContext } from '../command'
@@ -33,10 +33,10 @@ export async function createService(ctx: ICommandContext) {
         }
 
         // step2: 创建云函数网关
-        const res = await createFunctionGateway({
+        const res = await createGateway({
             envId,
             path: servicePath,
-            functionName
+            name: functionName
         })
         const link = genClickableLink(`https://${envId}.service.tcloudbase.com${servicePath}`)
         loading.succeed(`云函数 HTTP Service 创建成功！\n点击访问> ${link}`)
