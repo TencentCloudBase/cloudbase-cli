@@ -17,6 +17,7 @@ const { handleCompletion } = require('../lib/completion')
 
 let processArgv = process.argv
 const isBeta = pkg.version.indexOf('-') > -1
+process.CLI_VERSION = pkg.version
 
 const [major, minor] = process.versions.node.split('.').slice(0, 2)
 

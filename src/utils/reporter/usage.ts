@@ -9,10 +9,11 @@ export async function collectUsage(command: string) {
     const macMd5 = await getMacAddressMd5()
     const os = await getOSInfo()
     const data = {
-        command,
-        macMd5,
+        os,
         uin,
-        os
+        macMd5,
+        command,
+        version: process.CLI_VERSION
     }
 
     return postFetch(url, data)

@@ -11,6 +11,7 @@ class DataSchema {
         this.macMd5 = data.macMd5 || ''
         this.uin = data.uin || ''
         this.os = data.os || ''
+        this.version = data.version || ''
         this.date = new Date()
     }
 }

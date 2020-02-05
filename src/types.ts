@@ -5,6 +5,7 @@ declare global {
     namespace NodeJS {
         interface Process {
             IS_DEBUG: boolean
+            CLI_VERSION: string
         }
     }
 }
