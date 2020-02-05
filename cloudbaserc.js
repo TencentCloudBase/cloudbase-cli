@@ -1,7 +1,37 @@
 module.exports = {
-    envId: 'test-6df222',
+    envId: 'tcli',
     functionRoot: './cloudbase/functions',
     functions: [
+        {
+            name: 'notify',
+            // 超时时间
+            timeout: 3,
+            // 环境变量
+            // envVariables: {},
+            runtime: 'Nodejs8.9',
+            handler: 'index.main',
+            installDependency: true
+        },
+        {
+            name: 'agree',
+            // 超时时间
+            timeout: 3,
+            // 环境变量
+            // envVariables: {},
+            runtime: 'Nodejs8.9',
+            handler: 'index.main',
+            installDependency: true
+        },
+        {
+            name: 'usage',
+            // 超时时间
+            timeout: 3,
+            // 环境变量
+            // envVariables: {},
+            runtime: 'Nodejs8.9',
+            handler: 'index.main',
+            installDependency: true
+        },
         {
             name: 'config',
             // 超时时间
@@ -9,17 +39,16 @@ module.exports = {
             // 环境变量
             // envVariables: {},
             runtime: 'Nodejs8.9',
-            handler: 'index.main'
+            handler: 'index.main',
+            installDependency: true
         },
         {
             name: 'app',
-            config: {
-                // 超时时间
-                timeout: 8,
-                // 环境变量
-                // envVariables: {},
-                runtime: 'Nodejs8.9'
-            },
+            // 超时时间
+            timeout: 8,
+            // 环境变量
+            // envVariables: {},
+            runtime: 'Nodejs8.9',
             triggers: [
                 {
                     // name: 触发器的名字

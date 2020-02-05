@@ -1,10 +1,13 @@
 import chalk from 'chalk'
 import inquirer from 'inquirer'
+
+import { ICommandContext } from '../command'
+
 import { login } from '../../auth'
 import { listEnvs } from '../../env'
 import { CloudBaseError } from '../../error'
-import { checkAndGetCredential, loadingFactory } from '../../utils'
 import { warnLog, errorLog } from '../../logger'
+import { checkAndGetCredential, loadingFactory, usageStore, collectAgree } from '../../utils'
 
 function printSuggestion() {
     const tips = `可使用下面命令继续操作：
@@ -29,8 +32,29 @@ Tips：可以使用简写命令 tcb 代替 cloudbase`
     console.log(tips)
 }
 
+async function askForCollectDataConfirm() {
+    const agree = await usageStore.get('agreeCollect')
+    if (agree) return
+    const { confirm } = await inquirer.prompt({
+        type: 'confirm',
+        name: 'confirm',
+        message: '是否同意 Cloudbase CLI 收集您的使用数据以改进产品？',
+        default: true
+    })
+
+    if (confirm) {
+        await usageStore.set('agreeCollect', true)
+    }
+
+    await collectAgree(confirm)
+}
+
+async function handleLoginSuccess() {
+    
+}
+
 // 登录
-export async function accountLogin(options) {
+export async function accountLogin(ctx: ICommandContext) {
     const loading = loadingFactory()
     loading.start('检验登录状态')
     const hasLogin = await checkAndGetCredential()
@@ -42,7 +66,7 @@ export async function accountLogin(options) {
     }
 
     // 兼容临时密钥和永久密钥登录
-    if (options.key) {
+    if (ctx.options.key) {
         // 使用永久密钥登录
         const { secretId } = await inquirer.prompt({
             type: 'input',
@@ -70,6 +94,7 @@ export async function accountLogin(options) {
 
         if (res.code === 'SUCCESS') {
             loading.succeed('登录成功！')
+            await askForCollectDataConfirm()
             printSuggestion()
         } else {
             loading.fail('腾讯云密钥验证失败，请检查密钥是否正确或终端网络是否可用！')
@@ -82,13 +107,13 @@ export async function accountLogin(options) {
 
         if (res.code === 'SUCCESS') {
             loading.succeed('登录成功！')
+            await askForCollectDataConfirm()
             printSuggestion()
         } else {
             loading.fail(res.msg)
             console.log('请检查你的网络，尝试重新运行 cloudbase login 命令！')
             return
         }
-        return
     }
 
     // 检测用户是否存在，不存在则初始化
@@ -99,8 +124,9 @@ export async function accountLogin(options) {
         }
     } catch (e) {
         // 用户不存在
+        // 主账户可以直接使用 env:create 完成初始化工作
         if (e.code === 'ResourceNotFound.UserNotExists') {
-            errorLog('您还没有初始化云开发服务！')
+            errorLog('您还没有可用的环境，请使用 cloudbase env:create $name 创建环境！')
         } else {
             throw e
         }

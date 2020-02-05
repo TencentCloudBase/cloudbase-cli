@@ -1,8 +1,18 @@
+/* eslint-disable no-dupe-class-members */
+import chalk from 'chalk'
 import program from 'commander'
+import Sentry from '@sentry/node'
 import { EventEmitter } from 'events'
-import { resolveCloudBaseConfig, getEnvId } from '../utils'
 import { CloudBaseError } from '../error'
 import { ICloudBaseConfig } from '../types'
+import {
+    getEnvId,
+    usageStore,
+    collectUsage,
+    loadingFactory,
+    getNotification,
+    resolveCloudBaseConfig
+} from '../utils'
 
 interface ICommandOption {
     flags: string
@@ -38,9 +48,11 @@ export class Command extends EventEmitter {
         this.options = options
     }
 
-    on(event: 'pre-run', listener: () => void): this
-    // eslint-disable-next-line
-    on(event: string, listener: () => void): this {
+    on(
+        event: 'preHandle' | 'afterHandle',
+        listener: (ctx: ICommandContext, args: any[]) => void
+    ): this
+    on(event: string, listener: (ctx: ICommandContext, args: any[]) => void): this {
         super.on(event, listener)
         return this
     }
@@ -77,12 +89,40 @@ export class Command extends EventEmitter {
             }
 
             // 处理前
-            this.emit('pre-run', ctx, args)
-            this.preRun()
-
+            this.emit('preHandle', ctx, args)
+            await this.preHandle()
             handler(ctx, ...args)
+            this.emit('afterHandle', ctx, args)
+            // 上报数据
+            await this.afterHandle(ctx)
         })
     }
 
-    private preRun() {}
+    private async preHandle() {
+        try {
+            const loading = loadingFactory()
+            loading.start('数据加载中...')
+            const res = await getNotification()
+            loading.stop()
+            if (!res) return
+            const { title, content } = res
+            console.log(chalk.bold.cyan(title))
+            console.log(content, '\n')
+        } catch (e) {
+            Sentry.captureException(e)
+        }
+    }
+
+    private async afterHandle(ctx) {
+        try {
+            const { cmd } = ctx
+            const agree = await usageStore.get('agreeCollect')
+            // 不同意上报、不上报使用数据
+            if (!agree) return
+            await collectUsage(cmd)
+        } catch (e) {
+            // 上报错误
+            Sentry.captureException(e)
+        }
+    }
 }

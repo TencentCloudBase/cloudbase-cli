@@ -1,11 +1,14 @@
 import { listEnvs, updateEnvInfo } from '../../env'
-import { printHorizontalTable } from '../../utils'
+import { printHorizontalTable, loadingFactory } from '../../utils'
 import { CloudBaseError } from '../../error'
 import { warnLog, successLog } from '../../logger'
 import { ICommandContext } from '../command'
 
 export async function list() {
+    const loading = loadingFactory()
+    loading.start('数据加载中...')
     const data = await listEnvs()
+    loading.stop()
     const head = ['名称', '环境 Id', '套餐版本', '来源', '创建时间', '环境状态']
 
     const sortData = data.sort((prev, next) => {

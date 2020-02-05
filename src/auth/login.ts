@@ -65,7 +65,7 @@ export async function loginWithToken(options: ILoginOptions) {
         return LoginRes.UNKNOWN_ERROR(e.message)
     }
 
-    authStore.set(ConfigItems.credentail, credential)
+    await authStore.set(ConfigItems.credentail, credential)
     return LoginRes.SUCCESS
 }
 
@@ -87,8 +87,7 @@ export async function loginWithKey(secretId?: string, secretKey?: string) {
         return LoginRes.CHECK_LOGIN_FAILED
     }
 
-    authStore.set(ConfigItems.credentail, { secretId, secretKey })
-
+    await authStore.set(ConfigItems.credentail, { secretId, secretKey })
     return LoginRes.SUCCESS
 }
 

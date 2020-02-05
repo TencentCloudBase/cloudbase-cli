@@ -49,6 +49,7 @@
         "portfinder": "^1.0.20",
         "progress": "^2.0.3",
         "query-string": "^6.8.1",
+        "tabtab": "^3.0.2",
         "tar-fs": "^2.0.0",
         "terminal-link": "^2.1.1",
         "unzipper": "^0.10.5",
@@ -57,6 +58,7 @@
     "devDependencies": {
         "@types/jest": "^24.0.17",
         "@types/node": "^12.7.2",
+        "@types/node-fetch": "^2.5.4",
         "@typescript-eslint/eslint-plugin": "^2.12.0",
         "@typescript-eslint/parser": "^2.12.0",
         "eslint": "^6.7.2",

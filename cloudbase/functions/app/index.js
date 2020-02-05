@@ -4,10 +4,11 @@ const app = tcb.init({
     env: 'tcli'
 })
 
-exports.main = async event => {
+exports.main = async () => {
     const db = app.database()
-    const collection = db.collection('cli-config')
-    return collection.add({
-        name: 'test'
-    })
+    const collection = db.collection('notification')
+    return collection
+        .orderBy('uid', 'asc')
+        .limit(1)
+        .get()
 }

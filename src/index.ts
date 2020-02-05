@@ -25,7 +25,7 @@ import {
     updateFunctionCode
 } from './function'
 import * as storage from './storage'
-import { authStore } from './utils'
+import { getSyncDB } from './utils'
 import { ILoginOptions } from './types'
 
 export = class CloudBase {
@@ -79,7 +79,7 @@ export = class CloudBase {
                 secretId,
                 secretKey
             }
-            authStore.set('credential', credential)
+            getSyncDB('auth').set('credential', credential).write()
         }
     }
 }

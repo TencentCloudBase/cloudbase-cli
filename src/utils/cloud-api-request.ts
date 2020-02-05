@@ -1,8 +1,8 @@
 import crypto from 'crypto'
 import { URL } from 'url'
 import QueryString from 'query-string'
-import { CloudBaseError } from '../error'
 import { fetch } from './http-request'
+import { CloudBaseError } from '../error'
 import { getCredentialWithoutCheck } from './auth'
 
 function isObject(x) {

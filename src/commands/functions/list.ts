@@ -26,7 +26,7 @@ export async function list(ctx: ICommandContext) {
 
     const loading = loadingFactory()
 
-    loading.start('加载列表中...')
+    loading.start('数据加载中...')
 
     const data = await listFunction({
         envId,

@@ -1,71 +1,31 @@
-import os from 'os'
 import fs from 'fs'
 import path from 'path'
 import http, { Server, IncomingMessage, ServerResponse } from 'http'
-import crypto from 'crypto'
-import portfinder from 'portfinder'
 import queryString from 'query-string'
 import open from 'open'
-import address from 'address'
 
-import { Credential, AuthSecret, ILoginOptions } from '../types'
-export { printHorizontalTable } from './cli-table'
+import { md5 } from './tools'
 import { authStore } from './store'
-import { ConfigItems } from '../constant'
-import Logger from '../logger'
-import { fetch, loadingFactory, getPlatformRelease } from '../utils'
-import { CloudBaseError } from '../error'
+import { fetch } from './http-request'
+import { loadingFactory } from './output'
 import { CloudApiService } from './cloud-api-request'
+import { getMacAddress, getOSInfo, getPort } from './platform'
+
+import Logger from '../logger'
+import { ConfigItems } from '../constant'
+import { CloudBaseError } from '../error'
+import { Credential, AuthSecret, ILoginOptions } from '../types'
+
 
 const logger = new Logger('Auth')
 const tcbService = new CloudApiService('tcb')
 
-const defaultPort = 9012
 const CliAuthBaseUrl = 'https://console.cloud.tencent.com/tcb/auth'
 const refreshTokenUrl = 'https://iaas.cloud.tencent.com/tcb_refresh'
 
 interface ServerRes {
     server: Server
     port: number
-}
-
-// 获取本地可用端口
-async function getPort(): Promise<number> {
-    const port: number = await portfinder.getPortPromise({
-        port: defaultPort
-    })
-    return port
-}
-
-// 获取本机 Mac 地址
-function getMacAddress(): Promise<string> {
-    return new Promise(resolve => {
-        address.mac((err, mac) => {
-            if (err) {
-                resolve('')
-                return
-            }
-            resolve(mac)
-        })
-    })
-}
-
-// 获取 hostname 和平台信息
-function getOSInfo() {
-    const hostname = os.hostname()
-    const platform = os.platform()
-    const release = os.release()
-
-    const platformRelease = getPlatformRelease(platform, release)
-
-    return [hostname, platformRelease].join('/')
-}
-
-// MD5
-function md5(str: string): string {
-    const hash = crypto.createHash('md5')
-    hash.update(str)
-    return hash.digest('hex')
 }
 
 // 临时密钥过期后，进行续期
@@ -93,13 +53,13 @@ export async function refreshTmpToken(
 }
 
 // 获取 credentail 数据
-export function getCredentialData(): Credential {
+export async function getCredentialData(): Promise<Credential> {
     return authStore.get(ConfigItems.credentail) as Credential
 }
 
 // 获取身份认证信息并校验、自动刷新
 export async function getCredentialWithoutCheck(): Promise<AuthSecret> {
-    const credential = getCredentialData()
+    const credential = await getCredentialData()
     if (!credential) {
         return null
     }
@@ -127,7 +87,7 @@ export async function getCredentialWithoutCheck(): Promise<AuthSecret> {
             // 临时密钥超过两小时有效期，但在 1 个月 refresh 有效期内，刷新临时密钥
             const refreshCredential = await refreshTmpToken(credential)
             // 存储
-            authStore.set(ConfigItems.credentail, refreshCredential)
+            await authStore.set(ConfigItems.credentail, refreshCredential)
             const { tmpSecretId, tmpSecretKey, tmpToken } = refreshCredential
 
             return {

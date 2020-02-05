@@ -6,22 +6,23 @@ import { SSH } from '../types'
 import { ConfigItems } from '../constant'
 export { printHorizontalTable } from './cli-table'
 
-export * from './uuid'
-export * from './http-request'
-export * from './output'
-export * from './function-packer'
-export * from './store'
-export * from './auth'
-export * from './check-auth'
-export * from './os-release'
-export * from './time'
-export * from './cloud-api-request'
 export * from './fs'
-export * from './proxy'
-export * from './object'
+export * from './tools'
+export * from './output'
 export * from './config'
+export * from './platform'
+export * from './reporter'
+export * from './cli-table'
 export * from './progress-bar'
+export * from './function-packer'
 export * from './manager-service'
+
+export * from './auth'
+export * from './store'
+export * from './cloud'
+export * from './check-auth'
+export * from './http-request'
+export * from './cloud-api-request'
 
 export async function zipDir(dirPath, outputPath, ignore?: string | string[]) {
     return new Promise((resolve, reject) => {
@@ -64,12 +65,12 @@ export function askForInput(question): Promise<string> {
     })
 }
 
-export function getSSHConfig(): SSH {
+export async function getSSHConfig(): Promise<SSH> {
     return (authStore.get(ConfigItems.ssh) || {}) as SSH
 }
 
 export async function getSSH(): Promise<SSH> {
-    let sshConfig = getSSHConfig()
+    let sshConfig = await getSSHConfig()
     if (
         !sshConfig.host ||
         !sshConfig.port ||
@@ -92,7 +93,7 @@ export async function getSSH(): Promise<SSH> {
             username,
             password
         }
-        authStore.set(ConfigItems.ssh, config)
+        await authStore.set(ConfigItems.ssh, config)
         return config
     }
     return sshConfig

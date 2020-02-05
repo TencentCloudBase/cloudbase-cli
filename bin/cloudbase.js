@@ -10,6 +10,7 @@ const address = require('address')
 const pkg = require('../package.json')
 const store = require('../lib/utils/store')
 const { getProxy } = require('../lib/utils/proxy')
+const { handleCompletion } = require('../lib/completion')
 
 let processArgv = process.argv
 const isBeta = pkg.version.indexOf('-') > -1
@@ -81,9 +82,12 @@ if (processArgv.includes('--tcb-test')) {
 
 // debug 模式
 process.IS_DEBUG = processArgv.includes('-debug')
+if (processArgv.includes('completion')) {
+    return handleCompletion()
+}
 
 // 需要隐藏的选项
-const hideArgs = ['-debug', '--tcb-test']
+const hideArgs = ['-debug', '--tcb-test', '--completion']
 hideArgs.forEach(arg => {
     const index = processArgv.indexOf(arg)
     if (index > -1) {
@@ -93,6 +97,8 @@ hideArgs.forEach(arg => {
 
 // 注册命令
 require('../lib')
+
+// console.log(Object.keys(program._events))
 
 // 设置 Sentry 上报的用户 uin
 Sentry.configureScope(scope => {
@@ -158,7 +164,6 @@ try {
 }
 
 function errorHandler(err) {
-    console.log(err)
     process.emit('tcbError')
     const stackIngoreErrors = ['TencentCloudSDKHttpException', 'CloudBaseError']
     // 忽略自定义错误的错误栈

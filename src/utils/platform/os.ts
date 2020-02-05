@@ -1,3 +1,5 @@
+import os from 'os'
+
 const macOSMap = new Map([
     [19, 'Catalina'],
     [18, 'Mojave'],
@@ -48,4 +50,15 @@ export function getPlatformRelease(platform: string, release: string) {
 
     // 其他 Linux
     return 'Linux'
+}
+
+// 获取 hostname 和平台信息
+export function getOSInfo() {
+    const hostname = os.hostname()
+    const platform = os.platform()
+    const release = os.release()
+
+    const platformRelease = getPlatformRelease(platform, release)
+
+    return [hostname, platformRelease].join('/')
 }

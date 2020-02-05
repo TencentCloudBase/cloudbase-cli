@@ -21,8 +21,9 @@ export interface ICommandContext {
 export declare class Command extends EventEmitter {
     options: ICommandOptions;
     constructor(options: ICommandOptions);
-    on(event: 'pre-run', listener: () => void): this;
+    on(event: 'preHandle' | 'afterHandle', listener: (ctx: ICommandContext, args: any[]) => void): this;
     init(): void;
-    private preRun;
+    private preHandle;
+    private afterHandle;
 }
 export {};

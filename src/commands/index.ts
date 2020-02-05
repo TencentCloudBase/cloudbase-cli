@@ -1,5 +1,6 @@
-import './helpers'
 import './account'
+import './helpers'
+import './completion'
 import './env'
 import './functions'
 import './storage'
