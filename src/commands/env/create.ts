@@ -43,6 +43,19 @@ export async function create(ctx, alias: string) {
         default: 'postpay'
     })
 
+    // 通过控制台授权登陆的用户无订单支付权限
+    const { confirm } = await inquirer.prompt({
+        type: 'confirm',
+        name: 'confirm',
+        message:
+            '因支付权限问题，仅支持通过 API 秘钥登陆的主账户使用 CLI 创建包年包月免费环境，其他用户需要登陆控制台支付相关订单才能完成环境创建，是否继续？',
+        default: false
+    })
+
+    if (!confirm) {
+        throw new CloudBaseError('创建环境流程终止')
+    }
+
     loading.start('环境创建中...')
     try {
         const res = await createEnv({

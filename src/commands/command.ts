@@ -1,7 +1,7 @@
 /* eslint-disable no-dupe-class-members */
 import chalk from 'chalk'
 import program from 'commander'
-import Sentry from '@sentry/node'
+import * as Sentry from '@sentry/node'
 import { EventEmitter } from 'events'
 import { CloudBaseError } from '../error'
 import { ICloudBaseConfig } from '../types'
@@ -99,8 +99,8 @@ export class Command extends EventEmitter {
     }
 
     private async preHandle() {
+        const loading = loadingFactory()
         try {
-            const loading = loadingFactory()
             loading.start('数据加载中...')
             const res = await getNotification()
             loading.stop()
@@ -109,6 +109,7 @@ export class Command extends EventEmitter {
             console.log(chalk.bold.cyan(title))
             console.log(content, '\n')
         } catch (e) {
+            loading.stop()
             Sentry.captureException(e)
         }
     }

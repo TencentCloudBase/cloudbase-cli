@@ -8,12 +8,17 @@ const Sentry = require('@sentry/node')
 const logSymbols = require('log-symbols')
 const didYouMean = require('didyoumean')
 const updateNotifier = require('update-notifier')
+const omelette = require('omelette')
 
 const pkg = require('../package.json')
 const store = require('../lib/utils/store')
 const { ALL_COMMANDS } = require('../lib/constant')
 const { getProxy } = require('../lib/utils/tools/proxy')
 const { handleCompletion } = require('../lib/completion')
+
+const completion = omelette('cloudbase|tcb <action>')
+completion.on('action', handleCompletion)
+completion.init()
 
 let processArgv = process.argv
 const isBeta = pkg.version.indexOf('-') > -1

@@ -1,1 +1,4 @@
-export declare function handleCompletion(): void;
+export declare function handleCompletion({ reply, line }: {
+    reply: any;
+    line: any;
+}): void;

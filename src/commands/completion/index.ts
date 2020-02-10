@@ -2,16 +2,16 @@ import { Command } from '../command'
 import { installCompletion, unInstallCompletion } from './tab'
 const commands = [
     {
-        cmd: 'completion:install',
+        cmd: 'completion:setup',
         options: [],
-        desc: '安装自动补全',
+        desc: '启动自动补全命令',
         handler: installCompletion,
         requiredEnvId: false
     },
     {
-        cmd: 'completion:uninstall',
+        cmd: 'completion:clean',
         options: [],
-        desc: '登出腾讯云账号',
+        desc: '清楚自动补全命令',
         handler: unInstallCompletion,
         requiredEnvId: false
     }
