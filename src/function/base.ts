@@ -1,5 +1,5 @@
 import CloudBase from '@cloudbase/manager-node'
-import { CloudApiService, loadingFactory, checkAndGetCredential, getProxy } from '../utils'
+import { CloudApiService, checkAndGetCredential, getProxy } from '../utils'
 import { successLog } from '../logger'
 import {
     IListFunctionOptions,

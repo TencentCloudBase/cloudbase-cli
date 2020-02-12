@@ -7,7 +7,13 @@ import { login } from '../../auth'
 import { listEnvs } from '../../env'
 import { CloudBaseError } from '../../error'
 import { warnLog, errorLog } from '../../logger'
-import { checkAndGetCredential, loadingFactory, usageStore, collectAgree } from '../../utils'
+import {
+    checkAndGetCredential,
+    loadingFactory,
+    usageStore,
+    collectAgree,
+    genClickableLink
+} from '../../utils'
 
 function printSuggestion() {
     const tips = `可使用下面命令继续操作：
@@ -49,10 +55,6 @@ async function askForCollectDataConfirm() {
     await collectAgree(confirm)
 }
 
-async function handleLoginSuccess() {
-    
-}
-
 // 登录
 export async function accountLogin(ctx: ICommandContext) {
     const loading = loadingFactory()
@@ -67,6 +69,9 @@ export async function accountLogin(ctx: ICommandContext) {
 
     // 兼容临时密钥和永久密钥登录
     if (ctx.options.key) {
+        const clickableLink = genClickableLink('https://console.cloud.tencent.com/cam/capi')
+        console.log(`您可以访问 ${clickableLink} 获取 API 秘钥`)
+
         // 使用永久密钥登录
         const { secretId } = await inquirer.prompt({
             type: 'input',
