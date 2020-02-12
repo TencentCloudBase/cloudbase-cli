@@ -72,3 +72,5 @@ node_modules
 
 # Test api Key
 test/api-key.js
+
+pkg/
