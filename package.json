@@ -45,7 +45,6 @@
         "make-dir": "^3.0.0",
         "node-fetch": "^2.6.0",
         "node-ssh": "^6.0.0",
-        "omelette": "^0.4.12",
         "open": "^7.0.0",
         "ora": "^4.0.2",
         "portfinder": "^1.0.20",
