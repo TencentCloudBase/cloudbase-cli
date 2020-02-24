@@ -9,20 +9,22 @@ import { DefaultFunctionDeployConfig } from '../../constant'
 
 function printSuccessTips(envId: string) {
     const link = genClickableLink(`https://console.cloud.tencent.com/tcb/scf?envId=${envId}`)
-    console.log(`\n控制台查看函数详情：${link}`)
-    console.log(`\n使用 ${highlightCommand('cloudbase functions:list')} 命令查看已部署云函数\n`)
+    console.log(`\n控制台查看函数详情或创建 HTTP Service 链接 🔗：${link}`)
+    console.log(`\n使用 ${highlightCommand('cloudbase functions:list')} 命令查看已部署云函数`)
 }
 
 // 创建函数 API 网关
 async function genApiGateway(envId: string, name: string) {
     const loading = loadingFactory()
-    loading.start('生成云函数 HTTP Service 中...')
     // 检查是否绑定了 HTTP 网关
     const res = await queryGateway({
         name,
         envId
     })
+    // 未开启，不生成 HTTP 调用了链接
     if (res?.EnableService === false) return
+    loading.start('生成云函数 HTTP Service 中...')
+
     let path
     if (res?.APISet?.length > 0) {
         path = res.APISet[0]?.Path
@@ -123,7 +125,7 @@ export async function deploy(ctx: ICommandContext, name: string) {
             functionRootPath
         })
         loading.succeed(`[${newFunction.name}] 云函数部署成功！`)
-        await genApiGateway(envId, name)
+        // await genApiGateway(envId, name)
         printSuccessTips(envId)
     } catch (e) {
         // 询问是否覆盖同名函数
@@ -147,7 +149,7 @@ export async function deploy(ctx: ICommandContext, name: string) {
                         functionRootPath
                     })
                     loading.succeed(`[${newFunction.name}] 云函数部署成功！`)
-                    await genApiGateway(envId, name)
+                    // await genApiGateway(envId, name)
                     printSuccessTips(envId)
                 } catch (e) {
                     loading.stop()
