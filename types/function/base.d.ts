@@ -1,5 +1,9 @@
 import { IListFunctionOptions, IFunctionLogOptions, IUpdateFunctionConfigOptions, IFunctionBatchOptions, InvokeFunctionOptions } from '../types';
-interface ICopyFunctionOptions {
+export interface IBaseOptions {
+    envId: string;
+    functionName: string;
+}
+export interface ICopyFunctionOptions {
     envId: string;
     functionName: string;
     newFunctionName: string;
@@ -8,9 +12,12 @@ interface ICopyFunctionOptions {
     copyConfig?: boolean;
     codeSecret?: string;
 }
+export interface IDetailOptions extends IBaseOptions {
+    codeSecret?: string;
+}
 export declare function getFunctionService(envId: string): Promise<import("@cloudbase/manager-node/types/function").FunctionService>;
 export declare function listFunction(options: IListFunctionOptions): Promise<Record<string, string>[]>;
-export declare function getFunctionDetail(options: any): Promise<Record<string, string>>;
+export declare function getFunctionDetail(options: IDetailOptions): Promise<Record<string, any>>;
 export declare function batchGetFunctionsDetail({ names, envId, codeSecret }: {
     names: any;
     envId: any;
@@ -22,4 +29,3 @@ export declare function batchUpdateFunctionConfig(options: IFunctionBatchOptions
 export declare function invokeFunction(options: InvokeFunctionOptions): Promise<any>;
 export declare function batchInvokeFunctions(options: IFunctionBatchOptions): Promise<any[]>;
 export declare function copyFunction(options: ICopyFunctionOptions): Promise<void>;
-export {};

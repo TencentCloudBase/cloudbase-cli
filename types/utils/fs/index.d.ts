@@ -1,5 +1,5 @@
-export * from './zip';
 export * from './del';
+export * from './compress';
 export declare type SizeUnit = 'KB' | 'MB' | 'GB';
 export declare function checkFullAccess(dest: string, throwError?: boolean): boolean;
 export declare function checkWritable(dest: string, throwError?: boolean): boolean;

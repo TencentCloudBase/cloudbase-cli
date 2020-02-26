@@ -3,7 +3,7 @@ import chalk from 'chalk'
 import path from 'path'
 import tar from 'tar-fs'
 import fse from 'fs-extra'
-import inquirer from 'inquirer'
+import { prompt } from 'enquirer'
 import { CloudBaseError } from '../../error'
 import { successLog } from '../../logger'
 import { listEnvs } from '../../env'
@@ -87,22 +87,22 @@ export async function init(ctx: ICommandContext) {
         )
     }
 
-    const { env } = await inquirer.prompt({
-        type: 'list',
+    const { env } = await prompt({
+        type: 'select',
         name: 'env',
         message: '选择关联环境',
         choices: envs
     })
 
-    const { projectName } = await inquirer.prompt({
+    const { projectName } = await prompt({
         type: 'input',
         name: 'projectName',
         message: '请输入项目名称',
-        default: 'cloudbase-demo'
+        initial: 'cloudbase-demo'
     })
 
-    const { lang } = await inquirer.prompt({
-        type: 'list',
+    const { lang } = await prompt({
+        type: 'select',
         name: 'lang',
         message: '选择开发语言',
         choices: ['PHP', 'Java', 'Node']
@@ -116,8 +116,8 @@ export async function init(ctx: ICommandContext) {
 
     const templates = templateList.filter(item => item.lang === lang)
 
-    const { selectTemplateName } = await inquirer.prompt({
-        type: 'list',
+    const { selectTemplateName } = await prompt({
+        type: 'select',
         name: 'selectTemplateName',
         message: '选择云开发模板',
         choices: templates.map(item => item.name)
@@ -129,11 +129,11 @@ export async function init(ctx: ICommandContext) {
     const projectPath = path.join(process.cwd(), projectName)
 
     if (checkFullAccess(projectPath)) {
-        const { cover } = await inquirer.prompt({
+        const { cover } = await prompt({
             type: 'confirm',
             name: 'cover',
             message: `已存在同名文件夹：${projectName}，是否覆盖？`,
-            default: false
+            initial: false
         })
         // 不覆盖，操作终止
         if (!cover) {

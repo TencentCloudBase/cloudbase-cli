@@ -1,8 +1,8 @@
 import fs from 'fs'
 import { CloudBaseError } from '../../error'
 
-export * from './zip'
 export * from './del'
+export * from './compress'
 
 export type SizeUnit = 'KB' | 'MB' | 'GB'
 

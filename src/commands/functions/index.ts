@@ -13,6 +13,15 @@ import { copy } from './copy'
 import { codeDownload } from './code-download'
 import { debugFunctionByPath, debugByConfig } from './run'
 import { Command } from '../command'
+import {
+    createFileLayer,
+    listFileLayer,
+    attachFileLayer,
+    unAttachFileLayer,
+    downloadFileLayer,
+    sortFileLayer,
+    deleteFileLayer
+} from './layer'
 
 const commands = [
     {
@@ -260,6 +269,115 @@ const commands = [
                 )
             }
         }
+    },
+    {
+        cmd: 'functions:layer:create <name>',
+        options: [
+            {
+                flags: '-e, --envId <envId>',
+                desc: '环境 Id'
+            },
+            {
+                flags: '--file, <file>',
+                desc: '文件路径'
+            }
+        ],
+        desc: '创建函数文件层',
+        handler: createFileLayer
+    },
+    {
+        cmd: 'functions:layer:list',
+        options: [
+            {
+                flags: '-e, --envId <envId>',
+                desc: '环境 Id'
+            },
+            {
+                flags: '--name, <name>',
+                desc: '函数名称'
+            },
+            {
+                flags: '--layer, <layer>',
+                desc: '文件层别名'
+            },
+            {
+                flags: '--code-secret, <codeSecret>',
+                desc: '代码加密的函数的 CodeSecret'
+            }
+        ],
+        desc: '展示文件层列表',
+        handler: listFileLayer
+    },
+    {
+        cmd: 'functions:layer:bind <name>',
+        options: [
+            {
+                flags: '-e, --envId <envId>',
+                desc: '环境 Id'
+            },
+            {
+                flags: '--code-secret, <codeSecret>',
+                desc: '代码加密的函数的 CodeSecret'
+            }
+        ],
+        desc: '绑定文件层到云函数',
+        handler: attachFileLayer
+    },
+    {
+        cmd: 'functions:layer:unbind <name>',
+        options: [
+            {
+                flags: '-e, --envId <envId>',
+                desc: '环境 Id'
+            },
+            {
+                flags: '--code-secret, <codeSecret>',
+                desc: '代码加密的函数的 CodeSecret'
+            }
+        ],
+        desc: '删除云函数绑定的文件层',
+        handler: unAttachFileLayer
+    },
+    {
+        cmd: 'functions:layer:download',
+        options: [
+            {
+                flags: '-e, --envId <envId>',
+                desc: '环境 Id'
+            },
+            {
+                flags: '--dest <dest>',
+                desc: '下载文件存放的地址'
+            }
+        ],
+        desc: '下载云函数文件层',
+        handler: downloadFileLayer
+    },
+    {
+        cmd: 'functions:layer:sort <name>',
+        options: [
+            {
+                flags: '-e, --envId <envId>',
+                desc: '环境 Id'
+            },
+            {
+                flags: '--code-secret, <codeSecret>',
+                desc: '代码加密的函数的 CodeSecret'
+            }
+        ],
+        desc: '重新排列云函数绑定的文件层的顺序',
+        handler: sortFileLayer
+    },
+    {
+        cmd: 'functions:layer:delete',
+        options: [
+            {
+                flags: '-e, --envId <envId>',
+                desc: '环境 Id'
+            }
+        ],
+        desc: '删除当前环境的文件层',
+        handler: deleteFileLayer
     }
 ]
 
