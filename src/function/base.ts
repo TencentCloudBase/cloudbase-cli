@@ -10,14 +10,24 @@ import {
 } from '../types'
 import { CloudBaseError } from '../error'
 import { getVpcs, getSubnets } from './vpc'
+import { BaseOptions } from 'vm'
 
-interface ICopyFunctionOptions {
+export interface IBaseOptions {
+    envId: string
+    functionName: string
+}
+
+export interface ICopyFunctionOptions {
     envId: string
     functionName: string
     newFunctionName: string
     targetEnvId: string
     force?: boolean
     copyConfig?: boolean
+    codeSecret?: string
+}
+
+export interface IDetailOptions extends IBaseOptions {
     codeSecret?: string
 }
 
@@ -63,7 +73,7 @@ export async function listFunction(
 }
 
 // 获取云函数详细信息
-export async function getFunctionDetail(options): Promise<Record<string, string>> {
+export async function getFunctionDetail(options: IDetailOptions): Promise<Record<string, any>> {
     const { functionName, envId, codeSecret } = options
 
     const res = await scfService.request('GetFunction', {
@@ -109,9 +119,9 @@ export async function batchGetFunctionsDetail({
         (async () => {
             try {
                 const info = await getFunctionDetail({
-                    name,
                     envId,
-                    codeSecret
+                    codeSecret,
+                    functionName: name
                 })
                 data.push(info)
             } catch (e) {

@@ -176,11 +176,14 @@ function errorHandler(err) {
     process.emit('tcbError')
     const stackIngoreErrors = ['TencentCloudSDKHttpException', 'CloudBaseError']
     // 忽略自定义错误的错误栈
-    if (err.stack && !stackIngoreErrors.includes(err.name)) {
+    if (err && err.stack && !stackIngoreErrors.includes(err.name)) {
         console.log(err.stack)
     }
+
     // 3 空格，兼容中文字符编码长度问题
-    console.log(logSymbols.error + ' ' + err.message)
+    if (err && err.message) {
+        console.log(logSymbols.error + ' ' + err.message)
+    }
     process.emit('tcbExit')
     setTimeout(() => {
         process.exit(1)

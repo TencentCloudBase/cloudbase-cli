@@ -1,5 +1,3 @@
-import fs from 'fs'
-import archiver from 'archiver'
 import readline from 'readline'
 import { authStore } from './store'
 import { SSH } from '../types'
@@ -23,34 +21,6 @@ export * from './cloud'
 export * from './check-auth'
 export * from './http-request'
 export * from './cloud-api-request'
-
-export async function zipDir(dirPath, outputPath, ignore?: string | string[]) {
-    return new Promise((resolve, reject) => {
-        const output = fs.createWriteStream(outputPath)
-        const archive = archiver('zip')
-
-        output.on('close', function() {
-            resolve({
-                zipPath: outputPath,
-                size: Math.ceil(archive.pointer() / 1024)
-            })
-        })
-
-        archive.on('error', function(err) {
-            reject(err)
-        })
-
-        archive.pipe(output)
-        // append files from a glob pattern
-        archive.glob('**/*', {
-            // 目标路径
-            cwd: dirPath,
-            ignore: ignore,
-            dot: true
-        })
-        archive.finalize()
-    })
-}
 
 export function askForInput(question): Promise<string> {
     const rl = readline.createInterface({
