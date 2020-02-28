@@ -31,6 +31,13 @@ export async function listFileLayer(ctx: ICommandContext) {
             codeSecret
         })
         data = res?.Layers || []
+    } else if (envId) {
+        // 展示所有文件层
+        data = await listLayers({
+            offset: 0,
+            limit: 200
+        })
+        data = data.filter(item => item.LayerName.includes(`_${envId}`))
     } else {
         // 展示所有文件层
         data = await listLayers({

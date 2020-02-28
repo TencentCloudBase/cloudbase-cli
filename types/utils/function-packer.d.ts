@@ -11,7 +11,6 @@ export declare class FunctionPacker {
     tmpPath: string;
     ignore: string | string[];
     constructor(root: string, name: string, ignore: string | string[]);
-    validPath(path: string): void;
     getFileCode(): Promise<string>;
     getJavaFileCode(): string;
     build(type: CodeType): Promise<string>;
