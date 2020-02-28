@@ -1,6 +1,6 @@
 import fs from 'fs'
-import path from 'path'
 import del from 'del'
+import path from 'path'
 import makeDir from 'make-dir'
 import { random } from './tools'
 import { zipDir, checkFullAccess } from './fs'
@@ -37,14 +37,8 @@ export class FunctionPacker {
         this.funcPath = path.join(root, name)
     }
 
-    validPath(path: string) {
-        if (!checkFullAccess(path)) {
-            throw new CloudBaseError('file not exist')
-        }
-    }
-
     async getFileCode() {
-        this.validPath(this.funcPath)
+        checkFullAccess(this.funcPath, true)
         // 构建临时文件夹存放函数打包结果
         this.tmpPath = path.join(this.root, `.cloudbase_tmp_${random()}`)
         this.funcDistPath = path.join(this.tmpPath, this.name)

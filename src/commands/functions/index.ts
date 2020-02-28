@@ -271,7 +271,7 @@ const commands = [
         }
     },
     {
-        cmd: 'functions:layer:create <name>',
+        cmd: 'functions:layer:create <alias>',
         options: [
             {
                 flags: '-e, --envId <envId>',
@@ -306,7 +306,8 @@ const commands = [
             }
         ],
         desc: '展示文件层列表',
-        handler: listFileLayer
+        handler: listFileLayer,
+        requiredEnvId: false
     },
     {
         cmd: 'functions:layer:bind <name>',
