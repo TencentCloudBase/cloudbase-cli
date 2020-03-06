@@ -2,7 +2,8 @@ import fs from 'fs'
 import path from 'path'
 import del from 'del'
 import makeDir from 'make-dir'
-import { zipDir, random, checkFullAccess } from '../utils'
+import { random } from './tools'
+import { zipDir, checkFullAccess } from './fs'
 import { CloudBaseError } from '../error'
 
 export enum CodeType {
@@ -80,9 +81,7 @@ export class FunctionPacker {
                 return code
             } catch (error) {
                 this.clean()
-                throw new CloudBaseError(
-                    `函数代码打包失败：\n ${error.message}`
-                )
+                throw new CloudBaseError(`函数代码打包失败：\n ${error.message}`)
             }
         }
 
@@ -92,9 +91,7 @@ export class FunctionPacker {
                 return code
             } catch (error) {
                 this.clean()
-                throw new CloudBaseError(
-                    `函数代码打包失败：\n ${error.message}`
-                )
+                throw new CloudBaseError(`函数代码打包失败：\n ${error.message}`)
             }
         }
     }

@@ -3,8 +3,31 @@ import { deleteService } from './delete'
 import { listService } from './list'
 import { bindCustomDomain, getCustomDomain, unbindCustomDomain } from './domain'
 import { Command } from '../command'
+import { serviceSwitch, serviceAuthSwitch } from './switch'
 
 const commands = [
+    {
+        cmd: 'service:switch',
+        options: [
+            {
+                flags: '-e, --envId <envId>',
+                desc: '环境 Id'
+            }
+        ],
+        desc: '开启/关闭 HTTP Service 服务',
+        handler: serviceSwitch
+    },
+    {
+        cmd: 'service:auth:switch',
+        options: [
+            {
+                flags: '-e, --envId <envId>',
+                desc: '环境 Id'
+            }
+        ],
+        desc: '开启/关闭 HTTP Service 服务访问鉴权',
+        handler: serviceAuthSwitch
+    },
     {
         cmd: 'service:create',
         options: [

@@ -9,7 +9,7 @@ export async function listService(ctx: ICommandContext) {
     const { domain: domainName, servicePath, serviceId } = options
 
     if (!envId && !domainName) {
-        throw new CloudBaseError('请指定需要查询的环境 ID 或 HTTP Service 域名！')
+        throw new CloudBaseError('请指定需要查询的环境 ID 或 HTTP Service 自定义域名！')
     }
 
     const loading = loadingFactory()

@@ -1,24 +1,50 @@
+import { prompt } from 'enquirer'
+import { ICommandContext } from '../command'
 import { CloudBaseError } from '../../error'
 import { createGateway } from '../../gateway'
 import { listFunction } from '../../function'
 import { loadingFactory, genClickableLink } from '../../utils'
-import { ICommandContext } from '../command'
+import { assertTruthy } from '../../utils/validator'
 
 export async function createService(ctx: ICommandContext) {
     const { envId, options } = ctx
+    let { function: functionName, servicePath } = options
+    const loading = loadingFactory()
 
-    const { function: functionName, servicePath } = options
+    if (!servicePath || !functionName) {
+        loading.start('数据加载中...')
+        const functions = await listFunction({
+            envId,
+            limit: 100,
+            offset: 0
+        })
 
-    if (!servicePath) {
-        throw new CloudBaseError('请指定需要创建的 HTTP Service 路径！')
+        loading.stop()
+
+        if (!functions.length) {
+            throw new CloudBaseError('当前环境下不存在可用的云函数，请先创建云函数！')
+        }
+
+        let { name } = await prompt({
+            type: 'select',
+            name: 'name',
+            message: '请选择创建 HTTP Service 的云函数',
+            choices: functions.map(item => item.FunctionName)
+        })
+
+        let { path } = await prompt({
+            type: 'input',
+            name: 'path',
+            message: '请输入 HTTP Service 路径（以 / 开头）'
+        })
+
+        functionName = name
+        servicePath = path
     }
 
-    if (!functionName) {
-        throw new CloudBaseError('请指定需要创建的 HTTP Service 的云函数名称！')
-    }
+    assertTruthy(servicePath, '请指定需要创建的 HTTP Service 路径！')
 
     // 创建云函数网关
-    const loading = loadingFactory()
     loading.start(`[${functionName}] 云函数 HTTP Service 创建中...`)
 
     try {
@@ -33,7 +59,7 @@ export async function createService(ctx: ICommandContext) {
         }
 
         // step2: 创建云函数网关
-        const res = await createGateway({
+        await createGateway({
             envId,
             path: servicePath,
             name: functionName

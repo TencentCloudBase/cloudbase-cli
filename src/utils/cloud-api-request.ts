@@ -3,7 +3,7 @@ import { URL } from 'url'
 import QueryString from 'query-string'
 import { fetch } from './http-request'
 import { CloudBaseError } from '../error'
-import { getCredentialWithoutCheck } from './auth'
+import { getCredentialWithoutCheck } from './credential'
 
 function isObject(x) {
     return typeof x === 'object' && !Array.isArray(x) && x !== null
@@ -54,7 +54,8 @@ const ServiceVersionMap = {
     scf: '2018-04-16',
     flexdb: '2018-11-27',
     cam: '2019-01-16',
-    vpc: '2017-03-12'
+    vpc: '2017-03-12',
+    ssl: '2019-12-05'
 }
 
 export class CloudApiService {

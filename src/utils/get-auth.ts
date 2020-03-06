@@ -1,6 +1,7 @@
-import { getCredentialData, refreshTmpToken, checkAuth } from './auth'
-import { AuthSecret } from '../types'
+import { checkAuth } from './web-auth'
 import { authStore } from './store'
+import { getCredentialData, refreshTmpToken } from './credential'
+import { AuthSecret } from '../types'
 import { ConfigItems } from '../constant'
 
 // 获取身份认证信息并校验、自动刷新

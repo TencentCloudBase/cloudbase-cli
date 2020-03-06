@@ -1,5 +1,5 @@
 import CloudBase from '@cloudbase/manager-node'
-import { checkAndGetCredential } from './check-auth'
+import { checkAndGetCredential } from './get-auth'
 import { getProxy } from './tools'
 
 export async function getMangerService(envId = ''): Promise<CloudBase> {

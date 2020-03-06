@@ -1,6 +1,9 @@
 import fs from 'fs'
 import { CloudBaseError } from '../../error'
 
+export * from './zip'
+export * from './del'
+
 export type SizeUnit = 'KB' | 'MB' | 'GB'
 
 // 检查路径是否可以访问（读、写）
@@ -67,5 +70,3 @@ export function formateFileSize(size: number | string, unit: SizeUnit) {
 
     return Number(numSize / unitMap[unit]).toFixed(2)
 }
-
-export * from './del'

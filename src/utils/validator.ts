@@ -1,7 +1,16 @@
 import { CloudBaseError } from '../error'
 
-export function assertTrue(val: any, errMsg) {
-    if (!val) {
+type SimpleValue = number | string | boolean
+
+export function assertTruthy(val: SimpleValue | SimpleValue[], errMsg: string) {
+    let ok
+    if (Array.isArray(val)) {
+        ok = val.every(item => Boolean(val))
+    } else {
+        ok = Boolean(val)
+    }
+
+    if (!ok) {
         throw new CloudBaseError(errMsg)
     }
 }
