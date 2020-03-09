@@ -46,6 +46,7 @@ export async function createFunction(options: ICreateFunctionOptions): Promise<v
                 code: e.code
             })
         }
+        throw e
     }
 }
 
