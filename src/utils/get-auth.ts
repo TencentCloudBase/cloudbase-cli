@@ -8,7 +8,7 @@ import { ConfigItems } from '../constant'
 export async function checkAndGetCredential(): Promise<AuthSecret> {
     const credential = await getCredentialData()
     if (!credential) {
-        return null
+        return {} as any
     }
 
     // 存在永久密钥

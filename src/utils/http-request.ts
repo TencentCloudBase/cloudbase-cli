@@ -3,7 +3,7 @@ import HttpsProxyAgent from 'https-proxy-agent'
 import { getProxy } from './tools'
 
 // 使用 fetch + 代理
-export async function fetch(url: string, config?: RequestInit) {
+export async function fetch(url: string, config: RequestInit = {}) {
     const proxy = getProxy()
     if (proxy) {
         config.agent = new HttpsProxyAgent(proxy)

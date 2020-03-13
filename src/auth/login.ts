@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { CloudApiService, authStore, checkAndGetCredential, getAuthTokenFromWeb } from '../utils'
 import { ConfigItems } from '../constant'
 import { Credential, ILoginOptions } from '../types'
@@ -41,9 +42,9 @@ const LoginRes = {
 
 // 打开腾讯云-云开发控制台，通过获取临时密钥登录，临时密钥可续期，最长时间为 1 个月
 export async function loginWithToken(options: ILoginOptions) {
-    const isLogin = await checkAndGetCredential()
+    const credentail = await checkAndGetCredential()
 
-    if (isLogin) {
+    if (!_.isEmpty(credentail)) {
         return LoginRes.SUCCESS
     }
 
@@ -71,9 +72,9 @@ export async function loginWithToken(options: ILoginOptions) {
 
 // 使用永久密钥登录
 export async function loginWithKey(secretId?: string, secretKey?: string) {
-    const hasLogin = await checkAndGetCredential()
+    const credentail = await checkAndGetCredential()
 
-    if (hasLogin) {
+    if (!_.isEmpty(credentail)) {
         return LoginRes.SUCCESS
     }
 

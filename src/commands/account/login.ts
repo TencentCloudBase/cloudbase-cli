@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import chalk from 'chalk'
 import inquirer from 'inquirer'
 
@@ -59,8 +60,10 @@ async function askForCollectDataConfirm() {
 export async function accountLogin(ctx: ICommandContext) {
     const loading = loadingFactory()
     loading.start('检验登录状态')
-    const hasLogin = await checkAndGetCredential()
-    if (hasLogin) {
+
+    const credential = await checkAndGetCredential()
+
+    if (!_.isEmpty(credential)) {
         loading.succeed('您已登录，无需再次登录！')
         return
     } else {

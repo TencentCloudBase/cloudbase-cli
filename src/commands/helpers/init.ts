@@ -18,11 +18,11 @@ import {
 import { ICommandContext } from '../command'
 
 // 云函数
-const listUrl = 'https://service-lqbcazn1-1252710547.ap-shanghai.apigateway.myqcloud.com/release/'
+const listUrl = 'https://cli.service.tcloudbase.com/list'
 
 async function extractTemplate(projectPath: string, templatePath: string) {
     // 文件下载链接
-    const url = `https://6261-base-830cab-1252710547.tcb.qcloud.la/cloudbase-templates/${templatePath}.tar.gz`
+    const url = `https://636c-cli-1252710547.tcb.qcloud.la/cloudbase-templates/${templatePath}.tar.gz`
 
     return fetchStream(url).then(async res => {
         if (res.status !== 200) {
