@@ -19,6 +19,9 @@ export const DefaultCloudBaseConfig = {
     functions: []
 }
 
+// 请求超时时间
+export const REQUEST_TIMEOUT = 10000
+
 export const ALL_COMMANDS = [
     'login',
     'logout',
