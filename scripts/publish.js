@@ -58,8 +58,9 @@ async function publish() {
             `npm version ${newVersion} && ${publishCommand}`,
             (err, stdout, stderr) => {
                 if (err) {
-                    throw err
+                    console.error(err)
                 }
+
                 stdout && console.log(stdout)
                 stderr && console.error(stderr)
 
