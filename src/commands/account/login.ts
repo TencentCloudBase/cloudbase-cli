@@ -58,6 +58,8 @@ async function askForCollectDataConfirm() {
 
 // 登录
 export async function accountLogin(ctx: ICommandContext) {
+    const { options } = ctx
+    const { apiKeyId, apiKey } = options
     const loading = loadingFactory()
     loading.start('检验登录状态')
 
@@ -68,6 +70,26 @@ export async function accountLogin(ctx: ICommandContext) {
         return
     } else {
         loading.stop()
+    }
+
+    // 通过参数传入 API Key
+    if (apiKey && apiKeyId) {
+        loading.start('正在验证腾讯云密钥...')
+
+        const res = await login({
+            key: true,
+            secretKey: apiKey,
+            secretId: apiKeyId
+        })
+
+        if (res.code === 'SUCCESS') {
+            loading.succeed('登录成功！')
+            await askForCollectDataConfirm()
+            printSuggestion()
+        } else {
+            loading.fail('腾讯云密钥验证失败，请检查密钥是否正确或终端网络是否可用！')
+            return
+        }
     }
 
     // 兼容临时密钥和永久密钥登录
