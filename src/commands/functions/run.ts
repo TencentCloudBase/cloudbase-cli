@@ -1,7 +1,8 @@
+import _ from 'lodash'
 import path from 'path'
 import { spawn, SpawnOptionsWithoutStdio } from 'child_process'
 import { CloudBaseError } from '../../error'
-import { checkFullAccess, isDirectory } from '../../utils'
+import { checkFullAccess, isDirectory, checkAndGetCredential } from '../../utils'
 import { ICommandContext } from '../command'
 
 // 启动文件
@@ -63,6 +64,22 @@ function spawnNodeProcess(args: string[], options: SpawnOptionsWithoutStdio) {
     })
 }
 
+async function getSecret() {
+    const credential = await checkAndGetCredential()
+    if (_.isEmpty(credential)) {
+        console.log('未登录，无法直接调用 Node SDK')
+        return {}
+    }
+
+    const { secretId, secretKey, token } = credential
+
+    return {
+        TENCENTCLOUD_SECRETID: secretId,
+        TENCENTCLOUD_SECRETKEY: secretKey,
+        TENCENTCLOUD_SESSIONTOKEN: token
+    }
+}
+
 export async function debugFunctionByPath(functionPath: string, options: Record<string, any>) {
     const { params, debug, port } = options
     params && checkJSON(params)
@@ -98,6 +115,8 @@ export async function debugFunctionByPath(functionPath: string, options: Record<
         errorLog(`导入云函数异常：${e.message}`, debug)
     }
 
+    // 读取本地 secret 变量
+    const secret = await getSecret()
     const debugArgs = getDebugArgs(port)
     const args = debug ? [...debugArgs, bootstrapFilePath] : [bootstrapFilePath]
     console.log('> 以默认配置启动 Node 云函数调试')
@@ -108,13 +127,14 @@ export async function debugFunctionByPath(functionPath: string, options: Record<
             SCF_FUNCTION_HANDLER: 'index.main',
             SCF_FUNCTION_NAME: 'main',
             GLOBAL_USER_FILE_PATH: path.join(debugDirname, path.sep),
-            SCF_EVENT_BODY: params || '{}'
+            SCF_EVENT_BODY: params || '{}',
+            ...secret
         }
     })
 }
 
 export async function debugByConfig(ctx: ICommandContext, name: string) {
-    const { config, options } = ctx
+    const { config, options, envId } = ctx
     const { params, debug, port } = options
     params && checkJSON(params)
 
@@ -126,7 +146,7 @@ export async function debugByConfig(ctx: ICommandContext, name: string) {
     let debugDirname
     const funcConfig = config.functions.find(item => item.name === name)
 
-    const handlers = (funcConfig?.handler || 'index.js').split('.')
+    const handlers = (funcConfig?.handler || 'index.main').split('.')
     const indexFileName = handlers[0]
     const indexFile = `${indexFileName}.js`
     const mainFunction = handlers[1]
@@ -157,18 +177,21 @@ export async function debugByConfig(ctx: ICommandContext, name: string) {
         errorLog(`导入云函数异常:${e.message}`, debug)
     }
 
+    // 读取本地 secret
+    const secret = await getSecret()
     const debugArgs = getDebugArgs(port)
-
     const args = debug ? [...debugArgs, bootstrapFilePath] : [bootstrapFilePath]
 
     spawnNodeProcess(args, {
         env: {
             ...process.env,
+            SCF_NAMESPACE: envId,
             SCF_FUNCTION_HANDLER: funcConfig?.handler || 'index.main',
             SCF_FUNCTION_NAME: funcConfig?.name || 'main',
             GLOBAL_USER_FILE_PATH: path.join(debugDirname, path.sep),
             SCF_EVENT_BODY: params || JSON.stringify(funcConfig?.params || {}),
-            ...funcConfig?.envVariables
+            ...funcConfig?.envVariables,
+            ...secret
         }
     })
 }
