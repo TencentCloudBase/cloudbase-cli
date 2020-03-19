@@ -19,7 +19,7 @@ yarn global add @cloudbase/cli
 安装完成后，你可以使用 `cloudbase -v` 验证是否安装成功，如果输出了类似下面的版本号，则表明 CloudBase CLI 被成功安装到您的计算机中。
 
 ```text
-0.5.0
+0.6.0
 ```
 
 ## CloudBase CLI 运行要求
@@ -28,8 +28,8 @@ yarn global add @cloudbase/cli
 
 ## 文档
 
-请访问[教程与文档](https://tencentcloudbase.github.io/2019-09-03-cli/)了解详细的使用方法。
+请访问[教程与文档](https://docs.cloudbase.net/cli/intro.html)了解详细的使用方法。
 
 ## 意见反馈
 
-您可以到 GitHub Repo 新建一个 [issue](https://github.com/TencentCloudBase/cloud-base-cli/issues) 反馈您在使用过程中遇到的问题或建议。
+您可以到 GitHub Repo 新建一个 [issue](https://github.com/TencentCloudBase/cloudbase-cli/issues) 反馈您在使用过程中遇到的问题或建议。
