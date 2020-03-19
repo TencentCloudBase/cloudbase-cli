@@ -96,56 +96,50 @@ export async function deploy(ctx, localPath = '.', cloudPath = '') {
     const successFiles = []
     const failedFiles = []
 
-    try {
-        await hostingDeploy({
-            filePath: resolveLocalPath,
-            cloudPath,
-            envId,
-            isDir,
-            onProgress,
-            onFileFinish: (...args) => {
-                const error = args[0]
-                const fileInfo = (args as any)[2]
-                if (error) {
-                    failedFiles.push(fileInfo.Key)
-                } else {
-                    successFiles.push(fileInfo.Key)
-                }
+    await hostingDeploy({
+        filePath: resolveLocalPath,
+        cloudPath,
+        envId,
+        isDir,
+        onProgress,
+        onFileFinish: (...args) => {
+            const error = args[0]
+            const fileInfo = (args as any)[2]
+            if (error) {
+                failedFiles.push(fileInfo.Key)
+            } else {
+                successFiles.push(fileInfo.Key)
             }
-        })
+        }
+    })
 
-        if (isDir) {
-            successLog(`文件共计 ${totalFiles} 个`)
-            successLog(`文件上传成功 ${successFiles.length} 个`)
-            // 上传成功的文件
+    if (isDir) {
+        successLog(`文件共计 ${totalFiles} 个`)
+        successLog(`文件上传成功 ${successFiles.length} 个`)
+        // 上传成功的文件
+        if (totalFiles <= 50) {
+            printHorizontalTable(
+                ['状态', '文件'],
+                successFiles.map(item => [logSymbols.success, item])
+            )
+        }
+
+        // 上传失败的文件
+        errorLog(`文件上传失败 ${failedFiles.length} 个`)
+        if (failedFiles.length) {
             if (totalFiles <= 50) {
                 printHorizontalTable(
                     ['状态', '文件'],
-                    successFiles.map(item => [logSymbols.success, item])
+                    failedFiles.map(item => [logSymbols.error, item])
                 )
-            }
-
-            // 上传失败的文件
-            errorLog(`文件上传失败 ${failedFiles.length} 个`)
-            if (failedFiles.length) {
-                if (totalFiles <= 50) {
-                    printHorizontalTable(
-                        ['状态', '文件'],
-                        failedFiles.map(item => [logSymbols.error, item])
-                    )
-                } else {
-                    // 写入文件到本地
-                    const errorLogPath = path.resolve('./cloudbase-error.log')
-                    errorLog('上传失败文件：')
-                    console.log(errorLogPath)
-                    fs.writeFileSync(errorLogPath, failedFiles.join('\n'))
-                }
+            } else {
+                // 写入文件到本地
+                const errorLogPath = path.resolve('./cloudbase-error.log')
+                errorLog('上传失败文件：')
+                console.log(errorLogPath)
+                fs.writeFileSync(errorLogPath, failedFiles.join('\n'))
             }
         }
-    } catch (e) {
-        loading.stop()
-        errorLog('文件部署失败！')
-        console.log(e.message || e)
     }
 }
 

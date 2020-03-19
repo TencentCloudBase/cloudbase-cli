@@ -16,7 +16,7 @@ interface IStorageCloudOptions {
 }
 
 async function getStorageService(envId: string): Promise<StorageService> {
-    const { secretId, secretKey, token } = await checkAndGetCredential()
+    const { secretId, secretKey, token } = await checkAndGetCredential(true)
     const app = new CloudBase({
         secretId,
         secretKey,
