@@ -25,6 +25,9 @@ async function extractTemplate(projectPath: string, templatePath: string) {
     const url = `https://636c-cli-1252710547.tcb.qcloud.la/cloudbase-templates/${templatePath}.tar.gz`
 
     return fetchStream(url).then(async res => {
+        if (!res) {
+            throw new CloudBaseError('请求异常')
+        }
         if (res.status !== 200) {
             throw new CloudBaseError('未找到文件')
         }

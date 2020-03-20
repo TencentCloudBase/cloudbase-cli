@@ -9,6 +9,9 @@ function handleTimeout(e) {
         throw new CloudBaseError(
             '请求超时，请检查你的网络，如果终端无法直接访问公网，请设置终端 HTTP 请求代理！'
         )
+    } else {
+        // 其他错误，抛出
+        throw e
     }
 }
 
