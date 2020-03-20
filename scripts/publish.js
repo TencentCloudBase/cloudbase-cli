@@ -3,6 +3,22 @@ const inquirer = require('inquirer')
 const semver = require('semver')
 const package = require('../package.json')
 const { exec } = require('child_process')
+
+async function retry() {
+    const confirm = await inquirer.prompt([
+        {
+            type: 'confirm',
+            name: 'try',
+            message: '是否重新尝试发布？',
+            default: false
+        }
+    ])
+
+    if (confirm.try) {
+        publish()
+    }
+}
+
 async function publish() {
     const config = await inquirer.prompt([
         {
@@ -24,6 +40,7 @@ async function publish() {
 
     if (config.isLatest && config.version === 'prerelease') {
         console.log('PreRelease版本不能发布正式版！')
+        setImmediate(retry)
         return
     }
 
