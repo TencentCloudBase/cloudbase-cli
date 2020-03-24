@@ -37,7 +37,8 @@ export async function getEnvInfo(envId: string) {
 export async function listEnvs(options: { source?: string[] } = {}) {
     const { source } = options
     const res: any = await tcbService.request('DescribeEnvs', {
-        
+        IsVisible: false,
+        Channels: ['dcloud']
     })
     let { EnvList = [] } = res
     // 过滤为指定 source 环境
