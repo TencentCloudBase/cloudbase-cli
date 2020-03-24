@@ -1,9 +1,13 @@
+/// <reference types="node" />
 import { CloudBaseError } from './error';
+export declare type CustomEvent = 'logout';
 declare global {
     namespace NodeJS {
-        interface Process {
+        interface Process extends EventEmitter {
             IS_DEBUG: boolean;
             CLI_VERSION: string;
+            on(event: CustomEvent, listener: BeforeExitListener): any;
+            emit(event: CustomEvent, message?: any): any;
         }
     }
 }

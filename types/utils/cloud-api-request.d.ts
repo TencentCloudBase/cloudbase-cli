@@ -1,4 +1,6 @@
 export declare class CloudApiService {
+    static serviceCacheMap: Record<string, CloudApiService>;
+    static getInstance(service: string): CloudApiService;
     service: string;
     version: string;
     url: string;
@@ -8,7 +10,6 @@ export declare class CloudApiService {
     data: Record<string, any>;
     payload: Record<string, any>;
     baseParams: Record<string, any>;
-    credential: Record<string, any>;
     constructor(service: string, baseParams?: Record<string, any>, version?: string);
     get baseUrl(): any;
     request(action: string, data?: Record<string, any>, method?: 'POST' | 'GET'): Promise<any>;

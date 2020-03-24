@@ -51,7 +51,7 @@ const HostingStatusMap = {
     destroy_fail: '销毁失败' // eslint-disable-line
 }
 
-const tcbService = new CloudApiService('tcb')
+const tcbService = CloudApiService.getInstance('tcb')
 
 export async function getHostingInfo(options: IBaseOptions) {
     const { envId } = options

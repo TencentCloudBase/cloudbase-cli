@@ -2,7 +2,7 @@ import { CloudApiService, getMangerService } from '../utils'
 export * from './domain'
 export * from './login'
 
-const tcbService = new CloudApiService('tcb')
+const tcbService = CloudApiService.getInstance('tcb')
 
 // 初始化云开发服务
 // 当用户没开通云开发服务时，需要调用此接口初始化云开发服务
@@ -36,7 +36,9 @@ export async function getEnvInfo(envId: string) {
 // 列出所有环境
 export async function listEnvs(options: { source?: string[] } = {}) {
     const { source } = options
-    const res: any = await tcbService.request('DescribeEnvs')
+    const res: any = await tcbService.request('DescribeEnvs', {
+        
+    })
     let { EnvList = [] } = res
     // 过滤为指定 source 环境
     if (source && Array.isArray(source)) {

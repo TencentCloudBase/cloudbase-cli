@@ -4,6 +4,7 @@ import { ConfigItems } from '../constant'
 // 注销登录信息
 export async function logout() {
     const credentail = await getCredentialData()
+    process.emit('logout')
 
     try {
         // 仅使用 Web 控制台授权登录时才删除 token

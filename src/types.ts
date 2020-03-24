@@ -1,11 +1,15 @@
 import { CloudBaseError } from './error'
 
+export type CustomEvent = 'logout'
+
 /* eslint-disable */
 declare global {
     namespace NodeJS {
-        interface Process {
+        interface Process extends EventEmitter {
             IS_DEBUG: boolean
             CLI_VERSION: string
+            on(event: CustomEvent, listener: BeforeExitListener)
+            emit(event: CustomEvent, message?: any)
         }
     }
 }

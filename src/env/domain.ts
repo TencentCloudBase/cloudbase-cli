@@ -1,6 +1,6 @@
 import { CloudApiService } from '../utils'
 
-const tcbService = new CloudApiService('tcb')
+const tcbService = CloudApiService.getInstance('tcb')
 
 // 拉取安全域名列表
 export async function getEnvAuthDomains({ envId }) {

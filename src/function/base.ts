@@ -21,7 +21,7 @@ interface ICopyFunctionOptions {
     codeSecret?: string
 }
 
-const scfService = new CloudApiService('scf')
+const scfService = CloudApiService.getInstance('scf')
 
 export async function getFunctionService(envId: string) {
     const { secretId, secretKey, token } = await checkAndGetCredential(true)

@@ -3,7 +3,7 @@ import { successLog } from '../logger'
 import { IFunctionTriggerOptions, IFunctionBatchOptions } from '../types'
 import { CloudBaseError } from '../error'
 
-const scfService = new CloudApiService('scf')
+const scfService = CloudApiService.getInstance('scf')
 
 // 创建函数触发器
 export async function createFunctionTriggers(options: IFunctionTriggerOptions): Promise<void> {

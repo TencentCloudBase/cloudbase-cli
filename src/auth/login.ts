@@ -3,7 +3,7 @@ import { CloudApiService, authStore, checkAndGetCredential, getAuthTokenFromWeb 
 import { ConfigItems } from '../constant'
 import { Credential, ILoginOptions } from '../types'
 
-const tcbService = new CloudApiService('tcb')
+const tcbService = CloudApiService.getInstance('tcb')
 
 // 调用 env:list 接口，检查密钥是否有效
 async function checkAuth(credential: Credential) {

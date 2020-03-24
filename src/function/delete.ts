@@ -3,7 +3,7 @@ import { CloudBaseError } from '../error'
 import { CloudApiService } from '../utils'
 import { queryGateway, deleteGateway } from '../gateway'
 
-const scfService = new CloudApiService('scf')
+const scfService = CloudApiService.getInstance('scf')
 
 // 删除函数
 export async function deleteFunction({ functionName, envId }): Promise<void> {

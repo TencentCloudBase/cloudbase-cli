@@ -1,6 +1,6 @@
 import { CloudApiService } from '../utils'
 
-const vpcService = new CloudApiService('vpc')
+const vpcService = CloudApiService.getInstance('vpc')
 
 // 获取 vpc 信息
 export async function getVpcs() {

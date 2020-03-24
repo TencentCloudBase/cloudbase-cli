@@ -13,9 +13,8 @@ import Logger from '../logger'
 import { CloudBaseError } from '../error'
 import { Credential, ILoginOptions } from '../types'
 
-
 const logger = new Logger('Auth')
-const tcbService = new CloudApiService('tcb')
+const tcbService = CloudApiService.getInstance('tcb')
 
 const CliAuthBaseUrl = 'https://console.cloud.tencent.com/tcb/auth'
 

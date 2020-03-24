@@ -8,7 +8,7 @@ import {
     IUnbindGatewayDomainOptions
 } from '../types'
 
-const tcbService = new CloudApiService('tcb')
+const tcbService = CloudApiService.getInstance('tcb')
 
 // HTTP Service 开关
 export async function switchHttpService(options: { envId: string; enable: boolean }) {

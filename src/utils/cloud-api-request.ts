@@ -58,7 +58,21 @@ const ServiceVersionMap = {
     ssl: '2019-12-05'
 }
 
+let commonCredential: Record<string, any>
+
 export class CloudApiService {
+    // 缓存请求实例
+    static serviceCacheMap: Record<string, CloudApiService> = {}
+
+    static getInstance(service: string) {
+        if (CloudApiService.serviceCacheMap?.[service]) {
+            return CloudApiService.serviceCacheMap[service]
+        }
+        const apiService = new CloudApiService(service)
+        CloudApiService.serviceCacheMap[service] = apiService
+        return apiService
+    }
+
     service: string
     version: string
     url: string
@@ -68,13 +82,20 @@ export class CloudApiService {
     data: Record<string, any>
     payload: Record<string, any>
     baseParams: Record<string, any>
-    credential: Record<string, any>
 
     constructor(service: string, baseParams?: Record<string, any>, version = '') {
         this.service = service
         this.version = ServiceVersionMap[service] || version
         this.timeout = 60000
         this.baseParams = baseParams || {}
+
+        // 退出登录，清除 credential 缓存
+        const logoutListener = process.listenerCount('logout')
+        if (!logoutListener) {
+            process.on('logout', () => {
+                commonCredential = null
+            })
+        }
     }
 
     get baseUrl() {
@@ -96,13 +117,13 @@ export class CloudApiService {
 
         this.url = this.baseUrl
 
-        if (!this.credential?.secretId) {
+        if (!commonCredential?.secretId) {
             const credential = await getCredentialWithoutCheck()
 
             if (!credential) {
                 throw new CloudBaseError('无有效身份信息，请使用 cloudbase login 登录')
             }
-            this.credential = credential
+            commonCredential = credential
         }
 
         try {
@@ -154,8 +175,8 @@ export class CloudApiService {
             }
         }
 
-        if (this.credential?.token) {
-            config.headers['X-TC-Token'] = this.credential?.token
+        if (commonCredential?.token) {
+            config.headers['X-TC-Token'] = commonCredential?.token
         }
 
         if (method === 'GET') {
@@ -175,7 +196,7 @@ export class CloudApiService {
 
     getRequestSign(timestamp: number) {
         const { method = 'POST', url, service } = this
-        const { secretId, secretKey } = this.credential
+        const { secretId, secretKey } = commonCredential
         const urlObj = new URL(url)
 
         // 通用头部
@@ -211,7 +232,7 @@ export class CloudApiService {
     }
 
     setCredential(secretId: string, secretKey: string, token: string) {
-        this.credential = {
+        commonCredential = {
             secretId,
             secretKey,
             token

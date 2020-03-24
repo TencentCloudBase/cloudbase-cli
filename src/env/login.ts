@@ -22,7 +22,7 @@ function rsaEncrypt(data: string): string {
     return encrypted.toString('base64')
 }
 
-const tcbService = new CloudApiService('tcb')
+const tcbService = CloudApiService.getInstance('tcb')
 
 // 拉取登录配置列表
 export async function getLoginConfigList({ envId }) {

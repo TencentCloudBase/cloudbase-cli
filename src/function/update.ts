@@ -2,7 +2,7 @@ import { FunctionPacker, CodeType, loadingFactory, CloudApiService } from '../ut
 import { CloudBaseError } from '../error'
 import { ICreateFunctionOptions } from '../types'
 
-const scfService = new CloudApiService('scf')
+const scfService = CloudApiService.getInstance('scf')
 
 // 更新云函数代码
 export async function updateFunctionCode(options: ICreateFunctionOptions) {
