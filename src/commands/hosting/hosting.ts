@@ -71,6 +71,7 @@ export async function deploy(ctx, localPath = '.', cloudPath = '') {
     }
 
     if (totalFiles > 1000) {
+        loading.stop()
         const { confirm } = await inquirer.prompt({
             type: 'confirm',
             name: 'confirm',
