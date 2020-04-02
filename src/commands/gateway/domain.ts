@@ -3,6 +3,14 @@ import { bindGatewayDomain, queryGatewayDomain, unbindGatewayDomain } from '../.
 import { loadingFactory, printHorizontalTable, formatDate } from '../../utils'
 import { ICommandContext } from '../command'
 
+const SERVICE_STATUS_MAP = {
+    1: '部署中',
+    2: '部署失败',
+    3: '部署成功',
+    4: '删除中',
+    5: '删除失败'
+}
+
 export async function bindCustomDomain(ctx: ICommandContext, domain: string) {
     const { envId } = ctx
 
@@ -25,7 +33,7 @@ export async function bindCustomDomain(ctx: ICommandContext, domain: string) {
     }
 }
 
-export async function getCustomDomain(ctx: ICommandContext) {
+export async function getCustomDomains(ctx: ICommandContext) {
     const { envId, options } = ctx
 
     const { domain: domainName } = options
@@ -43,9 +51,10 @@ export async function getCustomDomain(ctx: ICommandContext) {
             domain: domainName
         })
         loading.succeed('查询 HTTP Service 域名成功！')
-        const head = ['HTTP Service domain', 'CreateTime']
+        const head = ['域名', '状态', '创建时间']
         const tableData = res.ServiceSet.map(item => [
             item.Domain,
+            SERVICE_STATUS_MAP[item.Status],
             formatDate(item.OpenTime * 1000, 'yyyy-MM-dd hh:mm:ss')
         ])
         printHorizontalTable(head, tableData)

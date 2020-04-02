@@ -30,7 +30,7 @@ export async function listService(ctx: ICommandContext) {
             return
         }
 
-        const head = ['Id', 'Path', 'FunctionName', 'CreateTime']
+        const head = ['Id', '路径', '函数名称', '创建时间']
         const tableData = res.APISet.map(item => [
             item.APIId,
             item.Path,

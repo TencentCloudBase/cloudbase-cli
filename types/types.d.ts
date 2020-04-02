@@ -97,6 +97,7 @@ export interface ICloudFunction {
     vpc?: IFunctionVPC;
     l5?: boolean;
     installDependency?: boolean;
+    isWaitInstall?: boolean;
 }
 export interface ICreateFunctionOptions {
     func?: ICloudFunction;

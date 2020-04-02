@@ -31,13 +31,15 @@ export async function createFunction(options: ICreateFunctionOptions): Promise<v
 
     const scfService = await getFunctionService(envId)
 
+    func.isWaitInstall = true
+
     try {
         await scfService.createFunction({
             func,
             functionRootPath,
             force,
             base64Code,
-            codeSecret
+            codeSecret,
         })
     } catch (e) {
         // 不强制覆盖，抛出错误

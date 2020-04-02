@@ -43,14 +43,15 @@ export async function log(ctx: ICommandContext, name: string) {
     }
 
     let params: any = {
-        offset,
-        limit,
         order,
         orderBy,
         startTime,
         endTime,
-        functionRequestId
+        functionRequestId,
+        offset: Number(offset),
+        limit: Number(limit)
     }
+
     error && (params.filter = { RetCode: 'not0' })
     success && (params.filter = { RetCode: 'is0' })
     // 删除值为 undefined 的字段

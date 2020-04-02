@@ -14,7 +14,7 @@ export async function listAuthDoamin(ctx: ICommandContext) {
         return
     }
 
-    const head = ['Domain Id', 'Domain', 'CreateTime', 'Status']
+    const head = ['域名 Id', '域名', '创建时间', '状态']
     const tableData = domains.map(item => [
         item.Id,
         item.Domain,

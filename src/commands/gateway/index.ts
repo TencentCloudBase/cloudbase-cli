@@ -1,7 +1,7 @@
 import { createService } from './create'
 import { deleteService } from './delete'
 import { listService } from './list'
-import { bindCustomDomain, getCustomDomain, unbindCustomDomain } from './domain'
+import { bindCustomDomain, unbindCustomDomain, getCustomDomains } from './domain'
 import { Command } from '../command'
 import { serviceSwitch, serviceAuthSwitch } from './switch'
 
@@ -128,7 +128,7 @@ const commands = [
             }
         ],
         desc: '查询自定义 HTTP Service 域名',
-        handler: getCustomDomain
+        handler: getCustomDomains
     }
 ]
 

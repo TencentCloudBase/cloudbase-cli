@@ -24,7 +24,7 @@ export async function list() {
     const tableData = sortData.map(item => [
         item.Alias,
         item.EnvId,
-        item.PackageName || '空',
+        item.PackageName || '按量计费',
         item.Source === 'miniapp' ? '小程序' : '云开发',
         item.CreateTime,
         item.Status === 'NORMAL' ? '正常' : '不可用'
