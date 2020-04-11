@@ -186,7 +186,8 @@ export async function hostingDeploy(options: IHostingFileOptions) {
             bucket,
             region: regoin,
             onProgress,
-            onFileFinish
+            onFileFinish,
+            fileId: false
         })
     } else {
         const assignCloudPath = cloudPath || path.parse(resolvePath).base
@@ -195,7 +196,8 @@ export async function hostingDeploy(options: IHostingFileOptions) {
             cloudPath: assignCloudPath,
             bucket,
             region: regoin,
-            onProgress
+            onProgress,
+            fileId: false
         })
     }
 }

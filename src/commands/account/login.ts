@@ -42,6 +42,7 @@ Tips：可以使用简写命令 tcb 代替 cloudbase`
 async function askForCollectDataConfirm() {
     const agree = await usageStore.get('agreeCollect')
     if (agree) return
+    // 询问
     const { confirm } = await inquirer.prompt({
         type: 'confirm',
         name: 'confirm',
@@ -72,7 +73,7 @@ export async function accountLogin(ctx: ICommandContext) {
         loading.stop()
     }
 
-    // 通过参数传入 API Key
+    // 通过参数传入 API Key，适用于 CI 场景
     if (apiKey && apiKeyId) {
         loading.start('正在验证腾讯云密钥...')
 
@@ -84,16 +85,13 @@ export async function accountLogin(ctx: ICommandContext) {
 
         if (res.code === 'SUCCESS') {
             loading.succeed('登录成功！')
-            await askForCollectDataConfirm()
             printSuggestion()
         } else {
             loading.fail('腾讯云密钥验证失败，请检查密钥是否正确或终端网络是否可用！')
             return
         }
-    }
-
-    // 兼容临时密钥和永久密钥登录
-    if (ctx.options.key) {
+    } else if (ctx.options.key) {
+        // 兼容临时密钥和永久密钥登录
         const clickableLink = genClickableLink('https://console.cloud.tencent.com/cam/capi')
         console.log(`您可以访问 ${clickableLink} 获取 API 秘钥`)
 
