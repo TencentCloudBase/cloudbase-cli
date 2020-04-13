@@ -17,7 +17,7 @@ export async function updateFunctionCode(options: ICreateFunctionOptions) {
     }
 
     // 校验运行时
-    const validRuntime = ['Nodejs8.9', 'Php7', 'Java8']
+    const validRuntime = ['Nodejs8.9', 'Php7', 'Java8', 'Nodejs10.15']
     if (func.runtime && !validRuntime.includes(func.runtime)) {
         throw new CloudBaseError(
             `${funcName} 非法的运行环境：${func.runtime}，当前支持环境：${validRuntime.join(', ')}`

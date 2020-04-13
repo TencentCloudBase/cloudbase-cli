@@ -14,13 +14,8 @@ export async function createFunction(options: ICreateFunctionOptions): Promise<v
 
     const funcName = func.name
 
-    // 校验 CodeSecret 格式
-    if (codeSecret && !/^[A-Za-z0-9+=/]{1,160}$/.test(codeSecret)) {
-        throw new CloudBaseError('CodeSecret 格式错误，格式为 1-160 位大小字母，数字+=/')
-    }
-
     // 校验运行时
-    const validRuntime = ['Nodejs8.9', 'Php7', 'Java8']
+    const validRuntime = ['Nodejs8.9', 'Php7', 'Java8', 'Nodejs10.15']
     if (func.runtime && !validRuntime.includes(func.runtime)) {
         throw new CloudBaseError(
             `${funcName} Invalid runtime value：${
@@ -39,7 +34,7 @@ export async function createFunction(options: ICreateFunctionOptions): Promise<v
             functionRootPath,
             force,
             base64Code,
-            codeSecret,
+            codeSecret
         })
     } catch (e) {
         // 不强制覆盖，抛出错误
@@ -55,7 +50,7 @@ export async function createFunction(options: ICreateFunctionOptions): Promise<v
 // 批量创建云函数
 export async function batchCreateFunctions(options: ICreateFunctionOptions): Promise<void> {
     const { functions, functionRootPath = '', envId, force, codeSecret, log = false } = options
-    const promises = functions.map(func =>
+    const promises = functions.map((func) =>
         (async () => {
             const loading = loadingFactory()
             try {
