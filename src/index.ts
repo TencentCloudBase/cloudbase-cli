@@ -10,6 +10,7 @@ import {
     createLoginConfig,
     updateLoginConfig
 } from './env'
+import { deleteThirdPartAttach } from './third'
 import {
     createFunction,
     listFunction,
@@ -48,6 +49,10 @@ export = class CloudBase {
             create: createLoginConfig,
             update: updateLoginConfig
         }
+    }
+
+    third = {
+        deleteThirdPartAttach
     }
 
     functions = {

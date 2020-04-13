@@ -1,6 +1,7 @@
 import './commands';
 import { logout } from './auth';
 import { listEnvs, createEnv, getEnvAuthDomains, createEnvDomain, deleteEnvDomain, getLoginConfigList, createLoginConfig, updateLoginConfig } from './env';
+import { deleteThirdPartAttach } from './third';
 import { createFunction, listFunction, deleteFunction, getFunctionDetail, getFunctionLog, updateFunctionConfig, createFunctionTriggers, deleteFunctionTrigger, invokeFunction, downloadFunctionCode, copyFunction, updateFunctionCode } from './function';
 import * as storage from './storage';
 import { ILoginOptions } from './types';
@@ -24,6 +25,9 @@ declare const _default: {
                 create: typeof createLoginConfig;
                 update: typeof updateLoginConfig;
             };
+        };
+        third: {
+            deleteThirdPartAttach: typeof deleteThirdPartAttach;
         };
         functions: {
             invoke: typeof invokeFunction;
