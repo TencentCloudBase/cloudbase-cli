@@ -91,7 +91,7 @@ if (processArgv.includes('completion')) {
 
 // 需要隐藏的选项
 const hideArgs = ['-debug', '--tcb-test', '--completion']
-hideArgs.forEach(arg => {
+hideArgs.forEach((arg) => {
     const index = processArgv.indexOf(arg)
     if (index > -1) {
         processArgv.splice(index, 1)
@@ -104,7 +104,7 @@ require('../lib')
 // console.log(Object.keys(program._events))
 
 // 设置 Sentry 上报的用户 uin
-Sentry.configureScope(scope => {
+Sentry.configureScope((scope) => {
     try {
         const credential = store.authStore.get('credential') || {}
         scope.setUser({
@@ -122,7 +122,7 @@ program.option('--config-file <path>', '设置配置文件，默认为 ./cloudba
 program.version(pkg.version, '-v, --version', '输出当前 CloudBase CLI 版本')
 
 // 处理无效命令
-program.action(cmd => {
+program.action((cmd) => {
     console.log(chalk.bold.red('Error: ') + `${cmd} 不是有效的命令！`)
     didYouMean.threshold = 0.5
     didYouMean.caseSensitive = false
@@ -135,7 +135,7 @@ program.action(cmd => {
 
 // 修改 help 提示信息
 program._helpDescription = '输出帮助信息'
-program.on('--help', function() {
+program.on('--help', function () {
     const tips = `\nTips:
 
 ${chalk.gray('–')} 简写
@@ -180,7 +180,7 @@ function errorHandler(err) {
         console.log(err.stack)
     }
     // 3 空格，兼容中文字符编码长度问题
-    console.log(logSymbols.error + ' ' + err.message)
+    err.message && console.log(logSymbols.error + ' ' + err.message)
     process.emit('tcbExit')
     setTimeout(() => {
         process.exit(1)

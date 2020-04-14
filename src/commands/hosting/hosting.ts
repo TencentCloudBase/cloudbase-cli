@@ -66,7 +66,7 @@ export async function deploy(ctx, localPath = '.', cloudPath = '') {
 
     if (isDir) {
         let files = await walkLocalDir(envId, resolveLocalPath)
-        files = files.filter(item => !isDirectory(item))
+        files = files.filter((item) => !isDirectory(item))
         totalFiles = files.length
     }
 
@@ -121,7 +121,7 @@ export async function deploy(ctx, localPath = '.', cloudPath = '') {
         if (totalFiles <= 50) {
             printHorizontalTable(
                 ['状态', '文件'],
-                successFiles.map(item => [logSymbols.success, item])
+                successFiles.map((item) => [logSymbols.success, item])
             )
         }
 
@@ -131,7 +131,7 @@ export async function deploy(ctx, localPath = '.', cloudPath = '') {
             if (totalFiles <= 50) {
                 printHorizontalTable(
                     ['状态', '文件'],
-                    failedFiles.map(item => [logSymbols.error, item])
+                    failedFiles.map((item) => [logSymbols.error, item])
                 )
             } else {
                 // 写入文件到本地
@@ -140,6 +140,9 @@ export async function deploy(ctx, localPath = '.', cloudPath = '') {
                 console.log(errorLogPath)
                 fs.writeFileSync(errorLogPath, failedFiles.join('\n'))
             }
+
+            // 抛出错误
+            throw new CloudBaseError('部分文件上传失败，进程退出')
         }
     }
 }
@@ -175,7 +178,7 @@ export async function deleteFiles(ctx, cloudPath = '') {
         loading.succeed(`删除${fileText}成功！`)
     } catch (e) {
         loading.fail(`删除${fileText}失败！`)
-        console.log(e.message)
+        throw new CloudBaseError(e.message)
     }
 }
 
@@ -191,7 +194,7 @@ export async function list(ctx) {
         })
         loading.stop()
         const head = ['序号', 'Key', 'LastModified', 'ETag', 'Size(KB)']
-        const notDir = item => !(Number(item.Size) === 0 && /\/$/g.test(item.Key))
+        const notDir = (item) => !(Number(item.Size) === 0 && /\/$/g.test(item.Key))
         const tableData = list
             .filter(notDir)
             .map((item, index) => [
@@ -204,6 +207,6 @@ export async function list(ctx) {
         printHorizontalTable(head, tableData)
     } catch (e) {
         loading.fail('获取文件列表失败！')
-        console.log(e.message)
+        throw new CloudBaseError(e.message)
     }
 }
