@@ -24,7 +24,7 @@ async function extractTemplate(projectPath: string, templatePath: string) {
     // 文件下载链接
     const url = `https://636c-cli-1252710547.tcb.qcloud.la/cloudbase-templates/${templatePath}.tar.gz`
 
-    return fetchStream(url).then(async res => {
+    return fetchStream(url).then(async (res) => {
         if (!res) {
             throw new CloudBaseError('请求异常')
         }
@@ -74,8 +74,8 @@ export async function init(ctx: ICommandContext) {
     loading.stop()
 
     const envs: { name: string; value: string }[] = envData
-        .filter(item => item.Status === 'NORMAL')
-        .map(item => ({
+        .filter((item) => item.Status === 'NORMAL')
+        .map((item) => ({
             name: `${item.Alias} - [${item.EnvId}:${item.PackageName || '空'}]`,
             value: item.EnvId
         }))
@@ -91,7 +91,10 @@ export async function init(ctx: ICommandContext) {
         type: 'select',
         name: 'env',
         message: '选择关联环境',
-        choices: envs
+        choices: envs,
+        result(choice) {
+            return this.map(choice)[choice]
+        }
     })
 
     const { projectName } = await prompt({
@@ -114,16 +117,16 @@ export async function init(ctx: ICommandContext) {
 
     loading.stop()
 
-    const templates = templateList.filter(item => item.lang === lang)
+    const templates = templateList.filter((item) => item.lang === lang)
 
     const { selectTemplateName } = await prompt({
         type: 'select',
         name: 'selectTemplateName',
         message: '选择云开发模板',
-        choices: templates.map(item => item.name)
+        choices: templates.map((item) => item.name)
     })
 
-    const selectedTemplate = templates.find(item => item.name === selectTemplateName)
+    const selectedTemplate = templates.find((item) => item.name === selectTemplateName)
 
     // 项目目录
     const projectPath = path.join(process.cwd(), projectName)
