@@ -13,5 +13,5 @@ export declare const DefaultCloudBaseConfig: {
     functionRoot: string;
     functions: any[];
 };
-export declare const REQUEST_TIMEOUT = 10000;
+export declare const REQUEST_TIMEOUT = 30000;
 export declare const ALL_COMMANDS: string[];

@@ -1,14 +1,16 @@
-import { FunctionPacker, CodeType, loadingFactory, CloudApiService } from '../utils'
 import { CloudBaseError } from '../error'
 import { ICreateFunctionOptions } from '../types'
-
-const scfService = CloudApiService.getInstance('scf')
+import { getFunctionService } from './base'
 
 // 更新云函数代码
 export async function updateFunctionCode(options: ICreateFunctionOptions) {
-    const { func, functionRootPath = '', envId, base64Code = '', codeSecret } = options
-    let base64
-    let packer
+    const { functionRootPath = '', envId, base64Code = '', codeSecret } = options
+    // 兼容处理 config
+    const func = {
+        ...options?.func?.config,
+        ...options.func
+    }
+
     const funcName = func.name
 
     // 校验 CodeSecret 格式
@@ -24,39 +26,15 @@ export async function updateFunctionCode(options: ICreateFunctionOptions) {
         )
     }
 
-    let installDependency
-    // Node 8.9 默认安装依赖
-    installDependency = func.runtime === 'Nodejs8.9' ? 'TRUE' : 'FALSE'
-    // 是否安装依赖，选项可以覆盖
-    if (typeof func.installDependency !== 'undefined') {
-        installDependency = func.installDependency ? 'TRUE' : 'FALSE'
-    }
-
-    // CLI 从本地读取
-    if (!base64Code) {
-        packer = new FunctionPacker(functionRootPath, funcName, func.ignore)
-        const type: CodeType = func.runtime === 'Java8' ? CodeType.JavaFile : CodeType.File
-        base64 = await packer.build(type)
-
-        if (!base64) {
-            throw new CloudBaseError('函数不存在！')
-        }
-    } else {
-        base64 = base64Code
-    }
-
-    const params: any = {
-        FunctionName: funcName,
-        Namespace: envId,
-        ZipFile: base64,
-        CodeSecret: codeSecret,
-        Handler: func.handler || 'index.main',
-        InstallDependency: installDependency
-    }
+    const scfService = await getFunctionService(envId)
 
     try {
-        // 更新云函数代码
-        await scfService.request('UpdateFunctionCode', params)
+        await scfService.updateFunctionCode({
+            func,
+            functionRootPath,
+            base64Code,
+            codeSecret
+        })
     } catch (e) {
         throw new CloudBaseError(`[${funcName}] 函数代码更新失败： ${e.message}`, {
             code: e.code

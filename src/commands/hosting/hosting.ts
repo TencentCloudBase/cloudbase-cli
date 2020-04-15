@@ -114,6 +114,15 @@ export async function deploy(ctx, localPath = '.', cloudPath = '') {
         }
     })
 
+    const info = await getHostingInfo({
+        envId
+    })
+
+    const website = info.data && info.data[0]
+
+    const link = genClickableLink(`https://${website.cdnDomain}`)
+    successLog(`\n部署完成 👉 ${link}`)
+
     if (isDir) {
         successLog(`文件共计 ${totalFiles} 个`)
         successLog(`文件上传成功 ${successFiles.length} 个`)

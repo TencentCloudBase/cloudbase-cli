@@ -13,7 +13,12 @@ export declare function uploadDirectory(options: IStorageOptions): Promise<void>
 export declare function downloadFile(options: IStorageOptions): Promise<void>;
 export declare function downloadDirectory(options: IStorageOptions): Promise<void>;
 export declare function deleteFile(options: IStorageCloudOptions): Promise<void>;
-export declare function deleteDirectory(options: IStorageCloudOptions): Promise<void>;
+export declare function deleteDirectory(options: IStorageCloudOptions): Promise<{
+    Deleted: {
+        Key: string;
+    }[];
+    Error: Object[];
+}>;
 export declare function list(options: IStorageCloudOptions): Promise<import("@cloudbase/manager-node/types/interfaces").IListFileInfo[]>;
 export declare function getUrl(options: IStorageCloudOptions): Promise<{
     fileId: string;
