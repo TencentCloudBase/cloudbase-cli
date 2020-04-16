@@ -8,7 +8,7 @@ interface IStorageCloudOptions {
     cloudPath: string;
     cloudPaths?: string[];
 }
-export declare function uploadFile(options: IStorageOptions): Promise<void>;
+export declare function uploadFile(options: IStorageOptions): Promise<any>;
 export declare function uploadDirectory(options: IStorageOptions): Promise<void>;
 export declare function downloadFile(options: IStorageOptions): Promise<void>;
 export declare function downloadDirectory(options: IStorageOptions): Promise<void>;

@@ -182,7 +182,9 @@ function errorHandler(err) {
 
     // 3 空格，兼容中文字符编码长度问题
     if (err && err.message) {
-        console.log(logSymbols.error + ' ' + err.message)
+        let errMsg = logSymbols.error + ' ' + err.message
+        errMsg += err.requestId ? `\n${err.requestId}` : ''
+        console.log(errMsg)
     }
     process.emit('tcbExit')
     setTimeout(() => {
