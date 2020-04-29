@@ -5,7 +5,14 @@ import { getFunctionService } from './base'
 
 // 创建云函数
 export async function createFunction(options: ICreateFunctionOptions): Promise<void> {
-    const { functionRootPath = '', envId, force = false, base64Code = '', codeSecret } = options
+    const {
+        functionRootPath = '',
+        functionPath,
+        envId,
+        force = false,
+        base64Code = '',
+        codeSecret
+    } = options
     // 兼容处理 config
     const func = {
         ...options?.func?.config,
@@ -31,10 +38,11 @@ export async function createFunction(options: ICreateFunctionOptions): Promise<v
     try {
         await scfService.createFunction({
             func,
-            functionRootPath,
             force,
             base64Code,
-            codeSecret
+            codeSecret,
+            functionPath,
+            functionRootPath
         })
     } catch (e) {
         // 不强制覆盖，抛出错误

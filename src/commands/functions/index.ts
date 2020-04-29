@@ -74,6 +74,14 @@ const commands = [
             {
                 flags: '--verbose',
                 desc: '输出云函数部署细节'
+            },
+            {
+                flags: '--path <path>',
+                desc: '指定云函数的文件夹路径'
+            },
+            {
+                flags: '--all',
+                desc: '部署配置文件中的包含的全部云函数'
             }
         ],
         desc: '部署云函数',
@@ -255,7 +263,7 @@ const commands = [
             }
         ],
         desc: '本地运行云函数（当前仅支持 Node）',
-        handler: async ctx => {
+        handler: async (ctx) => {
             const { options } = ctx
             const { path, name } = options
             // 指定函数路径，以默认配置运行函数
@@ -383,7 +391,7 @@ const commands = [
 ]
 
 // 注册命令
-commands.forEach(item => {
+commands.forEach((item) => {
     const command = new Command(item)
     command.init()
 })

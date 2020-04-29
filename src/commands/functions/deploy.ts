@@ -4,7 +4,14 @@ import { ICommandContext } from '../command'
 import { CloudBaseError } from '../../error'
 import { createFunction } from '../../function'
 import { queryGateway, createGateway } from '../../gateway'
-import { loadingFactory, genClickableLink, highlightCommand, random } from '../../utils'
+import {
+    random,
+    loadingFactory,
+    genClickableLink,
+    highlightCommand,
+    checkFullAccess,
+    isDirectory
+} from '../../utils'
 import { DefaultFunctionDeployConfig } from '../../constant'
 
 function printSuccessTips(envId: string) {
@@ -41,74 +48,86 @@ async function genApiGateway(envId: string, name: string) {
     console.log(`\n云函数 HTTP Service 链接：${link}`)
 }
 
-// TODO: 支持部署多个云函数
-export async function deploy(ctx: ICommandContext, name: string) {
-    const { envId, config, options } = ctx
-    const { functions } = config
-    const { force, codeSecret, verbose } = options
-    const functionRootPath = path.join(process.cwd(), config.functionRoot)
+async function deployAllFunction(options: any) {
+    const { functions, envId, force, codeSecret, functionRootPath, all } = options
 
-    let isBatchCreating = false
-
-    if (!name) {
+    // 指定 all 参数，直接部署全部云函数
+    if (!all) {
         const { isBatch } = await inquirer.prompt({
             type: 'confirm',
             name: 'isBatch',
             message: '没有指定需要部署的云函数，是否部署配置文件中的全部云函数？',
             default: false
         })
-        isBatchCreating = isBatch
         // 用户不部署全部函数，报错
-        if (!isBatchCreating) {
-            throw new CloudBaseError('请指定需要部署的云函数的名称！')
+        if (!isBatch) {
+            throw new CloudBaseError(
+                '请指定需要部署的云函数的名称或通过 --path 参数指定需要部署的函数的路径！'
+            )
         }
     }
 
     // 批量部署云函数
-    if (isBatchCreating) {
-        const promises = functions.map(func =>
-            (async () => {
-                const loading = loadingFactory()
-                loading.start('云函数部署中')
-                try {
-                    await createFunction({
-                        func,
-                        envId,
-                        force,
-                        codeSecret,
-                        functionRootPath
-                    })
-                    loading.succeed(`[${func.name}] 函数部署成功`)
-                } catch (e) {
-                    loading.fail(`[${func.name}] 函数部署失败`)
-                    throw new CloudBaseError(e.message)
-                }
-            })()
-        )
-        await Promise.all(promises)
-        return
+    const promises = functions.map((func) =>
+        (async () => {
+            const loading = loadingFactory()
+            loading.start('云函数部署中')
+            try {
+                await createFunction({
+                    func,
+                    envId,
+                    force,
+                    codeSecret,
+                    functionRootPath
+                })
+                loading.succeed(`[${func.name}] 函数部署成功`)
+            } catch (e) {
+                loading.fail(`[${func.name}] 函数部署失败`)
+                throw new CloudBaseError(e.message)
+            }
+        })()
+    )
+    await Promise.all(promises)
+}
+
+// TODO: 支持部署多个云函数
+export async function deploy(ctx: ICommandContext, name: string) {
+    const { envId, config, options } = ctx
+    const { functions } = config
+    const { force, codeSecret, path: funcPath, all, verbose } = options
+    const functionRootPath = path.join(process.cwd(), config.functionRoot)
+
+    // 当没有指定函数名称或函数路径时，询问处理否部署全部云函数
+    if ((!name && !funcPath) || all) {
+        return deployAllFunction({
+            all,
+            envId,
+            force,
+            functions,
+            codeSecret,
+            functionRootPath
+        })
+    }
+
+    // 校验函数路径是否存在
+    if (funcPath) {
+        checkFullAccess(funcPath, true)
+        if (!isDirectory(funcPath)) {
+            throw new CloudBaseError('--path 参数必须指定为云函数的文件夹路径')
+        }
     }
 
     let newFunction
     if (functions && functions.length > 0) {
-        newFunction = functions.find(item => item.name === name)
+        newFunction = functions.find((item) => item.name === name)
     }
 
+    // 没有配置，使用默认配置
     if (!newFunction || !newFunction.name) {
-        const { useDefaultConfig } = await inquirer.prompt({
-            type: 'confirm',
-            name: 'useDefaultConfig',
-            message: '未找到函数发布配置，是否使用默认配置（仅适用于 Node.js 云函数）',
-            default: false
-        })
-
-        if (useDefaultConfig) {
-            newFunction = {
-                name,
-                ...DefaultFunctionDeployConfig
-            }
-        } else {
-            throw new CloudBaseError(`函数 ${name} 配置不存在`)
+        console.log('未找到函数发布配置，使用默认配置 => 运行时：Nodejs10.15，在线安装依赖')
+        newFunction = {
+            name,
+            ...DefaultFunctionDeployConfig
         }
     }
 
@@ -120,9 +139,10 @@ export async function deploy(ctx: ICommandContext, name: string) {
         await createFunction({
             force,
             envId,
-            func: newFunction,
             codeSecret,
-            functionRootPath
+            functionRootPath,
+            functionPath: funcPath,
+            func: newFunction
         })
         loading.succeed(`[${newFunction.name}] 云函数部署成功！`)
         // await genApiGateway(envId, name)
@@ -144,9 +164,10 @@ export async function deploy(ctx: ICommandContext, name: string) {
                     await createFunction({
                         envId,
                         force: true,
-                        func: newFunction,
                         codeSecret,
-                        functionRootPath
+                        functionRootPath,
+                        func: newFunction,
+                        functionPath: funcPath
                     })
                     loading.succeed(`[${newFunction.name}] 云函数部署成功！`)
                     // await genApiGateway(envId, name)

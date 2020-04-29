@@ -4,8 +4,8 @@ export declare class ConfigItems {
 }
 export declare const DefaultFunctionDeployConfig: {
     timeout: number;
-    runtime: string;
     handler: string;
+    runtime: string;
     installDependency: boolean;
     ignore: string[];
 };

@@ -7,8 +7,8 @@ export class ConfigItems {
 // Node.js 默认部署配置
 export const DefaultFunctionDeployConfig = {
     timeout: 3,
-    runtime: 'Nodejs8.9',
     handler: 'index.main',
+    runtime: 'Nodejs10.15',
     installDependency: true,
     ignore: ['node_modules', 'node_modules/**/*', '.git']
 }
