@@ -34,7 +34,7 @@ export interface ICommandContext {
     options: any
 }
 
-const validOptions = options => {
+const validOptions = (options) => {
     if (!options || !options.parent) {
         throw new CloudBaseError('参数异常，请检查您是否输入了正确的命令！')
     }
@@ -60,7 +60,7 @@ export class Command extends EventEmitter {
     public init() {
         const { cmd, options, desc, handler, requiredEnvId = true } = this.options
         let instance = program.command(cmd)
-        options.forEach(option => {
+        options.forEach((option) => {
             instance = instance.option(option.flags, option.desc)
         })
 

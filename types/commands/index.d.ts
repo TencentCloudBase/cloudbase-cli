@@ -7,3 +7,4 @@ import './hosting';
 import './server';
 import './gateway';
 import './third';
+import './framework';
