@@ -2,11 +2,20 @@ import { CloudBaseError } from './error'
 
 export type CustomEvent = 'logout'
 
+export interface ICommandContext {
+    cmd: string
+    envId: string
+    config: ICloudBaseConfig
+    options: any
+    params: string[]
+}
+
 /* eslint-disable */
 declare global {
     namespace NodeJS {
         interface Process extends EventEmitter {
             IS_DEBUG: boolean
+            VERBOSE: boolean
             CLI_VERSION: string
             on(event: CustomEvent, listener: BeforeExitListener)
             emit(event: CustomEvent, message?: any)

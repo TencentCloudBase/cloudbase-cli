@@ -1,2 +1,12 @@
-import { ICommandContext } from '../command';
-export declare function codeUpdate(ctx: ICommandContext, name: string): Promise<void>;
+import { Command } from '../common';
+export declare class CodeUpdate extends Command {
+    get options(): {
+        cmd: string;
+        options: {
+            flags: string;
+            desc: string;
+        }[];
+        desc: string;
+    };
+    execute(ctx: any, params: any): Promise<void>;
+}

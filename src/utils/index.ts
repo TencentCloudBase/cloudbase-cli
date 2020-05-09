@@ -22,6 +22,7 @@ export * from './cloud'
 export * from './get-auth'
 export * from './http-request'
 export * from './cloud-api-request'
+export * from './new-auth'
 
 export function askForInput(question): Promise<string> {
     const rl = readline.createInterface({

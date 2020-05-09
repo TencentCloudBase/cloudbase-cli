@@ -17,6 +17,7 @@ export * from './cloud';
 export * from './get-auth';
 export * from './http-request';
 export * from './cloud-api-request';
+export * from './new-auth';
 export declare function askForInput(question: any): Promise<string>;
 export declare function getSSHConfig(): Promise<SSH>;
 export declare function getSSH(): Promise<SSH>;

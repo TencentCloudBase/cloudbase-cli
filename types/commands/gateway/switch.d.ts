@@ -1,3 +1,23 @@
-import { ICommandContext } from '../command';
-export declare function serviceSwitch(ctx: ICommandContext): Promise<void>;
-export declare function serviceAuthSwitch(ctx: ICommandContext): Promise<void>;
+import { Command } from '../common';
+export declare class ServiceSwitchCommand extends Command {
+    get options(): {
+        cmd: string;
+        options: {
+            flags: string;
+            desc: string;
+        }[];
+        desc: string;
+    };
+    execute(envId: any): Promise<void>;
+}
+export declare class ServiceAuthSwitch extends Command {
+    get options(): {
+        cmd: string;
+        options: {
+            flags: string;
+            desc: string;
+        }[];
+        desc: string;
+    };
+    execute(envId: any): Promise<void>;
+}

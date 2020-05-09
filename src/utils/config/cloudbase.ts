@@ -3,7 +3,6 @@ import { CloudBaseError } from '../../error'
 import { ICloudBaseConfig } from '../../types'
 import { DefaultCloudBaseConfig } from '../../constant'
 
-
 /**
  * 从配置文件中解析 cloudbase 配置
  */
@@ -31,7 +30,7 @@ export async function resolveCloudBaseConfig(configPath = ''): Promise<ICloudBas
     }
 
     // 兼容不同形式的配置
-    cloudbaseConfig.functions = cloudbaseConfig.functions.map(func => {
+    cloudbaseConfig.functions = cloudbaseConfig.functions.map((func) => {
         if ((func as any).config) {
             return {
                 ...func,

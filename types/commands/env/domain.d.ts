@@ -1,4 +1,35 @@
-import { ICommandContext } from '../command';
-export declare function listAuthDoamin(ctx: ICommandContext): Promise<void>;
-export declare function createAuthDomain(ctx: ICommandContext, domain: string): Promise<void>;
-export declare function deleteAuthDomain(ctx: ICommandContext): Promise<void>;
+import { Command } from '../common';
+import { Logger } from '../../decorators';
+export declare class ListAuthDoaminCommand extends Command {
+    get options(): {
+        cmd: string;
+        options: {
+            flags: string;
+            desc: string;
+        }[];
+        desc: string;
+    };
+    execute(envId: any): Promise<void>;
+}
+export declare class CreateAuthDomainCommand extends Command {
+    get options(): {
+        cmd: string;
+        options: {
+            flags: string;
+            desc: string;
+        }[];
+        desc: string;
+    };
+    execute(params: any, envId: any, log: Logger): Promise<void>;
+}
+export declare class DeleteAuthDomainCommand extends Command {
+    get options(): {
+        cmd: string;
+        options: {
+            flags: string;
+            desc: string;
+        }[];
+        desc: string;
+    };
+    execute(envId: any, log: Logger): Promise<void>;
+}

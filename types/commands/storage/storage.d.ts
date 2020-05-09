@@ -1,9 +1,90 @@
-import { ICommandContext } from '../command';
-export declare function upload(ctx: ICommandContext, localPath?: string, cloudPath?: string): Promise<void>;
-export declare function download(ctx: ICommandContext, cloudPath: string, localPath: string): Promise<void>;
-export declare function deleteFile(ctx: ICommandContext, cloudPath: string): Promise<void>;
-export declare function list(ctx: ICommandContext, cloudPath?: string): Promise<void>;
-export declare function getUrl(ctx: ICommandContext, cloudPath: string): Promise<void>;
-export declare function detail(ctx: ICommandContext, cloudPath: string): Promise<void>;
-export declare function getAcl(ctx: ICommandContext): Promise<void>;
-export declare function setAcl(ctx: ICommandContext): Promise<void>;
+import { Command } from '../common';
+import { Logger } from '../../decorators';
+export declare class UploadCommand extends Command {
+    get options(): {
+        cmd: string;
+        options: {
+            flags: string;
+            desc: string;
+        }[];
+        desc: string;
+    };
+    execute(envId: any, params: any, log: Logger): Promise<void>;
+}
+export declare class DownloadCommand extends Command {
+    get options(): {
+        cmd: string;
+        options: {
+            flags: string;
+            desc: string;
+        }[];
+        desc: string;
+    };
+    execute(envId: any, options: any, params: any): Promise<void>;
+}
+export declare class DeleteFileCommand extends Command {
+    get options(): {
+        cmd: string;
+        options: {
+            flags: string;
+            desc: string;
+        }[];
+        desc: string;
+    };
+    execute(envId: any, options: any, params: any): Promise<void>;
+}
+export declare class StorageListCommand extends Command {
+    get options(): {
+        cmd: string;
+        options: {
+            flags: string;
+            desc: string;
+        }[];
+        desc: string;
+    };
+    execute(envId: any, params: any): Promise<void>;
+}
+export declare class GetUrlCommand extends Command {
+    get options(): {
+        cmd: string;
+        options: {
+            flags: string;
+            desc: string;
+        }[];
+        desc: string;
+    };
+    execute(envId: any, params: any, log: Logger): Promise<void>;
+}
+export declare class StorageDetailCommand extends Command {
+    get options(): {
+        cmd: string;
+        options: {
+            flags: string;
+            desc: string;
+        }[];
+        desc: string;
+    };
+    execute(envId: any, params: any): Promise<void>;
+}
+export declare class GetAclCommand extends Command {
+    get options(): {
+        cmd: string;
+        options: {
+            flags: string;
+            desc: string;
+        }[];
+        desc: string;
+    };
+    execute(envId: any): Promise<void>;
+}
+export declare class setAclCommand extends Command {
+    get options(): {
+        cmd: string;
+        options: {
+            flags: string;
+            desc: string;
+        }[];
+        desc: string;
+    };
+    execute(envId: any, log: Logger): Promise<void>;
+}

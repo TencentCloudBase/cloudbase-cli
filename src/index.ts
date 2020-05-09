@@ -1,4 +1,8 @@
-import './commands'
+import 'reflect-metadata'
+import { registerCommands } from './commands'
+
+registerCommands()
+
 import { login, logout } from './auth'
 import {
     listEnvs,
@@ -30,9 +34,7 @@ import { getSyncDB } from './utils'
 import { ILoginOptions } from './types'
 
 export = class CloudBase {
-    login: (
-        options: ILoginOptions
-    ) => Promise<{ code: string; msg: string }> = login
+    login: (options: ILoginOptions) => Promise<{ code: string; msg: string }> = login
 
     logout = logout
 
@@ -79,6 +81,8 @@ export = class CloudBase {
     storage = storage
 
     constructor(secretId, secretKey) {
+        console.warn('')
+
         if (secretId && secretKey) {
             const credential = {
                 secretId,
