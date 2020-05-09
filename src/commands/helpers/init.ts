@@ -4,12 +4,13 @@ import path from 'path'
 import tar from 'tar-fs'
 import fse from 'fs-extra'
 import { prompt } from 'enquirer'
-import { CloudBaseError } from '../../error'
-import { listEnvs } from '../../env'
-import { fetch, fetchStream, loadingFactory, checkFullAccess, searchConfig } from '../../utils'
+import { searchConfig } from '@cloudbase/toolbox'
 
 import { Command, ICommand } from '../common'
+import { listEnvs } from '../../env'
+import { CloudBaseError } from '../../error'
 import { InjectParams, ArgsOptions, Log, Logger } from '../../decorators'
+import { fetch, fetchStream, loadingFactory, checkFullAccess } from '../../utils'
 
 // 云函数
 const listUrl = 'https://cli.service.tcloudbase.com/list'
