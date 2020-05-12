@@ -1,2 +1,13 @@
-import { ICommandContext } from '../command';
-export declare function copy(ctx: ICommandContext, name: string, newFunctionName: string): Promise<void>;
+import { Command } from '../common';
+import { Logger } from '../../decorators';
+export declare class FunctionCopy extends Command {
+    get options(): {
+        cmd: string;
+        options: {
+            flags: string;
+            desc: string;
+        }[];
+        desc: string;
+    };
+    execute(envId: any, options: any, params: any, log: Logger): Promise<void>;
+}

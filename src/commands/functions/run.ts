@@ -1,9 +1,11 @@
 import _ from 'lodash'
 import path from 'path'
 import { spawn, SpawnOptionsWithoutStdio } from 'child_process'
+import { Command, ICommand } from '../common'
 import { CloudBaseError } from '../../error'
+import { InjectParams, CmdContext } from '../../decorators'
 import { checkFullAccess, isDirectory, checkAndGetCredential } from '../../utils'
-import { ICommandContext } from '../command'
+import { ICommandContext } from '../../types'
 
 // 启动文件
 const bootstrapFilePath = path.join(__dirname, '../../../runtime/nodejs/bootstrap.js')
@@ -44,20 +46,20 @@ function spawnNodeProcess(args: string[], options: SpawnOptionsWithoutStdio) {
         ...options
     })
 
-    exec.on('error', e => {
+    exec.on('error', (e) => {
         console.log(`进程执行异常：${e.message}`)
         setTimeout(() => {}, 100)
     })
 
-    exec.stdout.on('data', data => {
+    exec.stdout.on('data', (data) => {
         console.log(`${data}`)
     })
 
-    exec.stderr.on('data', data => {
+    exec.stderr.on('data', (data) => {
         console.log(`${data}`)
     })
 
-    exec.on('close', code => {
+    exec.on('close', (code) => {
         if (code !== 0) {
             console.log(`\n云函数执行异常退出，错误码：${code}`)
         }
@@ -144,7 +146,7 @@ export async function debugByConfig(ctx: ICommandContext, name: string) {
     checkFullAccess(filePath, !debug)
 
     let debugDirname
-    const funcConfig = config.functions.find(item => item.name === name)
+    const funcConfig = config.functions.find((item) => item.name === name)
 
     const handlers = (funcConfig?.handler || 'index.main').split('.')
     const indexFileName = handlers[0]
@@ -194,4 +196,52 @@ export async function debugByConfig(ctx: ICommandContext, name: string) {
             ...secret
         }
     })
+}
+
+@ICommand()
+export class FunctionDebug extends Command {
+    get options() {
+        return {
+            cmd: 'functions:run',
+            options: [
+                {
+                    flags: '--path <path>',
+                    desc: '云函数路径，使用默认配置直接调用云函数，无需配置文件'
+                },
+                {
+                    flags: '--name <name>',
+                    desc: '指定云函数的名称进行调用，需要配置文件'
+                },
+                {
+                    flags: '--params <params>',
+                    desc: '调用函数传入的参数，JSON 字符串格式'
+                },
+                {
+                    flags: '--port <port>',
+                    desc: '启动调试时监听的端口号，默认为 9229'
+                },
+                {
+                    flags: '--debug',
+                    desc: '启动调试模式'
+                }
+            ],
+            desc: '本地运行云函数（当前仅支持 Node）'
+        }
+    }
+
+    @InjectParams()
+    async execute(@CmdContext() ctx) {
+        const { options } = ctx
+        const { path, name } = options
+        // 指定函数路径，以默认配置运行函数
+        if (path) {
+            await debugFunctionByPath(path, options)
+        } else if (typeof name === 'string') {
+            await debugByConfig(ctx, name)
+        } else {
+            throw new CloudBaseError(
+                '请指定运行函数的名称或函数的路径\n\n例如 cloudbase functions:run --name app'
+            )
+        }
+    }
 }

@@ -1,26 +1,10 @@
-import { Command } from '../command'
+import { Command } from '../common'
 import { run } from '@cloudbase/framework-core'
+import { ICommandContext } from '../../types'
+
+import { InjectParams, CmdContext, ArgsParams, Log, Logger } from '../../decorators'
 
 import { authStore } from '../../utils'
-
-const commands = [
-    {
-        // @todo
-        // support subcommands like `cloudbase framework deploy`
-        cmd: 'framework:deploy [module]',
-        options: [
-            {
-                flags: '-e, --envId <envId>',
-                desc: '环境 Id'
-            },
-            { flags: '--debug', desc: '是否打印详细日志' }
-        ],
-        desc: '云开发 Serverless 应用框架：部署全栈应用',
-        handler: async (ctx, module) => {
-            await callFramework(ctx, 'deploy', module)
-        }
-    }
-]
 
 async function callFramework(ctx, command, module) {
     const { envId, config } = ctx
@@ -42,8 +26,24 @@ async function callFramework(ctx, command, module) {
     )
 }
 
-// 注册命令
-commands.forEach((item) => {
-    const command = new Command(item)
-    command.init()
-})
+export class FramworkDeploy extends Command {
+    get options() {
+        return {
+            cmd: 'framework:deploy [module]',
+            options: [
+                {
+                    flags: '-e, --envId <envId>',
+                    desc: '环境 Id'
+                },
+                { flags: '--debug', desc: '是否打印详细日志' }
+            ],
+            desc: '云开发 Serverless 应用框架：部署全栈应用'
+        }
+    }
+
+    @InjectParams()
+    async execute(@CmdContext() ctx: ICommandContext, @Log() logger: Logger, @ArgsParams() params) {
+        const [module] = params || []
+        await callFramework(ctx, 'deploy', module)
+    }
+}

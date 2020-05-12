@@ -1,2 +1,12 @@
-import { ICommandContext } from '../../command';
-export declare function createFileLayer(ctx: ICommandContext, alias: string): Promise<void>;
+import { Command } from '../../common';
+export declare class CreateFileLayer extends Command {
+    get options(): {
+        cmd: string;
+        options: {
+            flags: string;
+            desc: string;
+        }[];
+        desc: string;
+    };
+    execute(envId: any, options: any, params: any): Promise<void>;
+}

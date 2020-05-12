@@ -60,13 +60,6 @@ notifier.notify({
     isGlobal: true
 })
 
-// 测试模式
-if (processArgv.includes('-debug')) {
-    console.log(
-        chalk.bold.yellow('====\n您已经进入 debug 模式！\n移除 -debug 选项退出 debug 模式！\n====')
-    )
-}
-
 if (processArgv.includes('--tcb-test')) {
     console.log(
         chalk.bold.yellow(
@@ -84,13 +77,13 @@ if (processArgv.includes('--tcb-test')) {
 }
 
 // debug 模式
-process.IS_DEBUG = processArgv.includes('-debug')
+process.IS_DEBUG = processArgv.includes('--debug')
 if (processArgv.includes('completion')) {
     return handleCompletion()
 }
 
 // 需要隐藏的选项
-const hideArgs = ['-debug', '--tcb-test', '--completion']
+const hideArgs = ['--debug', '--tcb-test', '--completion']
 hideArgs.forEach((arg) => {
     const index = processArgv.indexOf(arg)
     if (index > -1) {

@@ -1,3 +1,23 @@
-import { ICommandContext } from '../../command';
-export declare function attachFileLayer(ctx: ICommandContext, name: string): Promise<void>;
-export declare function unAttachFileLayer(ctx: ICommandContext, name: string): Promise<void>;
+import { Command } from '../../common';
+export declare class AttachFileLayer extends Command {
+    get options(): {
+        cmd: string;
+        options: {
+            flags: string;
+            desc: string;
+        }[];
+        desc: string;
+    };
+    execute(envId: any, options: any): Promise<void>;
+}
+export declare class UnAttachFileLayer extends Command {
+    get options(): {
+        cmd: string;
+        options: {
+            flags: string;
+            desc: string;
+        }[];
+        desc: string;
+    };
+    execute(envId: any, options: any): Promise<void>;
+}

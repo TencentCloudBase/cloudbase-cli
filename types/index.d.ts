@@ -1,4 +1,4 @@
-import './commands';
+import 'reflect-metadata';
 import { logout } from './auth';
 import { listEnvs, createEnv, getEnvAuthDomains, createEnvDomain, deleteEnvDomain, getLoginConfigList, createLoginConfig, updateLoginConfig } from './env';
 import { deleteThirdPartAttach } from './third';

@@ -43,8 +43,9 @@ function getHash(message: string): string {
 
 function getDate(timestamp: number): string {
     const date = new Date(timestamp * 1000)
-    const year = date.getFullYear()
-    const month = ('0' + (date.getMonth() + 1)).slice(-2)
+    // UTC 日期，非本地时间
+    const year = date.getUTCFullYear()
+    const month = ('0' + (date.getUTCMonth() + 1)).slice(-2)
     const day = ('0' + date.getUTCDate()).slice(-2)
     return `${year}-${month}-${day}`
 }

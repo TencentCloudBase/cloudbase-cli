@@ -9,11 +9,10 @@ import { loadingFactory } from './output'
 import { CloudApiService } from './cloud-api-request'
 import { getMacAddress, getOSInfo, getPort } from './platform'
 
-import Logger from '../logger'
 import { CloudBaseError } from '../error'
 import { Credential, ILoginOptions } from '../types'
+import { errorLog } from '../logger'
 
-const logger = new Logger('Auth')
 const tcbService = CloudApiService.getInstance('tcb')
 
 const CliAuthBaseUrl = 'https://console.cloud.tencent.com/tcb/auth'
@@ -38,8 +37,8 @@ async function createLocalServer(): Promise<ServerRes> {
 }
 
 function respondWithFile(req, res, statusCode, filename) {
-    return new Promise(function(resolve, reject) {
-        fs.readFile(path.join(__dirname, '../../templates', filename), function(err, response) {
+    return new Promise(function (resolve, reject) {
+        fs.readFile(path.join(__dirname, '../../templates', filename), function (err, response) {
             if (err) {
                 return reject(err)
             }
@@ -93,7 +92,7 @@ export async function getAuthTokenFromWeb(options: ILoginOptions): Promise<Crede
 
         loading.succeed('已打开云开发 CLI 授权页面，请在云开发 CLI 授权页面同意授权')
 
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             server.on('request', (req: IncomingMessage, res: ServerResponse) => {
                 const { url } = req
                 const { query } = queryString.parseUrl(url)
@@ -108,7 +107,7 @@ export async function getAuthTokenFromWeb(options: ILoginOptions): Promise<Crede
                             server.close()
                             resolve(query as Credential)
                         })
-                        .catch(e => {
+                        .catch((e) => {
                             server.close()
                             return respondWithFile(req, res, 502, 'html/loginFail.html')
                         })
@@ -135,7 +134,7 @@ export async function getAuthTokenFromWeb(options: ILoginOptions): Promise<Crede
             })
         })
     } catch (err) {
-        logger.error(err.message)
+        errorLog(err.message)
         loading.fail('获取授权失败！')
         throw err
     }

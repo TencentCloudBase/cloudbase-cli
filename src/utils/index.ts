@@ -7,7 +7,6 @@ export { printHorizontalTable } from './cli-table'
 export * from './fs'
 export * from './tools'
 export * from './output'
-export * from './config'
 export * from './platform'
 export * from './reporter'
 export * from './cli-table'
@@ -22,6 +21,7 @@ export * from './cloud'
 export * from './get-auth'
 export * from './http-request'
 export * from './cloud-api-request'
+export * from './new-auth'
 
 export function askForInput(question): Promise<string> {
     const rl = readline.createInterface({
