@@ -5,7 +5,9 @@ import { authStore } from '../../utils'
 
 const commands = [
     {
-        cmd: 'framework <command> [module]',
+        // @todo
+        // support subcommands like `cloudbase framework deploy`
+        cmd: 'framework:deploy [module]',
         options: [
             {
                 flags: '-e, --envId <envId>',
@@ -13,9 +15,9 @@ const commands = [
             },
             { flags: '--debug', desc: '是否打印详细日志' }
         ],
-        desc: '调用云开发 Serverless 应用框架',
-        handler: async (ctx, command, module) => {
-            await callFramework(ctx, command, module)
+        desc: '云开发 Serverless 应用框架：部署全栈应用',
+        handler: async (ctx, module) => {
+            await callFramework(ctx, 'deploy', module)
         }
     }
 ]
