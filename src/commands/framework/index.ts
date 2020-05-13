@@ -1,4 +1,4 @@
-import { Command } from '../common'
+import { Command, ICommand } from '../common'
 import { run } from '@cloudbase/framework-core'
 import { ICommandContext } from '../../types'
 
@@ -26,6 +26,7 @@ async function callFramework(ctx, command, module) {
     )
 }
 
+@ICommand()
 export class FramworkDeploy extends Command {
     get options() {
         return {
