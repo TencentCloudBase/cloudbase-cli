@@ -10,7 +10,7 @@ export declare class InitCommand extends Command {
         desc: string;
         requiredEnvId: boolean;
     };
-    execute(options: any): Promise<void>;
+    execute(options: any, logger?: Logger): Promise<void>;
     extractTemplate(projectPath: string, templatePath: string): Promise<void>;
     copyServerTemplate(projectPath: string): Promise<void>;
     initSuccessOutput(projectName: any, log?: Logger): void;

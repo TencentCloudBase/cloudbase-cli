@@ -22,6 +22,14 @@ export class InitCommand extends Command {
             cmd: 'init',
             options: [
                 {
+                    flags: '--template <template>',
+                    desc: '指定项目模板名称'
+                },
+                {
+                    flags: '--project <project>',
+                    desc: '指定项目名称'
+                },
+                {
                     flags: '--server',
                     desc: '创建派主机 Node 项目'
                 }
@@ -32,7 +40,7 @@ export class InitCommand extends Command {
     }
 
     @InjectParams()
-    async execute(@ArgsOptions() options) {
+    async execute(@ArgsOptions() options, @Log() logger?: Logger) {
         const loading = loadingFactory()
         loading.start('拉取环境列表中')
         let envData = []
@@ -68,36 +76,47 @@ export class InitCommand extends Command {
             }
         })
 
-        const { projectName } = await prompt({
-            type: 'input',
-            name: 'projectName',
-            message: '请输入项目名称',
-            initial: 'cloudbase-demo'
-        })
+        // 确定项目名称
+        let projectName
+        if (options.project) {
+            projectName = options.project
+        } else {
+            const { projectName: promptProjectName } = await prompt({
+                type: 'input',
+                name: 'projectName',
+                message: '请输入项目名称',
+                initial: 'cloudbase-demo'
+            })
 
-        const { lang } = await prompt({
-            type: 'select',
-            name: 'lang',
-            message: '选择开发语言',
-            choices: ['PHP', 'Java', 'Node']
-        })
+            projectName = promptProjectName
+        }
 
+        // 拉取模板
         loading.start('拉取云开发模板列表中')
-
-        const templateList = await fetch(listUrl)
-
+        const templates = await fetch(listUrl)
         loading.stop()
 
-        const templates = templateList.filter((item) => item.lang === lang)
+        let templateName
 
-        const { selectTemplateName } = await prompt({
-            type: 'select',
-            name: 'selectTemplateName',
-            message: '选择云开发模板',
-            choices: templates.map((item) => item.name)
-        })
+        // 确定模板名称
+        if (options.template) {
+            templateName = options.template
+        } else {
+            let { selectTemplateName } = await prompt({
+                type: 'select',
+                name: 'selectTemplateName',
+                message: '选择云开发模板',
+                choices: templates.map((item) => item.name)
+            })
+            templateName = selectTemplateName
+        }
 
-        const selectedTemplate = templates.find((item) => item.name === selectTemplateName)
+        const selectedTemplate = templates.find((item) => item.name === templateName)
+
+        if (!selectedTemplate) {
+            logger.info(`模板 \`${templateName}\` 不存在`)
+            return
+        }
 
         // 项目目录
         const projectPath = path.join(process.cwd(), projectName)
@@ -183,10 +202,14 @@ export class InitCommand extends Command {
     initSuccessOutput(projectName, @Log() log?: Logger) {
         log.success(`创建项目 ${projectName} 成功！\n`)
         const command = chalk.bold.cyan(`cd ${projectName}`)
-        log.info(`👉 执行命令 ${command} 进入项目文件夹！`)
-        log.info(`👉 执行命令 ${chalk.bold.cyan('cloudbase functions:deploy app')} 部署云函数`)
 
         log.info('🎉 欢迎贡献你的模板 👉')
         log.printClickableLink('https://github.com/TencentCloudBase/cloudbase-templates')
+
+        log.info(
+            `👉 执行命令 ${command} 进入项目文件夹，👉 执行命令 ${chalk.bold.cyan(
+                'cloudbase framework:deploy'
+            )} 一键部署`
+        )
     }
 }
