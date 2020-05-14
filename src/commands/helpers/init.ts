@@ -42,6 +42,8 @@ export class InitCommand extends Command {
     @InjectParams()
     async execute(@ArgsOptions() options, @Log() logger?: Logger) {
         const loading = loadingFactory()
+
+        // 选择环境
         loading.start('拉取环境列表中')
         let envData = []
         try {
@@ -51,7 +53,6 @@ export class InitCommand extends Command {
             throw e
         }
         loading.stop()
-
         const envs: { name: string; value: string }[] = envData
             .filter((item) => item.Status === 'NORMAL')
             .map((item) => ({
@@ -65,7 +66,6 @@ export class InitCommand extends Command {
                 '没有可以使用的环境，请使用 cloudbase env:create $name 命令创建免费环境！'
             )
         }
-
         const { env } = await prompt({
             type: 'select',
             name: 'env',
@@ -76,31 +76,17 @@ export class InitCommand extends Command {
             }
         })
 
-        // 确定项目名称
-        let projectName
-        if (options.project) {
-            projectName = options.project
-        } else {
-            const { projectName: promptProjectName } = await prompt({
-                type: 'input',
-                name: 'projectName',
-                message: '请输入项目名称',
-                initial: 'cloudbase-demo'
-            })
-
-            projectName = promptProjectName
-        }
-
         // 拉取模板
         loading.start('拉取云开发模板列表中')
         const templates = await fetch(listUrl)
         loading.stop()
 
         let templateName
+        let tempateId
 
         // 确定模板名称
         if (options.template) {
-            templateName = options.template
+            tempateId = options.template
         } else {
             let { selectTemplateName } = await prompt({
                 type: 'select',
@@ -110,17 +96,32 @@ export class InitCommand extends Command {
             })
             templateName = selectTemplateName
         }
-
-        const selectedTemplate = templates.find((item) => item.name === templateName)
+        const selectedTemplate = templateName
+            ? templates.find((item) => item.name === templateName)
+            : templates.find((item) => item._id === tempateId)
 
         if (!selectedTemplate) {
-            logger.info(`模板 \`${templateName}\` 不存在`)
+            logger.info(`模板 \`${templateName || tempateId}\` 不存在`)
             return
         }
 
-        // 项目目录
-        const projectPath = path.join(process.cwd(), projectName)
+        // 确定项目名称
+        let projectName
+        if (options.project) {
+            projectName = options.project
+        } else {
+            const { projectName: promptProjectName } = await prompt({
+                type: 'input',
+                name: 'projectName',
+                message: '请输入项目名称',
+                initial: selectedTemplate._id
+            })
 
+            projectName = promptProjectName
+        }
+
+        // 确定项目权限
+        const projectPath = path.join(process.cwd(), projectName)
         if (checkFullAccess(projectPath)) {
             const { cover } = await prompt({
                 type: 'confirm',
@@ -138,8 +139,8 @@ export class InitCommand extends Command {
             }
         }
 
+        // 下载 PAI主机文件
         loading.start('下载文件中')
-
         if (options.server) {
             await this.copyServerTemplate(projectPath)
             // 重命名 _gitignore 文件
@@ -148,29 +149,32 @@ export class InitCommand extends Command {
                 path.join(projectPath, '.gitignore')
             )
         } else {
-            await this.extractTemplate(projectPath, selectedTemplate.path)
+            await this.extractTemplate(projectPath, selectedTemplate._id, selectedTemplate.url)
         }
-
         loading.stop()
 
-        // 写入 envId
-        const { filepath } = await searchConfig(projectPath)
-
+        // 配置文件初始化，写入环境id
+        let filepath = (await searchConfig(projectPath))?.filepath
         // 配置文件未找到
         if (!filepath) {
-            this.initSuccessOutput(projectName)
-            return
+            fs.writeFileSync(
+                path.join(projectPath, 'cloudbaserc.js'),
+                `module.exports = { envId: "${env}" }`
+            )
+        } else {
+            const configContent = fs.readFileSync(filepath).toString()
+            fs.writeFileSync(filepath, configContent.replace('{{envId}}', env))
         }
 
-        const configContent = fs.readFileSync(filepath).toString()
-
-        fs.writeFileSync(filepath, configContent.replace('{{envId}}', env))
+        // 成功提示
         this.initSuccessOutput(projectName)
     }
 
-    async extractTemplate(projectPath: string, templatePath: string) {
+    async extractTemplate(projectPath: string, templatePath: string, remoteUrl?: string) {
         // 文件下载链接
-        const url = `https://636c-cli-1252710547.tcb.qcloud.la/cloudbase-templates/${templatePath}.tar.gz`
+        const url =
+            remoteUrl ||
+            `https://636c-cli-1252710547.tcb.qcloud.la/cloudbase-templates/${templatePath}.tar.gz`
 
         return fetchStream(url).then(async (res) => {
             if (!res) {
@@ -203,13 +207,12 @@ export class InitCommand extends Command {
         log.success(`创建项目 ${projectName} 成功！\n`)
         const command = chalk.bold.cyan(`cd ${projectName}`)
 
-        log.info('🎉 欢迎贡献你的模板 👉')
-        log.printClickableLink('https://github.com/TencentCloudBase/cloudbase-templates')
+        log.info('🎉 欢迎贡献你的模板 👉 https://github.com/TencentCloudBase/cloudbase-templates')
+
+        log.info(`👉 执行命令 ${command} 进入项目文件夹`)
 
         log.info(
-            `👉 执行命令 ${command} 进入项目文件夹，👉 执行命令 ${chalk.bold.cyan(
-                'cloudbase framework:deploy'
-            )} 一键部署`
+            `👉 开发完成后，执行命令 ${chalk.bold.cyan('cloudbase framework:deploy')} 一键部署`
         )
     }
 }

@@ -11,7 +11,7 @@ export declare class InitCommand extends Command {
         requiredEnvId: boolean;
     };
     execute(options: any, logger?: Logger): Promise<void>;
-    extractTemplate(projectPath: string, templatePath: string): Promise<void>;
+    extractTemplate(projectPath: string, templatePath: string, remoteUrl?: string): Promise<void>;
     copyServerTemplate(projectPath: string): Promise<void>;
     initSuccessOutput(projectName: any, log?: Logger): void;
 }
