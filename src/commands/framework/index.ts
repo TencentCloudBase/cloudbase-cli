@@ -4,11 +4,15 @@ import { ICommandContext } from '../../types'
 
 import { InjectParams, CmdContext, ArgsParams, Log, Logger } from '../../decorators'
 
-import { authStore } from '../../utils'
+import { AuthSupevisor } from '@cloudbase/toolbox'
+import { getProxy } from '../../utils'
 
 async function callFramework(ctx, command, module) {
     const { envId, config } = ctx
-    const { secretId, secretKey } = await authStore.get('credential')
+
+    const { token, secretId, secretKey } = await AuthSupevisor.getInstance({
+        proxy: getProxy()
+    }).getLoginState()
 
     await run(
         {
@@ -16,6 +20,7 @@ async function callFramework(ctx, command, module) {
             cloudbaseConfig: {
                 secretId,
                 secretKey,
+                token,
                 envId
             },
             config: config.framework,
