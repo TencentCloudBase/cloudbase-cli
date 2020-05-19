@@ -1,10 +1,10 @@
 import fs from 'fs'
 import chalk from 'chalk'
 import path from 'path'
-import tar from 'tar-fs'
 import fse from 'fs-extra'
 import { prompt } from 'enquirer'
 import { searchConfig } from '@cloudbase/toolbox'
+import unzipper from 'unzipper'
 
 import { Command, ICommand } from '../common'
 import { listEnvs } from '../../env'
@@ -13,7 +13,7 @@ import { InjectParams, ArgsOptions, Log, Logger } from '../../decorators'
 import { fetch, fetchStream, loadingFactory, checkFullAccess } from '../../utils'
 
 // 云函数
-const listUrl = 'https://cli.service.tcloudbase.com/list'
+const listUrl = 'https://tcli.service.tcloudbase.com/templates'
 
 @ICommand()
 export class InitCommand extends Command {
@@ -98,7 +98,7 @@ export class InitCommand extends Command {
         }
         const selectedTemplate = templateName
             ? templates.find((item) => item.name === templateName)
-            : templates.find((item) => item._id === tempateId)
+            : templates.find((item) => item.path === tempateId)
 
         if (!selectedTemplate) {
             logger.info(`模板 \`${templateName || tempateId}\` 不存在`)
@@ -114,7 +114,7 @@ export class InitCommand extends Command {
                 type: 'input',
                 name: 'projectName',
                 message: '请输入项目名称',
-                initial: selectedTemplate._id
+                initial: selectedTemplate.path
             })
 
             projectName = promptProjectName
@@ -149,7 +149,7 @@ export class InitCommand extends Command {
                 path.join(projectPath, '.gitignore')
             )
         } else {
-            await this.extractTemplate(projectPath, selectedTemplate._id, selectedTemplate.url)
+            await this.extractTemplate(projectPath, selectedTemplate.path, selectedTemplate.url)
         }
         loading.stop()
 
@@ -174,7 +174,7 @@ export class InitCommand extends Command {
         // 文件下载链接
         const url =
             remoteUrl ||
-            `https://636c-cli-1252710547.tcb.qcloud.la/cloudbase-templates/${templatePath}.tar.gz`
+            `https://7463-tcli-1258016615.tcb.qcloud.la/cloudbase-templates/${templatePath}.zip`
 
         return fetchStream(url).then(async (res) => {
             if (!res) {
@@ -186,11 +186,15 @@ export class InitCommand extends Command {
 
             // 解压缩文件
             await new Promise((resolve, reject) => {
-                const extractor = tar.extract(projectPath)
+                const unzipStream = unzipper.Extract({
+                    path: projectPath + '/'
+                })
+
                 res.body.on('error', reject)
-                extractor.on('error', reject)
-                extractor.on('finish', resolve)
-                res.body.pipe(extractor)
+                unzipStream.on('error', reject)
+                unzipStream.on('finish', resolve)
+
+                res.body.pipe(unzipStream)
             })
         })
     }
