@@ -4,6 +4,8 @@ import { ICommandContext } from '../../types'
 
 import { InjectParams, CmdContext, ArgsParams, Log, Logger } from '../../decorators'
 
+import * as Hosting from '../../hosting'
+import * as Function from '../../function'
 import { AuthSupevisor } from '@cloudbase/toolbox'
 import { getProxy } from '../../utils'
 
@@ -23,8 +25,12 @@ async function callFramework(ctx, command, module) {
                 token,
                 envId
             },
-            config: config.framework,
-            logLevel: ctx.options.debug ? 'debug' : 'info'
+            config,
+            logLevel: ctx.options.verbose ? 'debug' : 'info',
+            resourceProviders: {
+                hosting: Hosting,
+                function: Function
+            }
         },
         command,
         module
@@ -41,7 +47,7 @@ export class FramworkDeploy extends Command {
                     flags: '-e, --envId <envId>',
                     desc: '环境 Id'
                 },
-                { flags: '--debug', desc: '是否打印详细日志' }
+                { flags: '--verbose', desc: '是否打印详细日志' }
             ],
             desc: '云开发 Serverless 应用框架：部署全栈应用'
         }
