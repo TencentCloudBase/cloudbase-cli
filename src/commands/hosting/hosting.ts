@@ -218,7 +218,7 @@ export class HostingDeleteFiles extends Command {
 
     @InjectParams()
     async execute(@EnvId() envId, @ArgsOptions() options, @ArgsParams() params) {
-        const cloudPath = params?.[0]
+        const cloudPath = params?.[0] || ''
         let isDir = options.dir
 
         // 删除所有文件，危险操作，需要提示
