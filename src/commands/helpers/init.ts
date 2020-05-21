@@ -155,6 +155,7 @@ export class InitCommand extends Command {
 
         // 配置文件初始化，写入环境id
         let filepath = (await searchConfig(projectPath))?.filepath
+        console.log(projectPath, filepath)
         // 配置文件未找到
         if (!filepath) {
             fs.writeFileSync(
@@ -192,7 +193,7 @@ export class InitCommand extends Command {
 
                 res.body.on('error', reject)
                 unzipStream.on('error', reject)
-                unzipStream.on('finish', resolve)
+                unzipStream.on('close', resolve)
 
                 res.body.pipe(unzipStream)
             })
