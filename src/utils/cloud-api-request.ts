@@ -1,9 +1,9 @@
 import crypto from 'crypto'
 import { URL } from 'url'
 import QueryString from 'query-string'
+import { getCredentialWithoutCheck } from '@cloudbase/toolbox'
 import { fetch } from './http-request'
 import { CloudBaseError } from '../error'
-import { getCredentialWithoutCheck } from './credential'
 
 function isObject(x) {
     return typeof x === 'object' && !Array.isArray(x) && x !== null

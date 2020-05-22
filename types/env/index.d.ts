@@ -10,7 +10,7 @@ export declare function createEnv({ alias, paymentMode }: {
 export declare function getEnvInfo(envId: string): Promise<any>;
 export declare function listEnvs(options?: {
     source?: string[];
-}): Promise<any>;
+}): Promise<any[]>;
 export declare function updateEnvInfo({ envId, alias }: {
     envId: any;
     alias: any;

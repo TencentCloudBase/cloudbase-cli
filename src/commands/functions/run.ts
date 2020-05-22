@@ -3,9 +3,9 @@ import path from 'path'
 import { spawn, SpawnOptionsWithoutStdio } from 'child_process'
 import { Command, ICommand } from '../common'
 import { CloudBaseError } from '../../error'
+import { ICommandContext } from '../../types'
 import { InjectParams, CmdContext } from '../../decorators'
 import { checkFullAccess, isDirectory, checkAndGetCredential } from '../../utils'
-import { ICommandContext } from '../../types'
 
 // 启动文件
 const bootstrapFilePath = path.join(__dirname, '../../../runtime/nodejs/bootstrap.js')

@@ -1,6 +1,7 @@
 import arg from 'arg'
 import path from 'path'
 import { AuthSupevisor, resolveCloudBaseConfig } from '@cloudbase/toolbox'
+import { getProxy } from './tools'
 
 // https://www.npmjs.com/package/arg
 export interface IArgs extends arg.Spec {
@@ -36,10 +37,11 @@ export const getCloudBaseConfig = async (configPath?: string) => {
     return config
 }
 
-export const authSupervisor = AuthSupevisor.getInstance({
+export const authSupevisor = AuthSupevisor.getInstance({
+    proxy: getProxy(),
     cache: true
 })
 
 export async function getLoginState() {
-    return authSupervisor.getLoginState()
+    return authSupevisor.getLoginState()
 }
