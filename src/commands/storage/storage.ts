@@ -9,7 +9,7 @@ import {
     loadingFactory,
     printHorizontalTable,
     formatDate,
-    createOnProgressBar,
+    createUploadProgressBar,
     formateFileSize,
     getMangerService,
     isDirectory,
@@ -88,7 +88,7 @@ export class UploadCommand extends Command {
         }
 
         // 上传进度条
-        const onProgress = createOnProgressBar(
+        const onProgress = createUploadProgressBar(
             () => {
                 !isDir && log.success('上传文件成功！')
             },

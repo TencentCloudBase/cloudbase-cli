@@ -51,16 +51,8 @@ export interface AuthSecret {
     token?: string
 }
 
-export interface SSH {
-    host: string
-    port: string
-    username: string
-    password: string
-}
-
 export interface IConfig {
     credential?: Credential
-    ssh?: SSH
 }
 
 export interface ICloudBaseConfig {

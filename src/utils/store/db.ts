@@ -58,10 +58,7 @@ export class LocalStore {
 
     async push(key: string, value: any) {
         const db = await this.getDB()
-        await db
-            .get(key)
-            .push(value)
-            .write()
+        await db.get(key).push(value).write()
     }
 
     async delete(key) {

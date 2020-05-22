@@ -1,13 +1,13 @@
 import { createParamDecorator } from './common'
 import { Logger } from './_log'
 import { ParamTypes } from '../constants'
-import { authSupervisor, getArgs } from '../../utils'
+import { authSupevisor, getArgs } from '../../utils'
 
 const EmptyValue = () => {}
 
 // 注入登录态信息
 export const Credential = createParamDecorator(ParamTypes.Credential, async () => {
-    const credential = await authSupervisor.getLoginState()
+    const credential = await authSupevisor.getLoginState()
     return credential
 })
 

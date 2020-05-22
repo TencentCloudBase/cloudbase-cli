@@ -19,7 +19,7 @@ import {
     printHorizontalTable,
     formatDate,
     formateFileSize,
-    createOnProgressBar,
+    createUploadProgressBar,
     genClickableLink,
     checkFullAccess
 } from '../../utils'
@@ -125,7 +125,7 @@ export class HostingDeploy extends Command {
         }
 
         // 上传进度条
-        const onProgress = createOnProgressBar(
+        const onProgress = createUploadProgressBar(
             () => {
                 !isDir && log.success('文件部署成功！')
             },

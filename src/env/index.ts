@@ -33,7 +33,7 @@ export async function getEnvInfo(envId: string) {
 }
 
 // 列出所有环境
-export async function listEnvs(options: { source?: string[] } = {}) {
+export async function listEnvs(options: { source?: string[] } = {}): Promise<any[]> {
     const { source } = options
     const res: any = await tcbService.request('DescribeEnvs', {
         IsVisible: false,

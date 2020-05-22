@@ -1,1 +1,1 @@
-export declare function createOnProgressBar(onFinished: Function, onStart?: Function): (data: any) => void;
+export declare function createUploadProgressBar(onFinished: Function, onStart?: Function): (data: any) => void;
