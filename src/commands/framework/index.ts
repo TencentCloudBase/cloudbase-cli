@@ -59,3 +59,26 @@ export class FramworkDeploy extends Command {
         await callFramework(ctx, 'deploy', module)
     }
 }
+
+@ICommand()
+export class FramworkCompile extends Command {
+    get options() {
+        return {
+            cmd: 'framework:compile [module]',
+            options: [
+                {
+                    flags: '-e, --envId <envId>',
+                    desc: '环境 Id'
+                },
+                { flags: '--verbose', desc: '是否打印详细日志' }
+            ],
+            desc: '云开发 Serverless 应用框架：编译应用描述文件'
+        }
+    }
+
+    @InjectParams()
+    async execute(@CmdContext() ctx: ICommandContext, @Log() logger: Logger, @ArgsParams() params) {
+        const [module] = params || []
+        await callFramework(ctx, 'compile', module)
+    }
+}
