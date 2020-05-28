@@ -37,11 +37,11 @@ export const getCloudBaseConfig = async (configPath?: string) => {
     return config
 }
 
-export const authSupervisor = AuthSupevisor.getInstance({
-    cache: true,
-    proxy: getProxy()
+export const authSupevisor = AuthSupevisor.getInstance({
+    proxy: getProxy(),
+    cache: true
 })
 
 export async function getLoginState() {
-    return authSupervisor.getLoginState()
+    return authSupevisor.getLoginState()
 }

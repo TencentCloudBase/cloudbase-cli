@@ -19,7 +19,7 @@ import {
     printHorizontalTable,
     formatDate,
     formateFileSize,
-    createOnProgressBar,
+    createUploadProgressBar,
     genClickableLink,
     checkFullAccess
 } from '../../utils'
@@ -125,7 +125,7 @@ export class HostingDeploy extends Command {
         }
 
         // 上传进度条
-        const onProgress = createOnProgressBar(
+        const onProgress = createUploadProgressBar(
             () => {
                 !isDir && log.success('文件部署成功！')
             },
@@ -218,7 +218,7 @@ export class HostingDeleteFiles extends Command {
 
     @InjectParams()
     async execute(@EnvId() envId, @ArgsOptions() options, @ArgsParams() params) {
-        const cloudPath = params?.[0]
+        const cloudPath = params?.[0] || ''
         let isDir = options.dir
 
         // 删除所有文件，危险操作，需要提示

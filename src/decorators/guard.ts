@@ -1,4 +1,4 @@
-import { authSupervisor, getCloudBaseConfig } from '../utils'
+import { authSupevisor, getCloudBaseConfig } from '../utils'
 
 export interface AuthGuardOptions {
     // 无法通过 guard 认证时的提示信息
@@ -21,7 +21,7 @@ export const AuthGuard = (options: AuthGuardOptions = {}): MethodDecorator => (
     // 修改原函数行为
     descriptor.value = async function (...args) {
         const credential = target?.credential
-        const loginState = await authSupervisor.getLoginState()
+        const loginState = await authSupevisor.getLoginState()
 
         // 未登录，终止运行
         if (!credential && !loginState) {

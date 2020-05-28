@@ -1,18 +1,18 @@
 import _ from 'lodash'
 import chalk from 'chalk'
 import inquirer from 'inquirer'
+import { Command, ICommand } from '../common'
 import { login } from '../../auth'
 import { listEnvs } from '../../env'
 import { CloudBaseError } from '../../error'
+import { InjectParams, ArgsOptions, Log, Logger } from '../../decorators'
 import {
-    checkAndGetCredential,
     loadingFactory,
     usageStore,
     collectAgree,
-    genClickableLink
+    genClickableLink,
+    checkAndGetCredential
 } from '../../utils'
-import { Command, ICommand } from '../common'
-import { InjectParams, ArgsOptions, Log, Logger } from '../../decorators'
 
 function printSuggestion() {
     const tips = `可使用下面命令继续操作：

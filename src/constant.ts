@@ -1,6 +1,6 @@
 // cloudbase cli 配置的字段名
 export class ConfigItems {
-    static credentail = 'credential'
+    static credential = 'credential'
     static ssh = 'ssh'
 }
 
@@ -21,6 +21,26 @@ export const DefaultCloudBaseConfig = {
 
 // 请求超时时间
 export const REQUEST_TIMEOUT = 30000
+
+export const enum ENV_STATUS {
+    // 创建中
+    UNAVAILABLE = 'UNAVAILABLE',
+    // 正常
+    NORMAL = 'NORMAL',
+    // 销毁隔离
+    ISOLATE = 'ISOLATE',
+    // 异常
+    ABNORMAL = 'ABNORMAL',
+    ERROR = 'ERROR'
+}
+
+export const STATUS_TEXT = {
+    UNAVAILABLE: '创建中',
+    NORMAL: '正常',
+    ISOLATE: '隔离中',
+    ABNORMAL: '异常',
+    ERROR: '异常'
+}
 
 export const ALL_COMMANDS = [
     'login',

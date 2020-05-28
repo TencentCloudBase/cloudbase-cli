@@ -30,7 +30,7 @@ export class Logger {
     }
 
     info(msg: string) {
-        console.log(`${logSymbols.info} ${msg}\n`)
+        console.log(`${logSymbols.info} ${msg}`)
     }
 
     success(msg: string) {

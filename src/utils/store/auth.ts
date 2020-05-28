@@ -27,7 +27,7 @@ class AuthStore extends LocalStore {
             try {
                 const content = JSON.parse(fs.readFileSync(oldConfigPath, 'utf8'))
                 const { credential, ssh } = content
-                await db.set(ConfigItems.credentail, credential).write()
+                await db.set(ConfigItems.credential, credential).write()
                 await db.set(ConfigItems.ssh, ssh).write()
                 fs.unlinkSync(oldConfigPath)
             } catch (e) {
@@ -39,11 +39,11 @@ class AuthStore extends LocalStore {
 
 export const authStore = new AuthStore({
     _: '这是您的 CloudBase 身份凭据文件，请不要分享给他人！',
-    [ConfigItems.credentail]: {},
+    [ConfigItems.credential]: {},
     [ConfigItems.ssh]: {}
 })
 
 export async function getUin() {
-    const credentail = await authStore.get(ConfigItems.credentail)
-    return credentail?.uin || '无'
+    const credential = await authStore.get(ConfigItems.credential)
+    return credential?.uin || '无'
 }

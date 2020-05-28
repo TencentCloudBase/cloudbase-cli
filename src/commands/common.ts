@@ -56,6 +56,7 @@ export abstract class Command extends EventEmitter {
         listener: (ctx: ICommandContext, args: any[]) => void
     ): this
 
+    // eslint-disable-next-line
     on(event: string, listener: (ctx: ICommandContext, args: any[]) => void): this {
         super.on(event, listener)
         return this
@@ -106,7 +107,9 @@ export abstract class Command extends EventEmitter {
 
             this.emit('afterHandle', ctx, args)
             // 上报数据
-            await this.afterHandle(ctx)
+            this.afterHandle(ctx).then((e) => {
+                process.exit()
+            })
         })
     }
 

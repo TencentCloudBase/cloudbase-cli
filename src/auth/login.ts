@@ -1,16 +1,7 @@
 import _ from 'lodash'
-import { CloudApiService, authStore, checkAndGetCredential, getAuthTokenFromWeb } from '../utils'
-import { ConfigItems } from '../constant'
-import { Credential, ILoginOptions } from '../types'
-
-const tcbService = CloudApiService.getInstance('tcb')
-
-// 调用 env:list 接口，检查密钥是否有效
-async function checkAuth(credential: Credential) {
-    const { tmpSecretId, tmpSecretKey, tmpToken } = credential
-    tcbService.setCredential(tmpSecretId, tmpSecretKey, tmpToken)
-    return tcbService.request('DescribeEnvs')
-}
+import { authSupevisor } from '../utils'
+import { ILoginOptions } from '../types'
+import { Credential } from '@cloudbase/toolbox'
 
 // 登录返回 code 与信息
 const LoginRes = {
@@ -41,58 +32,48 @@ const LoginRes = {
 }
 
 // 打开腾讯云-云开发控制台，通过获取临时密钥登录，临时密钥可续期，最长时间为 1 个月
-export async function loginWithToken(options: ILoginOptions) {
-    const credentail = await checkAndGetCredential()
+export async function loginByWebAuth() {
+    let credential
+    try {
+        credential = await authSupevisor.loginByWebAuth()
+    } catch (e) {
+        return LoginRes.UNKNOWN_ERROR(e.message)
+    }
 
-    if (!_.isEmpty(credentail)) {
-        return LoginRes.SUCCESS
+    if (_.isEmpty(credential)) {
+        return LoginRes.INVALID_TOKEN
+    }
+
+    return {
+        credential,
+        ...LoginRes.SUCCESS
+    }
+}
+
+// 使用永久密钥登录
+export async function loginWithKey(secretId?: string, secretKey?: string) {
+    if (!secretId || !secretKey) {
+        return LoginRes.INVALID_PARAM('SecretID 或 SecretKey 不能为空')
     }
 
     let credential
 
     try {
-        credential = await getAuthTokenFromWeb(options)
-    } catch (e) {
-        return LoginRes.UNKNOWN_ERROR(e.message)
-    }
-
-    if (!credential.refreshToken || !credential.uin) {
-        return LoginRes.INVALID_TOKEN
-    }
-
-    try {
-        await checkAuth(credential)
-    } catch (e) {
-        return LoginRes.UNKNOWN_ERROR(e.message)
-    }
-
-    await authStore.set(ConfigItems.credentail, credential)
-    return LoginRes.SUCCESS
-}
-
-// 使用永久密钥登录
-export async function loginWithKey(secretId?: string, secretKey?: string) {
-    const credentail = await checkAndGetCredential()
-
-    if (!_.isEmpty(credentail)) {
-        return LoginRes.SUCCESS
-    }
-
-    if (!secretId || !secretKey) {
-        return LoginRes.INVALID_PARAM('SecretID 或 SecretKey 不能为空')
-    }
-
-    try {
-        await checkAuth({ tmpSecretId: secretId, tmpSecretKey: secretKey })
+        credential = await authSupevisor.loginByApiSecret(secretId, secretKey)
     } catch (e) {
         return LoginRes.CHECK_LOGIN_FAILED
     }
 
-    await authStore.set(ConfigItems.credentail, { secretId, secretKey })
+    if (_.isEmpty(credential)) {
+        return LoginRes.INVALID_TOKEN
+    }
+
     return LoginRes.SUCCESS
 }
 
-export async function login(options: ILoginOptions = {}): Promise<{ code: string; msg: string }> {
+export async function login(
+    options: ILoginOptions = {}
+): Promise<{ code: string; msg: string; credential?: Credential }> {
     const { secretId, secretKey, key } = options
-    return key ? loginWithKey(secretId, secretKey) : loginWithToken(options)
+    return key ? loginWithKey(secretId, secretKey) : loginByWebAuth()
 }
