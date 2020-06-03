@@ -14,6 +14,7 @@ import {
 } from '../../utils'
 import { DefaultFunctionDeployConfig } from '../../constant'
 import { InjectParams, CmdContext, ArgsParams, Log, Logger } from '../../decorators'
+import { ICreateFunctionOptions } from '../../types'
 
 @ICommand()
 export class FunctionDeploy extends Command {
@@ -107,73 +108,14 @@ export class FunctionDeploy extends Command {
         } catch (e) {
             // 询问是否覆盖同名函数
             loading.stop()
-            if (e.code === 'ResourceInUse.FunctionName') {
-                const { force } = await inquirer.prompt({
-                    type: 'confirm',
-                    name: 'force',
-                    message: '存在同名云函数，是否覆盖原函数代码与配置',
-                    default: false
-                })
-
-                if (force) {
-                    loading.start('云函数部署中...')
-                    try {
-                        await createFunction({
-                            envId,
-                            force: true,
-                            codeSecret,
-                            functionRootPath,
-                            func: newFunction,
-                            functionPath: funcPath
-                        })
-                        loading.succeed(`[${newFunction.name}] 云函数部署成功！`)
-                        // await genApiGateway(envId, name)
-                        this.printSuccessTips(envId)
-                    } catch (e) {
-                        loading.stop()
-                        throw e
-                    }
-                    return
-                }
-            }
-            throw e
-        }
-    }
-
-    @InjectParams()
-    printSuccessTips(envId: string, @Log() log?: Logger) {
-        const link = genClickableLink(`https://console.cloud.tencent.com/tcb/scf?envId=${envId}`)
-        log.breakLine()
-        log.info(`控制台查看函数详情或创建 HTTP Service 链接 🔗：${link}`)
-        log.info(`使用 ${highlightCommand('cloudbase functions:list')} 命令查看已部署云函数`)
-    }
-
-    // 创建函数 API 网关
-    async genApiGateway(envId: string, name: string) {
-        const loading = loadingFactory()
-        // 检查是否绑定了 HTTP 网关
-        const res = await queryGateway({
-            name,
-            envId
-        })
-        // 未开启，不生成 HTTP 调用了链接
-        if (res?.EnableService === false) return
-        loading.start('生成云函数 HTTP Service 中...')
-
-        let path
-        if (res?.APISet?.length > 0) {
-            path = res.APISet[0]?.Path
-        } else {
-            path = `/${random(12)}`
-            await createGateway({
+            this.handleDeployFail(e, {
                 envId,
-                name,
-                path
+                codeSecret,
+                functionRootPath,
+                func: newFunction,
+                functionPath: funcPath
             })
         }
-        loading.stop()
-        const link = genClickableLink(`https://${envId}.service.tcloudbase.com${path}`)
-        console.log(`\n云函数 HTTP Service 链接：${link}`)
     }
 
     async deployAllFunction(options: any) {
@@ -210,11 +152,89 @@ export class FunctionDeploy extends Command {
                 })
                 loading.succeed(`[${func.name}] 云函数部署成功`)
             } catch (e) {
-                loading.fail(`[${func.name}] 函数部署失败`)
-                throw new CloudBaseError(e.message)
+                loading.stop()
+                this.handleDeployFail(e, {
+                    func,
+                    envId,
+                    codeSecret,
+                    functionRootPath
+                })
             }
         })
 
         await Promise.all(promises)
+    }
+
+    async handleDeployFail(e: CloudBaseError, options: ICreateFunctionOptions) {
+        const { envId, codeSecret, functionRootPath, func, functionPath } = options
+        const loading = loadingFactory()
+
+        if (e.code === 'ResourceInUse.FunctionName' || e.code === 'ResourceInUse.Function') {
+            const { force } = await inquirer.prompt({
+                type: 'confirm',
+                name: 'force',
+                message: `存在同名云函数：[${func.name}]，是否覆盖原函数代码与配置`,
+                default: false
+            })
+
+            if (force) {
+                loading.start('云函数部署中...')
+                try {
+                    await createFunction({
+                        func,
+                        envId,
+                        force: true,
+                        codeSecret,
+                        functionRootPath,
+                        functionPath
+                    })
+                    loading.succeed(`[${func.name}] 云函数部署成功！`)
+                    // await genApiGateway(envId, name)
+                    this.printSuccessTips(envId)
+                } catch (e) {
+                    loading.stop()
+                    throw e
+                }
+                return
+            }
+        }
+
+        throw e
+    }
+
+    @InjectParams()
+    printSuccessTips(envId: string, @Log() log?: Logger) {
+        const link = genClickableLink(`https://console.cloud.tencent.com/tcb/scf?envId=${envId}`)
+        log.breakLine()
+        log.info(`控制台查看函数详情或创建 HTTP Service 链接 🔗：${link}`)
+        log.info(`使用 ${highlightCommand('cloudbase functions:list')} 命令查看已部署云函数`)
+    }
+
+    // 创建函数 API 网关
+    async genApiGateway(envId: string, name: string) {
+        const loading = loadingFactory()
+        // 检查是否绑定了 HTTP 网关
+        const res = await queryGateway({
+            name,
+            envId
+        })
+        // 未开启，不生成 HTTP 调用了链接
+        if (res?.EnableService === false) return
+        loading.start('生成云函数 HTTP Service 中...')
+
+        let path
+        if (res?.APISet?.length > 0) {
+            path = res.APISet[0]?.Path
+        } else {
+            path = `/${random(12)}`
+            await createGateway({
+                envId,
+                name,
+                path
+            })
+        }
+        loading.stop()
+        const link = genClickableLink(`https://${envId}.service.tcloudbase.com${path}`)
+        console.log(`\n云函数 HTTP Service 链接：${link}`)
     }
 }
