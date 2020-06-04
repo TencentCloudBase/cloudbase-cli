@@ -107,9 +107,7 @@ export abstract class Command extends EventEmitter {
 
             this.emit('afterHandle', ctx, args)
             // 上报数据
-            this.afterHandle(ctx).then((e) => {
-                process.exit()
-            })
+            this.afterHandle(ctx)
         })
     }
 

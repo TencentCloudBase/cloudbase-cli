@@ -11,7 +11,6 @@ export interface ICommandContext {
 declare global {
     namespace NodeJS {
         interface Process extends EventEmitter {
-            IS_DEBUG: boolean;
             VERBOSE: boolean;
             CLI_VERSION: string;
             on(event: CustomEvent, listener: BeforeExitListener): any;

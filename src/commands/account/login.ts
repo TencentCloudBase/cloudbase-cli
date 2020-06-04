@@ -81,7 +81,7 @@ export class LoginCommand extends Command {
 
     @InjectParams()
     async execute(@ArgsOptions() options, @Log() log: Logger) {
-        log.debug(options)
+        log.verbose(options)
         const { apiKeyId, apiKey } = options
         const loading = loadingFactory()
         loading.start('检验登录状态')

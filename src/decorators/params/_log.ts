@@ -12,12 +12,10 @@ export class Logger {
         }
     }
 
-    debugEnabled: boolean
     verboseEnabled: boolean
 
-    constructor(options: { debug?: boolean; verbose?: boolean } = {}) {
-        const { debug, verbose } = options
-        this.debugEnabled = debug
+    constructor(options: { verbose?: boolean } = {}) {
+        const { verbose } = options
         this.verboseEnabled = verbose
     }
 
@@ -45,8 +43,8 @@ export class Logger {
         console.log(`${logSymbols.error} ${msg}`)
     }
 
-    debug(...args: any) {
-        if (this.debugEnabled) {
+    verbose(...args: any) {
+        if (this.verboseEnabled) {
             const msg = args.join(' ▶️ ')
             console.log(
                 `${chalk.bold('[debug]')} ${chalk.gray(`[${new Date().toISOString()}]`)} ${msg}`
@@ -69,7 +67,7 @@ export class Logger {
 
     async time(label: string, fn: Promise<any> | (() => Promise<any>)) {
         const promise = typeof fn === 'function' ? fn() : fn
-        if (this.debugEnabled) {
+        if (this.verboseEnabled) {
             this.c.log(label)
             Console.prototype.time.call(this.c, label)
             const r = await promise

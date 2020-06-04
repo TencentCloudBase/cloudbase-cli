@@ -93,7 +93,7 @@ export class HostingDeploy extends Command {
         const localPath = params?.[0]
         const cloudPath = params?.[1] || ''
 
-        log.debug('本地目录', localPath)
+        log.verbose('本地目录', localPath)
 
         const resolveLocalPath = path.resolve(localPath)
         checkFullAccess(resolveLocalPath, true)

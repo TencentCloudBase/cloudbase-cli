@@ -60,7 +60,7 @@ export class CreateAuthDomainCommand extends Command {
 
     @InjectParams()
     async execute(@ArgsParams() params, @EnvId() envId, @Log() log: Logger) {
-        log.debug(params)
+        log.verbose(params)
 
         const domain = params?.[0]
         const domains = domain.split('/')

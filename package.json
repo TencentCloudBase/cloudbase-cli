@@ -29,7 +29,7 @@
     "dependencies": {
         "@cloudbase/cloud-api": "^0.1.4",
         "@cloudbase/manager-node": "^3.3.1",
-        "@cloudbase/toolbox": "^0.3.12",
+        "@cloudbase/toolbox": "^0.3.14",
         "@sentry/node": "^5.10.2",
         "address": "^1.1.2",
         "archiver": "^3.1.1",
