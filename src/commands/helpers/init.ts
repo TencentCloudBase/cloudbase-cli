@@ -46,6 +46,10 @@ export class InitCommand extends Command {
                     desc: '指定项目模板名称'
                 },
                 {
+                    flags: '--without-template',
+                    desc: '不使用模板，在当前项目初始化'
+                },
+                {
                     flags: '--project <project>',
                     desc: '指定项目名称'
                 }
@@ -143,75 +147,84 @@ export class InitCommand extends Command {
         // 检查环境状态
         await this.checkEnvStatus(env)
 
-        // 拉取模板
-        const templates = await execWithLoading(() => fetch(listUrl), {
-            startTip: '拉取云开发模板列表中'
-        })
-
-        let templateName
-        let tempateId
-
-        // 确定模板名称
-        if (options.template) {
-            tempateId = options.template
-        } else {
-            let { selectTemplateName } = await prompt({
-                type: 'select',
-                name: 'selectTemplateName',
-                message: '选择云开发模板',
-                choices: templates.map((item) => item.name)
-            })
-            templateName = selectTemplateName
-        }
-        const selectedTemplate = templateName
-            ? templates.find((item) => item.name === templateName)
-            : templates.find((item) => item.path === tempateId)
-
-        if (!selectedTemplate) {
-            log.info(`模板 \`${templateName || tempateId}\` 不存在`)
-            return
-        }
-
-        // 确定项目名称
         let projectName
-        if (options.project) {
-            projectName = options.project
-        } else {
-            const { projectName: promptProjectName } = await prompt({
-                type: 'input',
-                name: 'projectName',
-                message: '请输入项目名称',
-                initial: selectedTemplate.path
+        let projectPath
+
+        if (!options['without-template']) {
+            // 拉取模板
+            const templates = await execWithLoading(() => fetch(listUrl), {
+                startTip: '拉取云开发模板列表中'
             })
 
-            projectName = promptProjectName
-        }
+            let templateName
+            let tempateId
 
-        // 确定项目权限
-        const projectPath = path.join(process.cwd(), projectName)
-        if (checkFullAccess(projectPath)) {
-            const { cover } = await prompt({
-                type: 'confirm',
-                name: 'cover',
-                message: `已存在同名文件夹：${projectName}，是否覆盖？`,
-                initial: false
-            })
-            // 不覆盖，操作终止
-            if (!cover) {
-                throw new CloudBaseError('操作终止！')
+            // 确定模板名称
+            if (options.template) {
+                tempateId = options.template
             } else {
-                // 覆盖操作不会删除不冲突的文件夹或文件
-                // 删除原有文件夹，防止生成的项目包含用户原有文件
-                fse.removeSync(projectPath)
+                let { selectTemplateName } = await prompt({
+                    type: 'select',
+                    name: 'selectTemplateName',
+                    message: '选择云开发模板',
+                    choices: templates.map((item) => item.name)
+                })
+                templateName = selectTemplateName
             }
-        }
+            const selectedTemplate = templateName
+                ? templates.find((item) => item.name === templateName)
+                : templates.find((item) => item.path === tempateId)
 
-        await execWithLoading(
-            () => this.extractTemplate(projectPath, selectedTemplate.path, selectedTemplate.url),
-            {
-                startTip: '下载文件中'
+            if (!selectedTemplate) {
+                log.info(`模板 \`${templateName || tempateId}\` 不存在`)
+                return
             }
-        )
+
+            // 确定项目名称
+            let projectName
+            if (options.project) {
+                projectName = options.project
+            } else {
+                const { projectName: promptProjectName } = await prompt({
+                    type: 'input',
+                    name: 'projectName',
+                    message: '请输入项目名称',
+                    initial: selectedTemplate.path
+                })
+
+                projectName = promptProjectName
+            }
+
+            // 确定项目权限
+            const projectPath = path.join(process.cwd(), projectName)
+            if (checkFullAccess(projectPath)) {
+                const { cover } = await prompt({
+                    type: 'confirm',
+                    name: 'cover',
+                    message: `已存在同名文件夹：${projectName}，是否覆盖？`,
+                    initial: false
+                })
+                // 不覆盖，操作终止
+                if (!cover) {
+                    throw new CloudBaseError('操作终止！')
+                } else {
+                    // 覆盖操作不会删除不冲突的文件夹或文件
+                    // 删除原有文件夹，防止生成的项目包含用户原有文件
+                    fse.removeSync(projectPath)
+                }
+            }
+
+            await execWithLoading(
+                () =>
+                    this.extractTemplate(projectPath, selectedTemplate.path, selectedTemplate.url),
+                {
+                    startTip: '下载文件中'
+                }
+            )
+        } else {
+            projectName = ''
+            projectPath = path.join(process.cwd(), projectName)
+        }
 
         // 配置文件初始化，写入环境id
         let filepath = (await searchConfig(projectPath))?.filepath
@@ -219,8 +232,8 @@ export class InitCommand extends Command {
         // 配置文件未找到
         if (!filepath) {
             fs.writeFileSync(
-                path.join(projectPath, 'cloudbaserc.js'),
-                `module.exports = { envId: "${env}" }`
+                path.join(projectPath, 'cloudbaserc.json'),
+                JSON.stringify({ envId: env })
             )
         } else {
             const configContent = fs.readFileSync(filepath).toString()
@@ -390,10 +403,12 @@ export class InitCommand extends Command {
     // 项目初始化成功后打印提示语
     @InjectParams()
     initSuccessOutput(projectName, @Log() log?: Logger) {
-        log.success(`创建项目 ${projectName} 成功！\n`)
-        const command = chalk.bold.cyan(`cd ${projectName}`)
+        log.success(`初始化项目 ${projectName} 成功！\n`)
 
-        log.info(`👉 执行命令 ${command} 进入项目文件夹`)
+        if (projectName) {
+            const command = chalk.bold.cyan(`cd ${projectName}`)
+            log.info(`👉 执行命令 ${command} 进入项目文件夹`)
+        }
 
         log.info(
             `👉 开发完成后，执行命令 ${chalk.bold.cyan('cloudbase framework:deploy')} 一键部署`
