@@ -150,7 +150,7 @@ export class InitCommand extends Command {
         let projectName
         let projectPath
 
-        if (!options['without-template']) {
+        if (!options.withoutTemplate) {
             // 拉取模板
             const templates = await execWithLoading(() => fetch(listUrl), {
                 startTip: '拉取云开发模板列表中'
@@ -181,7 +181,6 @@ export class InitCommand extends Command {
             }
 
             // 确定项目名称
-            let projectName
             if (options.project) {
                 projectName = options.project
             } else {
@@ -196,7 +195,7 @@ export class InitCommand extends Command {
             }
 
             // 确定项目权限
-            const projectPath = path.join(process.cwd(), projectName)
+            projectPath = path.join(process.cwd(), projectName)
             if (checkFullAccess(projectPath)) {
                 const { cover } = await prompt({
                     type: 'confirm',
@@ -403,7 +402,7 @@ export class InitCommand extends Command {
     // 项目初始化成功后打印提示语
     @InjectParams()
     initSuccessOutput(projectName, @Log() log?: Logger) {
-        log.success(`初始化项目 ${projectName} 成功！\n`)
+        log.success(`初始化项目${projectName}成功！\n`)
 
         if (projectName) {
             const command = chalk.bold.cyan(`cd ${projectName}`)
