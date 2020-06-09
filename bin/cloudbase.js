@@ -35,8 +35,6 @@ Sentry.init({
     dsn: 'https://fff0077d06624655ad70d1ee25df419e@report.url.cn/sentry/1782',
     httpsProxy: getProxy() || '',
     serverName: os.hostname(),
-    // 忽略错误，正则匹配,
-    // ignoreErrors: [],
     integrations: [
         new Sentry.Integrations.OnUnhandledRejection({
             mode: 'none'
@@ -76,14 +74,8 @@ if (processArgv.includes('--tcb-test')) {
     }
 }
 
-// debug 模式
-process.IS_DEBUG = processArgv.includes('--debug')
-if (processArgv.includes('completion')) {
-    return handleCompletion()
-}
-
 // 需要隐藏的选项
-const hideArgs = ['--debug', '--tcb-test', '--completion']
+const hideArgs = ['--tcb-test', '--verbose']
 hideArgs.forEach((arg) => {
     const index = processArgv.indexOf(arg)
     if (index > -1) {

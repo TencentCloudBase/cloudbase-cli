@@ -14,10 +14,8 @@ export const Credential = createParamDecorator(ParamTypes.Credential, async () =
 // 日志打印
 export const Log = createParamDecorator(ParamTypes.Log, () => {
     const args = getArgs()
-    const debug = process.IS_DEBUG || args['--debug']
     const verbose = process.VERBOSE || args['--verbose']
     const log = new Logger({
-        debug,
         verbose
     })
 

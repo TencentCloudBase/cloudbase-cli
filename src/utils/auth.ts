@@ -7,6 +7,7 @@ import { getProxy } from './tools'
 export interface IArgs extends arg.Spec {
     '--config-path': string
     '--envId': string
+    '-e': string
 }
 
 export const getArgs = (): arg.Result<IArgs> => {
@@ -14,7 +15,6 @@ export const getArgs = (): arg.Result<IArgs> => {
         {
             '--config-path': String(),
             '--envId': String(),
-            '--debug': String(),
             '--verbose': String(),
 
             // Alias

@@ -3,6 +3,7 @@ import { AuthSupevisor } from '@cloudbase/toolbox';
 export interface IArgs extends arg.Spec {
     '--config-path': string;
     '--envId': string;
+    '-e': string;
 }
 export declare const getArgs: () => arg.Result<IArgs>;
 export declare const getCloudBaseConfig: (configPath?: string) => Promise<import("@cloudbase/toolbox").ICloudBaseConfig>;

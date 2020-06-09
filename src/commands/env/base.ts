@@ -69,7 +69,7 @@ export class EnvRenameCommand extends Command {
 
     @InjectParams()
     async execute(@EnvId() envId, @ArgsParams() params, @Log() log: Logger) {
-        log.debug(params)
+        log.verbose(params)
 
         const name = params?.[0]
         if (!name) {
