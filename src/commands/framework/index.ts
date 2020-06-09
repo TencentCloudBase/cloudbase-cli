@@ -38,7 +38,7 @@ async function callFramework(ctx, command, module) {
 }
 
 @ICommand()
-export class FramworkDeploy extends Command {
+export class FrameworkDeploy extends Command {
     get options() {
         return {
             cmd: 'framework:deploy [module]',
@@ -61,7 +61,7 @@ export class FramworkDeploy extends Command {
 }
 
 @ICommand()
-export class FramworkCompile extends Command {
+export class FrameworkCompile extends Command {
     get options() {
         return {
             cmd: 'framework:compile [module]',
