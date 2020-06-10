@@ -16,7 +16,8 @@ import {
     execWithLoading,
     checkFullAccess,
     getMangerService,
-    checkAndGetCredential
+    checkAndGetCredential,
+    templateDownloadReport
 } from '../../utils'
 import { login } from '../../auth'
 import { ENV_STATUS, STATUS_TEXT } from '../../constant'
@@ -171,6 +172,7 @@ export class InitCommand extends Command {
                 })
                 templateName = selectTemplateName
             }
+
             const selectedTemplate = templateName
                 ? templates.find((item) => item.name === templateName)
                 : templates.find((item) => item.path === tempateId)
@@ -214,8 +216,14 @@ export class InitCommand extends Command {
             }
 
             await execWithLoading(
-                () =>
-                    this.extractTemplate(projectPath, selectedTemplate.path, selectedTemplate.url),
+                async () => {
+                    await templateDownloadReport(selectedTemplate.path, selectedTemplate.name)
+                    await this.extractTemplate(
+                        projectPath,
+                        selectedTemplate.path,
+                        selectedTemplate.url
+                    )
+                },
                 {
                     startTip: '下载文件中'
                 }
