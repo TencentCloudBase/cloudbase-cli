@@ -90,7 +90,7 @@ export class HostingDeploy extends Command {
 
     @InjectParams()
     async execute(@EnvId() envId, @ArgsParams() params, @Log() log: Logger) {
-        const localPath = params?.[0]
+        const localPath = params?.[0] || '.'
         const cloudPath = params?.[1] || ''
 
         log.verbose('本地目录', localPath)
