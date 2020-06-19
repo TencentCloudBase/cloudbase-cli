@@ -12,9 +12,21 @@ import { getProxy } from '../../utils'
 async function callFramework(ctx, command, module) {
     const { envId, config } = ctx
 
-    const { token, secretId, secretKey } = await AuthSupevisor.getInstance({
-        proxy: getProxy()
-    }).getLoginState()
+    let token
+    let secretId
+    let secretKey
+
+    try {
+        const loginState = await AuthSupevisor.getInstance({
+            proxy: getProxy()
+        }).getLoginState()
+
+        secretId = loginState.secretId
+        secretKey = loginState.secretKey
+        token = loginState.token
+    } catch (e) {
+        throw new Error('登录信息失效，请重新使用 cloudbase login 登录')
+    }
 
     await run(
         {
