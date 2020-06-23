@@ -110,7 +110,7 @@ export class LoginCommand extends Command {
                 printSuggestion()
             } else {
                 loading.fail('腾讯云密钥验证失败，请检查密钥是否正确或终端网络是否可用！')
-                return
+                return process.exit(1)
             }
         } else if (options.key) {
             // 兼容临时密钥和永久密钥登录
@@ -148,7 +148,7 @@ export class LoginCommand extends Command {
                 printSuggestion()
             } else {
                 loading.fail('腾讯云密钥验证失败，请检查密钥是否正确或终端网络是否可用！')
-                return
+                return process.exit(1)
             }
         } else {
             // 使用临时密钥登录-支持自动续期
@@ -162,7 +162,7 @@ export class LoginCommand extends Command {
             } else {
                 loading.fail(res.msg)
                 console.log('请检查你的网络，尝试重新运行 cloudbase login 命令！')
-                return
+                return process.exit(1)
             }
         }
 
@@ -180,6 +180,7 @@ export class LoginCommand extends Command {
             } else {
                 throw e
             }
+            process.exit(1)
         }
     }
 }

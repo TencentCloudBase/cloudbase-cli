@@ -10,5 +10,5 @@ export declare class LoginCommand extends Command {
         desc: string;
         requiredEnvId: boolean;
     };
-    execute(options: any, log: Logger): Promise<void>;
+    execute(options: any, log: Logger): Promise<never>;
 }
