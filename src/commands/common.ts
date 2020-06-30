@@ -9,7 +9,8 @@ import {
     collectUsage,
     loadingFactory,
     getNotification,
-    getCloudBaseConfig
+    getCloudBaseConfig,
+    authSupevisor
 } from '../utils'
 
 interface ICommandOption {
@@ -22,6 +23,8 @@ export interface ICommandOptions {
     options: ICommandOption[]
     desc: string
     requiredEnvId?: boolean
+    // 多数命令都需要登陆，不需要登陆的命令需要特别声明
+    withoutAuth?: boolean
 }
 
 const validOptions = (options) => {
@@ -62,9 +65,9 @@ export abstract class Command extends EventEmitter {
         return this
     }
 
-    // 初始化参数
+    // 初始化命令
     public init() {
-        const { cmd, options, desc, requiredEnvId = true } = this.options
+        const { cmd, options, desc, requiredEnvId = true, withoutAuth = false } = this.options
 
         let instance = program.command(cmd)
         options.forEach((option) => {
@@ -81,6 +84,13 @@ export abstract class Command extends EventEmitter {
             const cmdOptions: any = args.splice(-1)?.[0]
             const config = await getCloudBaseConfig(cmdOptions?.parent?.configFile)
             const envId = cmdOptions?.envId || config?.envId
+
+            const loginState = await authSupevisor.getLoginState()
+
+            // 校验登陆态
+            if (!withoutAuth && !loginState) {
+                throw new CloudBaseError('无有效身份信息，请使用 cloudbase login 登录')
+            }
 
             if (!envId && requiredEnvId) {
                 throw new CloudBaseError(

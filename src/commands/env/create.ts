@@ -58,12 +58,12 @@ export class CreateCommand extends Command {
             default: 'postpay'
         })
 
-        // 通过控制台授权登陆的用户无订单支付权限
+        // 通过控制台授权登录的用户无订单支付权限
         const { confirm } = await inquirer.prompt({
             type: 'confirm',
             name: 'confirm',
             message:
-                '因支付权限问题，仅支持通过 API 秘钥登陆的主账户使用 CLI 创建包年包月免费环境，其他用户需要登陆控制台支付相关订单才能完成环境创建，是否继续？',
+                '因支付权限问题，仅支持通过 API 秘钥登录的主账户使用 CLI 创建包年包月免费环境，其他用户需要登录控制台支付相关订单才能完成环境创建，是否继续？',
             default: false
         })
 

@@ -6,6 +6,7 @@ export declare class LogoutCommand extends Command {
         options: any[];
         desc: string;
         requiredEnvId: boolean;
+        withoutAuth: boolean;
     };
     execute(log: Logger): Promise<void>;
 }

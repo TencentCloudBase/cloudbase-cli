@@ -75,7 +75,8 @@ export class LoginCommand extends Command {
                 }
             ],
             desc: '登录腾讯云账号',
-            requiredEnvId: false
+            requiredEnvId: false,
+            withoutAuth: true
         }
     }
 

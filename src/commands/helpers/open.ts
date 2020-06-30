@@ -27,7 +27,8 @@ export class OpenLinkCommand extends Command {
             cmd: 'open [link]',
             options: [],
             desc: '在浏览器中打开云开发相关连接',
-            requiredEnvId: false
+            requiredEnvId: false,
+            withoutAuth: true
         }
     }
 

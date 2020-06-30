@@ -7,12 +7,6 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
-            "program": "${workspaceFolder}/src/utils/runtime/nodejs/bootstrap.js"
-        },
-        {
-            "type": "node",
-            "request": "launch",
             "name": "Debug: cloudbase logout",
             "program": "${workspaceFolder}/bin/cloudbase.js",
             "args": ["logout"],

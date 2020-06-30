@@ -56,7 +56,8 @@ export class InitCommand extends Command {
                 }
             ],
             desc: '创建并初始化一个新的云开发项目',
-            requiredEnvId: false
+            requiredEnvId: false,
+            withoutAuth: true
         }
     }
 

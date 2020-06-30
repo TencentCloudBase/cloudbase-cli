@@ -10,7 +10,8 @@ export class LogoutCommand extends Command {
             cmd: 'logout',
             options: [],
             desc: '登出腾讯云账号',
-            requiredEnvId: false
+            requiredEnvId: false,
+            withoutAuth: true
         }
     }
 

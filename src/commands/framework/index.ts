@@ -1,32 +1,16 @@
-import { Command, ICommand } from '../common'
 import { run } from '@cloudbase/framework-core'
+import { Command, ICommand } from '../common'
 import { ICommandContext } from '../../types'
-
 import { InjectParams, CmdContext, ArgsParams, Log, Logger } from '../../decorators'
 
 import * as Hosting from '../../hosting'
 import * as Function from '../../function'
-import { AuthSupevisor } from '@cloudbase/toolbox'
-import { getProxy } from '../../utils'
+import { authSupevisor } from '../../utils'
 
 async function callFramework(ctx, command, module) {
     const { envId, config } = ctx
-
-    let token
-    let secretId
-    let secretKey
-
-    try {
-        const loginState = await AuthSupevisor.getInstance({
-            proxy: getProxy()
-        }).getLoginState()
-
-        secretId = loginState.secretId
-        secretKey = loginState.secretKey
-        token = loginState.token
-    } catch (e) {
-        throw new Error('登录信息失效，请重新使用 cloudbase login 登录')
-    }
+    const loginState = await authSupevisor.getLoginState()
+    const { token, secretId, secretKey } = loginState
 
     await run(
         {

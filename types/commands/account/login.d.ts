@@ -9,6 +9,7 @@ export declare class LoginCommand extends Command {
         }[];
         desc: string;
         requiredEnvId: boolean;
+        withoutAuth: boolean;
     };
     execute(options: any, log: Logger): Promise<never>;
 }

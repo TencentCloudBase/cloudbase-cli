@@ -10,6 +10,7 @@ export interface ICommandOptions {
     options: ICommandOption[];
     desc: string;
     requiredEnvId?: boolean;
+    withoutAuth?: boolean;
 }
 export declare function ICommand(): ClassDecorator;
 export declare function registerCommands(): void;

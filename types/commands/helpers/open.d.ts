@@ -5,6 +5,7 @@ export declare class OpenLinkCommand extends Command {
         options: any[];
         desc: string;
         requiredEnvId: boolean;
+        withoutAuth: boolean;
     };
     execute(params: any): Promise<void>;
 }

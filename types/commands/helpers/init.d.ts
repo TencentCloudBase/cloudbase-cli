@@ -9,6 +9,7 @@ export declare class InitCommand extends Command {
         }[];
         desc: string;
         requiredEnvId: boolean;
+        withoutAuth: boolean;
     };
     execute(options: any, log?: Logger): Promise<void>;
     checkLogin(log?: Logger): Promise<void>;
