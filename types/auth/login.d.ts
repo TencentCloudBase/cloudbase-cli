@@ -8,7 +8,7 @@ export declare function loginByWebAuth(): Promise<{
     msg: string;
     credential: any;
 }>;
-export declare function loginWithKey(secretId?: string, secretKey?: string): Promise<{
+export declare function loginWithKey(secretId?: string, secretKey?: string, token?: string): Promise<{
     code: string;
     msg: string;
 }>;

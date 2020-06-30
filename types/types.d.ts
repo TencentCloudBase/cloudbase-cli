@@ -151,6 +151,7 @@ export interface ILoginOptions {
     key?: boolean;
     secretId?: string;
     secretKey?: string;
+    token?: string;
     getAuthUrl?: (url: string) => string;
 }
 export interface GatewayContext {

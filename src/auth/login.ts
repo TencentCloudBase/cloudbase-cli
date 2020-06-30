@@ -50,8 +50,8 @@ export async function loginByWebAuth() {
     }
 }
 
-// 使用永久密钥登录
-export async function loginWithKey(secretId?: string, secretKey?: string) {
+// 使用密钥登录
+export async function loginWithKey(secretId?: string, secretKey?: string, token?: string) {
     if (!secretId || !secretKey) {
         return LoginRes.INVALID_PARAM('SecretID 或 SecretKey 不能为空')
     }
@@ -59,7 +59,7 @@ export async function loginWithKey(secretId?: string, secretKey?: string) {
     let credential
 
     try {
-        credential = await authSupevisor.loginByApiSecret(secretId, secretKey)
+        credential = await authSupevisor.loginByApiSecret(secretId, secretKey, token)
     } catch (e) {
         return LoginRes.CHECK_LOGIN_FAILED
     }
@@ -74,6 +74,6 @@ export async function loginWithKey(secretId?: string, secretKey?: string) {
 export async function login(
     options: ILoginOptions = {}
 ): Promise<{ code: string; msg: string; credential?: Credential }> {
-    const { secretId, secretKey, key } = options
-    return key ? loginWithKey(secretId, secretKey) : loginByWebAuth()
+    const { secretId, secretKey, key, token } = options
+    return key ? loginWithKey(secretId, secretKey, token) : loginByWebAuth()
 }

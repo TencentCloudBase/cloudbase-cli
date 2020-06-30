@@ -72,6 +72,10 @@ export class LoginCommand extends Command {
                 {
                     flags: '--apiKey <apiKey>',
                     desc: '腾讯云 API 秘钥 Key'
+                },
+                {
+                    flags: '--token <token>',
+                    desc: '腾讯云 API 临时秘钥 Token'
                 }
             ],
             desc: '登录腾讯云账号',
@@ -83,7 +87,7 @@ export class LoginCommand extends Command {
     @InjectParams()
     async execute(@ArgsOptions() options, @Log() log: Logger) {
         log.verbose(options)
-        const { apiKeyId, apiKey } = options
+        const { apiKeyId, apiKey, token } = options
         const loading = loadingFactory()
         loading.start('检验登录状态')
 
@@ -101,6 +105,7 @@ export class LoginCommand extends Command {
             loading.start('正在验证腾讯云密钥...')
 
             const res = await login({
+                token,
                 key: true,
                 secretKey: apiKey,
                 secretId: apiKeyId

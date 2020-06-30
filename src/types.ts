@@ -182,6 +182,7 @@ export interface ILoginOptions {
     key?: boolean
     secretId?: string
     secretKey?: string
+    token?: string
     // 修改浏览器登录打开的链接
     getAuthUrl?: (url: string) => string
 }
