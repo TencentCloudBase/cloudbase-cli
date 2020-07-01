@@ -4,12 +4,20 @@ import {
     listLayerVersions,
     attachLayer,
     getFunctionDetail,
-    unAttachLayer
+    unAttachLayer,
+    listFunction
 } from '../../../function'
 import { Command, ICommand } from '../../common'
 import { loadingFactory } from '../../../utils'
 import { CloudBaseError } from '../../../error'
-import { InjectParams, EnvId, ArgsOptions } from '../../../decorators'
+import { InjectParams, EnvId, ArgsOptions, ArgsParams } from '../../../decorators'
+
+const LayerStatusMap = {
+    Active: '正常',
+    Publishing: '发布中',
+    PublishFailed: '发布失败',
+    Deleted: '已删除'
+}
 
 @ICommand()
 export class AttachFileLayer extends Command {
@@ -31,18 +39,33 @@ export class AttachFileLayer extends Command {
     }
 
     @InjectParams()
-    async execute(@EnvId() envId, @ArgsOptions() options) {
+    async execute(@EnvId() envId, @ArgsParams() params, @ArgsOptions() options) {
         const { codeSecret } = options
+        const fnName = params?.[0]
 
         const loading = loadingFactory()
         loading.start('数据加载中...')
+
+        // 检查函数是否存在当前环境中
+        const envFunctions = await listFunction({
+            envId
+        })
+        const exist = envFunctions.find((fn) => fn.FunctionName === fnName)
+        if (!exist) {
+            throw new CloudBaseError(`当前环境不存在此函数 [${fnName}]`)
+        }
+
         let layers: any[] = await listLayers({
             offset: 0,
             limit: 200
         })
+
         loading.stop()
 
-        layers = layers.map((item) => item.LayerName)
+        layers = layers.map((item) => ({
+            name: `[${LayerStatusMap[item.Status] || '异常'}] ${item.LayerName}`,
+            value: item.LayerName
+        }))
 
         if (!layers.length) {
             throw new CloudBaseError('没有可用的文件层，请先创建文件层！')
@@ -52,7 +75,11 @@ export class AttachFileLayer extends Command {
             type: 'select',
             name: 'layer',
             message: '选择文件层名称',
-            choices: layers
+            choices: layers,
+            result(choices) {
+                const keys = Object.values(this.map(choices)) as string[]
+                return keys[0]
+            }
         })
 
         let versions = await listLayerVersions({
@@ -75,11 +102,12 @@ export class AttachFileLayer extends Command {
         loading.start('文件层绑定中...')
         await attachLayer({
             envId,
-            functionName: name,
+            functionName: fnName,
             layerName: layer,
             layerVersion: Number(version),
             codeSecret
         })
+
         loading.succeed('文件层绑定成功！')
     }
 }
