@@ -1,23 +1,28 @@
 import { loadingFactory } from '../utils'
 import { CloudBaseError } from '../error'
-import { ICreateFunctionOptions } from '../types'
 import { getFunctionService } from './base'
+import { ICreateFunctionOptions, ICloudFunction } from '../types'
 
 // 创建云函数
 export async function createFunction(options: ICreateFunctionOptions): Promise<void> {
     const {
-        functionRootPath = '',
-        functionPath,
         envId,
+        accessPath,
+        codeSecret,
         force = false,
+        functionPath,
         base64Code = '',
-        codeSecret
+        functionRootPath = ''
     } = options
+
     // 兼容处理 config
-    const func = {
+    const func: ICloudFunction & { path?: string } = {
         ...options?.func?.config,
         ...options.func
     }
+
+    // 覆盖默认的路径
+    accessPath && (func.path = accessPath)
 
     const funcName = func.name
 

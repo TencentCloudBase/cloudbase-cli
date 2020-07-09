@@ -52,24 +52,24 @@ export class CreateService extends Command {
             let { name } = await prompt({
                 type: 'select',
                 name: 'name',
-                message: '请选择创建 HTTP Service 的云函数',
+                message: '请选择创建云接入的云函数',
                 choices: functions.map((item) => item.FunctionName)
             })
 
             let { path } = await prompt({
                 type: 'input',
                 name: 'path',
-                message: '请输入 HTTP Service 路径（以 / 开头）'
+                message: '请输入云接入路径（以 / 开头）'
             })
 
             functionName = name
             servicePath = path
         }
 
-        assertTruthy(servicePath, '请指定需要创建的 HTTP Service 路径！')
+        assertTruthy(servicePath, '请指定需要创建的云接入路径！')
 
         // 创建云函数网关
-        loading.start(`[${functionName}] 云函数 HTTP Service 创建中...`)
+        loading.start(`[${functionName}] 云接入创建中...`)
 
         try {
             // step1: 判断云函数是否存在
@@ -89,7 +89,7 @@ export class CreateService extends Command {
                 name: functionName
             })
             const link = genClickableLink(`https://${envId}.service.tcloudbase.com${servicePath}`)
-            loading.succeed(`云函数 HTTP Service 创建成功！\n点击访问> ${link}`)
+            loading.succeed(`云接入创建成功！\n点击访问> ${link}`)
         } catch (e) {
             loading.stop()
             if (e.code === 'InvalidParameter.APICreated') {

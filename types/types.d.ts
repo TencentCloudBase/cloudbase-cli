@@ -109,6 +109,7 @@ export interface ICreateFunctionOptions {
     log?: boolean;
     codeSecret?: string;
     functionPath?: string;
+    accessPath?: string;
 }
 export interface IListFunctionOptions {
     limit?: number;

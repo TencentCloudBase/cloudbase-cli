@@ -23,7 +23,7 @@ export class BindCustomDomainCommand extends Command {
                     desc: '环境 Id'
                 }
             ],
-            desc: '绑定自定义 HTTP Service 域名'
+            desc: '绑定自定义云接入域名'
         }
     }
 
@@ -34,7 +34,7 @@ export class BindCustomDomainCommand extends Command {
         console.log(domain)
 
         if (!domain) {
-            throw new CloudBaseError('请指定需要绑定的 HTTP Service 域名！')
+            throw new CloudBaseError('请指定需要绑定的云接入域名！')
         }
 
         const loading = loadingFactory()
@@ -68,7 +68,7 @@ export class GetCustomDomainsCommand extends Command {
                     desc: '域名'
                 }
             ],
-            desc: '查询自定义 HTTP Service 域名'
+            desc: '查询自定义云接入域名'
         }
     }
 
@@ -77,11 +77,11 @@ export class GetCustomDomainsCommand extends Command {
         const { domain: domainName } = options
 
         if (!envId && !domainName) {
-            throw new CloudBaseError('请指定需要查询的环境 ID 或 HTTP Service 域名！')
+            throw new CloudBaseError('请指定需要查询的环境 ID 或云接入域名！')
         }
 
         const loading = loadingFactory()
-        loading.start('查询 HTTP Service 域名中...')
+        loading.start('查询云接入域名中...')
 
         try {
             const res = await queryGatewayDomain({
@@ -89,7 +89,7 @@ export class GetCustomDomainsCommand extends Command {
                 domain: domainName
             })
 
-            loading.succeed('查询 HTTP Service 域名成功！')
+            loading.succeed('查询云接入域名成功！')
 
             if (!res?.ServiceSet?.length) {
                 log.info('HTTP Service 域名为空！')
@@ -121,7 +121,7 @@ export class UnbindCustomDomainCommand extends Command {
                     desc: '环境 Id'
                 }
             ],
-            desc: '解绑自定义 HTTP Service 域名'
+            desc: '解绑自定义云接入域名'
         }
     }
 
@@ -130,7 +130,7 @@ export class UnbindCustomDomainCommand extends Command {
         const domain = params?.[0]
 
         if (!domain) {
-            throw new CloudBaseError('请指定需要解绑的 HTTP Service 域名！')
+            throw new CloudBaseError('请指定需要解绑的云接入域名！')
         }
 
         const loading = loadingFactory()

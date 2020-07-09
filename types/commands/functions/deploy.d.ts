@@ -1,7 +1,7 @@
 import { Command } from '../common';
 import { CloudBaseError } from '../../error';
-import { Logger } from '../../decorators';
 import { ICreateFunctionOptions } from '../../types';
+import { Logger } from '../../decorators';
 export declare class FunctionDeploy extends Command {
     get options(): {
         cmd: string;

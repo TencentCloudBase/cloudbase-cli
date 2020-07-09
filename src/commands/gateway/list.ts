@@ -28,7 +28,7 @@ export class ListServiceCommand extends Command {
                     desc: 'Service Id'
                 }
             ],
-            desc: '获取 HTTP Service 列表'
+            desc: '获取云接入列表'
         }
     }
 
@@ -37,11 +37,11 @@ export class ListServiceCommand extends Command {
         const { domain: domainName, servicePath, serviceId } = options
 
         if (!envId && !domainName) {
-            throw new CloudBaseError('请指定需要查询的环境 ID 或 HTTP Service 自定义域名！')
+            throw new CloudBaseError('请指定需要查询的环境 ID 或云接入自定义域名！')
         }
 
         const loading = loadingFactory()
-        loading.start('查询 HTTP Service 中...')
+        loading.start('查询云接入中...')
 
         try {
             const res = await queryGateway({

@@ -15,7 +15,7 @@ export class ServiceSwitchCommand extends Command {
                     desc: '环境 Id'
                 }
             ],
-            desc: '开启/关闭 HTTP Service 服务'
+            desc: '开启/关闭云接入服务'
         }
     }
 
@@ -32,7 +32,7 @@ export class ServiceSwitchCommand extends Command {
         const { enable } = await prompt({
             type: 'select',
             name: 'enable',
-            message: `开启/关闭 HTTP Service 服务（当前状态：${status}）`,
+            message: `开启/关闭云接入服务（当前状态：${status}）`,
             choices: ['开启', '关闭']
         })
 
@@ -62,7 +62,7 @@ export class ServiceAuthSwitch extends Command {
                     desc: '环境 Id'
                 }
             ],
-            desc: '开启/关闭 HTTP Service 服务访问鉴权'
+            desc: '开启/关闭云接入服务访问鉴权'
         }
     }
 
@@ -79,7 +79,7 @@ export class ServiceAuthSwitch extends Command {
         const { enable } = await prompt({
             type: 'select',
             name: 'enable',
-            message: `开启/关闭 HTTP Service 服务访问鉴权（当前状态：${status}）`,
+            message: `开启/关闭云接入服务访问鉴权（当前状态：${status}）`,
             choices: ['开启', '关闭']
         })
 

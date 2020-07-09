@@ -12,9 +12,9 @@ import {
     checkFullAccess,
     isDirectory
 } from '../../utils'
+import { ICreateFunctionOptions } from '../../types'
 import { DefaultFunctionDeployConfig } from '../../constant'
 import { InjectParams, CmdContext, ArgsParams, Log, Logger } from '../../decorators'
-import { ICreateFunctionOptions } from '../../types'
 
 @ICommand()
 export class FunctionDeploy extends Command {
@@ -36,11 +36,15 @@ export class FunctionDeploy extends Command {
                 },
                 {
                     flags: '--path <path>',
-                    desc: '指定云函数的文件夹路径'
+                    desc: '自动创建云接入访问路径'
                 },
                 {
                     flags: '--all',
                     desc: '部署配置文件中的包含的全部云函数'
+                },
+                {
+                    flags: '--dir <dir>',
+                    desc: '指定云函数的文件夹路径'
                 }
             ],
             desc: '部署云函数'
@@ -51,16 +55,25 @@ export class FunctionDeploy extends Command {
     async execute(@CmdContext() ctx, @ArgsParams() params, @Log() log: Logger) {
         const { envId, config, options } = ctx
         const { functions } = config
-        const { force, codeSecret, path: funcPath, all } = options
+        const { force, codeSecret, path: access, all, dir } = options
         const functionRootPath = path.join(process.cwd(), config.functionRoot)
         const name = params?.[0]
 
+        if (access && checkFullAccess(access)) {
+            log.warn('--path 参数已更换为云接入路径，请使用 --dir 指定部署函数的文件夹路径')
+        }
+
+        if (access && access[0] !== '/') {
+            throw new CloudBaseError('云接入路径必须以 / 开头')
+        }
+
         // 当没有指定函数名称或函数路径时，询问处理否部署全部云函数
-        if ((!name && !funcPath) || all) {
+        if ((!name && !dir) || all) {
             return this.deployAllFunction({
                 all,
                 envId,
                 force,
+                access,
                 functions,
                 codeSecret,
                 functionRootPath
@@ -68,9 +81,9 @@ export class FunctionDeploy extends Command {
         }
 
         // 校验函数路径是否存在
-        if (funcPath) {
-            checkFullAccess(funcPath, true)
-            if (!isDirectory(funcPath)) {
+        if (dir) {
+            checkFullAccess(dir, true)
+            if (!isDirectory(dir)) {
                 throw new CloudBaseError('--path 参数必须指定为云函数的文件夹路径')
             }
         }
@@ -99,8 +112,9 @@ export class FunctionDeploy extends Command {
                 envId,
                 codeSecret,
                 functionRootPath,
-                functionPath: funcPath,
-                func: newFunction
+                func: newFunction,
+                accessPath: access,
+                functionPath: dir
             })
             loading.succeed(`[${newFunction.name}] 云函数部署成功！`)
             // await genApiGateway(envId, name)
@@ -108,18 +122,26 @@ export class FunctionDeploy extends Command {
         } catch (e) {
             // 询问是否覆盖同名函数
             loading.stop()
-            this.handleDeployFail(e, {
+            await this.handleDeployFail(e, {
                 envId,
                 codeSecret,
                 functionRootPath,
                 func: newFunction,
-                functionPath: funcPath
+                accessPath: access,
+                functionPath: dir
             })
+        }
+
+        if (access || newFunction.path) {
+            const link = genClickableLink(
+                `https://${envId}.service.tcloudbase.com${access || newFunction.path}`
+            )
+            console.log(`\n云函数云接入访问链接：${link}`)
         }
     }
 
     async deployAllFunction(options: any) {
-        const { functions = [], envId, force, codeSecret, functionRootPath, all } = options
+        const { functions = [], envId, force, codeSecret, functionRootPath, all, access } = options
 
         // 指定 all 参数，直接部署全部云函数
         if (!all) {
@@ -148,16 +170,18 @@ export class FunctionDeploy extends Command {
                     envId,
                     force,
                     codeSecret,
-                    functionRootPath
+                    functionRootPath,
+                    accessPath: access
                 })
                 loading.succeed(`[${func.name}] 云函数部署成功`)
             } catch (e) {
                 loading.stop()
-                this.handleDeployFail(e, {
+                await this.handleDeployFail(e, {
                     func,
                     envId,
                     codeSecret,
-                    functionRootPath
+                    functionRootPath,
+                    accessPath: access
                 })
             }
         })
@@ -166,7 +190,7 @@ export class FunctionDeploy extends Command {
     }
 
     async handleDeployFail(e: CloudBaseError, options: ICreateFunctionOptions) {
-        const { envId, codeSecret, functionRootPath, func, functionPath } = options
+        const { envId, codeSecret, functionRootPath, func, functionPath, accessPath } = options
         const loading = loadingFactory()
 
         if (e.code === 'ResourceInUse.FunctionName' || e.code === 'ResourceInUse.Function') {
@@ -183,10 +207,11 @@ export class FunctionDeploy extends Command {
                     await createFunction({
                         func,
                         envId,
-                        force: true,
                         codeSecret,
-                        functionRootPath,
-                        functionPath
+                        accessPath,
+                        force: true,
+                        functionPath,
+                        functionRootPath
                     })
                     loading.succeed(`[${func.name}] 云函数部署成功！`)
                     // await genApiGateway(envId, name)
@@ -206,7 +231,7 @@ export class FunctionDeploy extends Command {
     printSuccessTips(envId: string, @Log() log?: Logger) {
         const link = genClickableLink(`https://console.cloud.tencent.com/tcb/scf?envId=${envId}`)
         log.breakLine()
-        log.info(`控制台查看函数详情或创建 HTTP Service 链接 🔗：${link}`)
+        log.info(`控制台查看函数详情或创建云接入链接 🔗：${link}`)
         log.info(`使用 ${highlightCommand('cloudbase functions:list')} 命令查看已部署云函数`)
     }
 
@@ -220,7 +245,7 @@ export class FunctionDeploy extends Command {
         })
         // 未开启，不生成 HTTP 调用了链接
         if (res?.EnableService === false) return
-        loading.start('生成云函数 HTTP Service 中...')
+        loading.start('生成云函数云接入中...')
 
         let path
         if (res?.APISet?.length > 0) {
@@ -235,6 +260,6 @@ export class FunctionDeploy extends Command {
         }
         loading.stop()
         const link = genClickableLink(`https://${envId}.service.tcloudbase.com${path}`)
-        console.log(`\n云函数 HTTP Service 链接：${link}`)
+        console.log(`\n云函数云接入链接：${link}`)
     }
 }
