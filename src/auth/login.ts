@@ -22,23 +22,14 @@ const LoginRes = {
             code: 'INVALID_PARAM',
             msg: `参数无效：${msg}`
         }
-    },
-    UNKNOWN_ERROR(msg) {
-        return {
-            code: 'UNKNOWN_ERROR',
-            msg: `未知错误：${msg}`
-        }
     }
 }
 
 // 打开腾讯云-云开发控制台，通过获取临时密钥登录，临时密钥可续期，最长时间为 1 个月
 export async function loginByWebAuth() {
-    let credential
-    try {
-        credential = await authSupevisor.loginByWebAuth()
-    } catch (e) {
-        return LoginRes.UNKNOWN_ERROR(e.message)
-    }
+    const credential = await authSupevisor.loginByWebAuth({
+        throwError: true
+    })
 
     if (_.isEmpty(credential)) {
         return LoginRes.INVALID_TOKEN

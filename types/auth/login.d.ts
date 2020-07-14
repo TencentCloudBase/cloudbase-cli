@@ -6,7 +6,7 @@ export declare function loginByWebAuth(): Promise<{
 } | {
     code: string;
     msg: string;
-    credential: any;
+    credential: Credential;
 }>;
 export declare function loginWithKey(secretId?: string, secretKey?: string, token?: string): Promise<{
     code: string;

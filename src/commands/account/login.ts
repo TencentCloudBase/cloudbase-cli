@@ -167,7 +167,7 @@ export class LoginCommand extends Command {
                 printSuggestion()
             } else {
                 loading.fail(res.msg)
-                console.log('请检查你的网络，尝试重新运行 cloudbase login 命令！')
+                console.log('Web 授权登录失败，秘钥校验失败！')
                 return process.exit(1)
             }
         }
