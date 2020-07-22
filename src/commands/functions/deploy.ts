@@ -84,7 +84,7 @@ export class FunctionDeploy extends Command {
         if (dir) {
             checkFullAccess(dir, true)
             if (!isDirectory(dir)) {
-                throw new CloudBaseError('--path 参数必须指定为云函数的文件夹路径')
+                throw new CloudBaseError('--dir 参数必须指定为云函数的文件夹路径')
             }
         }
 

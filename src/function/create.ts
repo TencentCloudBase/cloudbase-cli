@@ -26,16 +26,6 @@ export async function createFunction(options: ICreateFunctionOptions): Promise<v
 
     const funcName = func.name
 
-    // 校验运行时
-    const validRuntime = ['Nodejs8.9', 'Php7', 'Java8', 'Nodejs10.15']
-    if (func.runtime && !validRuntime.includes(func.runtime)) {
-        throw new CloudBaseError(
-            `${funcName} Invalid runtime value：${
-                func.runtime
-            }. Now only support: ${validRuntime.join(', ')}`
-        )
-    }
-
     const scfService = await getFunctionService(envId)
 
     func.isWaitInstall = true
@@ -53,7 +43,8 @@ export async function createFunction(options: ICreateFunctionOptions): Promise<v
         // 不强制覆盖，抛出错误
         if (e.message && !force) {
             throw new CloudBaseError(`[${funcName}] 部署失败，${e.message}`, {
-                code: e.code
+                code: e.code,
+                original: e
             })
         }
         throw e

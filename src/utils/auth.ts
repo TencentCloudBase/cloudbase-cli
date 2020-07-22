@@ -28,11 +28,12 @@ export const getArgs = (): arg.Result<IArgs> => {
 
 export const getCloudBaseConfig = async (configPath?: string) => {
     const args = getArgs()
-    const assignConfigPath = configPath || args['--config-path'] || process.cwd()
 
-    const projectPath = path.resolve(assignConfigPath)
+    let specificConfigPath = configPath || args['--config-path']
+    specificConfigPath = specificConfigPath ? path.resolve(specificConfigPath) : undefined
+
     const config = await resolveCloudBaseConfig({
-        searchFrom: projectPath
+        configPath: specificConfigPath
     })
     return config
 }
