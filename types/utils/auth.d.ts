@@ -6,6 +6,6 @@ export interface IArgs extends arg.Spec {
     '-e': string;
 }
 export declare const getArgs: () => arg.Result<IArgs>;
-export declare const getCloudBaseConfig: (configPath?: string) => Promise<import("@cloudbase/toolbox").ICloudBaseConfig>;
+export declare const getCloudBaseConfig: (configPath?: string) => Promise<any>;
 export declare const authSupevisor: AuthSupevisor;
 export declare function getLoginState(): Promise<import("@cloudbase/toolbox").Credential>;

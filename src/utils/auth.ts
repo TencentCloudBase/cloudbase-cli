@@ -1,6 +1,6 @@
 import arg from 'arg'
 import path from 'path'
-import { AuthSupevisor, resolveCloudBaseConfig } from '@cloudbase/toolbox'
+import { AuthSupevisor, ConfigParser } from '@cloudbase/toolbox'
 import { getProxy } from './tools'
 
 // https://www.npmjs.com/package/arg
@@ -32,9 +32,10 @@ export const getCloudBaseConfig = async (configPath?: string) => {
     let specificConfigPath = configPath || args['--config-path']
     specificConfigPath = specificConfigPath ? path.resolve(specificConfigPath) : undefined
 
-    const config = await resolveCloudBaseConfig({
-        configPath: specificConfigPath
+    const parser = new ConfigParser({
+        configPath: specificConfigPath 
     })
+    const config = await parser.get()
     return config
 }
 

@@ -103,6 +103,7 @@ Sentry.configureScope((scope) => {
 
 // 设置 options 选项
 program.option('--config-file <path>', '设置配置文件，默认为 ./cloudbaserc.js 或 .cloudbaserc.json')
+program.option('--mode <mode>', '设置当前工作模式')
 
 program.version(pkg.version, '-v, --version', '输出当前 CloudBase CLI 版本')
 
