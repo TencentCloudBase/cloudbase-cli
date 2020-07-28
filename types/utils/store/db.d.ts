@@ -1,6 +1,7 @@
+import low from 'lowdb';
 export declare const cloudbaseConfigDir: string;
-export declare function getAsyncDB(file: string): any;
-export declare function getSyncDB(file: string): any;
+export declare function getAsyncDB(file: string): Promise<low.LowdbAsync<any>>;
+export declare function getSyncDB(file: string): low.LowdbSync<any>;
 export declare class LocalStore {
     db: any;
     dbKey: string;
