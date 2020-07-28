@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import program from 'commander'
+import { Command as Commander } from 'commander'
 import * as Sentry from '@sentry/node'
 import { EventEmitter } from 'events'
 import { CloudBaseError } from '../error'
@@ -19,9 +19,15 @@ interface ICommandOption {
 }
 
 export interface ICommandOptions {
+    // 基础资源命令
     cmd: string
+    // 嵌套子命令
+    childCmd?: string
+    // 命令选项
     options: ICommandOption[]
+    // 命令描述
     desc: string
+    // 使用命令时是否必须要传入 EnvId
     requiredEnvId?: boolean
     // 多数命令都需要登陆，不需要登陆的命令需要特别声明
     withoutAuth?: boolean
@@ -36,6 +42,7 @@ const validOptions = (options) => {
 type CommandConstructor = new () => Command
 
 const registrableCommands: CommandConstructor[] = []
+const cmdMap = new Map()
 
 // 装饰器收集命令
 export function ICommand(): ClassDecorator {
@@ -67,9 +74,30 @@ export abstract class Command extends EventEmitter {
 
     // 初始化命令
     public init() {
-        const { cmd, options, desc, requiredEnvId = true, withoutAuth = false } = this.options
+        const {
+            cmd,
+            desc,
+            options,
+            childCmd,
+            requiredEnvId = true,
+            withoutAuth = false
+        } = this.options
 
-        let instance = program.command(cmd)
+        // 不能使用 new Commander 重复声明同一个命令，需要缓存 cmd 实例
+        let instance
+        if (cmdMap.has(cmd)) {
+            instance = cmdMap.get(cmd)
+        } else {
+            instance = new Commander(cmd)
+            cmdMap.set(cmd, instance)
+        }
+
+        if (childCmd) {
+            instance = instance.command(childCmd)
+        }
+
+        instance.storeOptionsAsProperties(false).passCommandToAction(false)
+
         options.forEach((option) => {
             instance = instance.option(option.flags, option.desc)
         })
@@ -81,7 +109,8 @@ export abstract class Command extends EventEmitter {
             // 命令的参数
             const params = args.slice(0, -1)
             // 最后一个参数为 commander 的 options
-            const cmdOptions: any = args.splice(-1)?.[0]
+            // const cmdOptions: any = args.splice(-1)?.[0]
+            const cmdOptions: any = args.splice(-1)
             const config = await getCloudBaseConfig(cmdOptions?.parent?.configFile)
             const envId = cmdOptions?.envId || config?.envId
 

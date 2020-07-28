@@ -7,6 +7,7 @@ interface ICommandOption {
 }
 export interface ICommandOptions {
     cmd: string;
+    childCmd?: string;
     options: ICommandOption[];
     desc: string;
     requiredEnvId?: boolean;
