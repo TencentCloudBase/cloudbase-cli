@@ -74,7 +74,7 @@ export class LoginCommand extends Command {
                     desc: '腾讯云 API 秘钥 Key'
                 },
                 {
-                    flags: '--token <token>',
+                    flags: '--token [token]',
                     desc: '腾讯云 API 临时秘钥 Token'
                 }
             ],

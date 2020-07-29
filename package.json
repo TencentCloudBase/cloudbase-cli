@@ -28,9 +28,9 @@
     "license": "ISC",
     "dependencies": {
         "@cloudbase/cloud-api": "^0.1.6",
-        "@cloudbase/framework-core": "^0.6.0",
+        "@cloudbase/framework-core": "^0.6.3",
         "@cloudbase/manager-node": "^3.4.1",
-        "@cloudbase/toolbox": "^0.4.7",
+        "@cloudbase/toolbox": "^0.4.9",
         "@sentry/node": "^5.10.2",
         "address": "^1.1.2",
         "archiver": "^3.1.1",
