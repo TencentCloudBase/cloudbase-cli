@@ -115,6 +115,8 @@ if (process.argv.length < 3) {
     smartDeploy()
 }
 
+program.addHelpCommand(false)
+
 try {
     program.parse(processArgv)
 } catch (e) {
