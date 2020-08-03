@@ -5,6 +5,8 @@ import { Logger } from '../../decorators';
 export declare class FunctionDeploy extends Command {
     get options(): {
         cmd: string;
+        childCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;

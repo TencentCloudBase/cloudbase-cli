@@ -1,4 +1,5 @@
 import 'reflect-metadata'
-import { registerCommands } from './commands'
+import { registerCommands } from './commands/common'
+import './commands'
 
 registerCommands()

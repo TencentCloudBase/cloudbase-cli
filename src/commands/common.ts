@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import { Command as Commander } from 'commander'
+import { program, Command as Commander } from 'commander'
 import * as Sentry from '@sentry/node'
 import { EventEmitter } from 'events'
 import { CloudBaseError } from '../error'
@@ -12,6 +12,7 @@ import {
     getCloudBaseConfig,
     authSupevisor
 } from '../utils'
+import logSymbols from 'log-symbols'
 
 interface ICommandOption {
     flags: string
@@ -19,6 +20,8 @@ interface ICommandOption {
 }
 
 export interface ICommandOptions {
+    // 废弃的命令
+    deprecateCmd?: string
     // 基础资源命令
     cmd: string
     // 嵌套子命令
@@ -31,12 +34,6 @@ export interface ICommandOptions {
     requiredEnvId?: boolean
     // 多数命令都需要登陆，不需要登陆的命令需要特别声明
     withoutAuth?: boolean
-}
-
-const validOptions = (options) => {
-    if (!options || !options.parent) {
-        throw new CloudBaseError('参数异常，请检查您是否输入了正确的命令！')
-    }
 }
 
 type CommandConstructor = new () => Command
@@ -74,32 +71,43 @@ export abstract class Command extends EventEmitter {
 
     // 初始化命令
     public init() {
-        const {
-            cmd,
-            desc,
-            options,
-            childCmd,
-            requiredEnvId = true,
-            withoutAuth = false
-        } = this.options
+        const { cmd, childCmd, deprecateCmd } = this.options
 
         // 不能使用 new Commander 重复声明同一个命令，需要缓存 cmd 实例
-        let instance
+        let instance: Commander
+
+        // 子命令
         if (cmdMap.has(cmd)) {
             instance = cmdMap.get(cmd)
+            instance.command(cmd)
         } else {
-            instance = new Commander(cmd)
+            // 新命令或原有的旧命令格式
+            instance = program.command(cmd) as Commander
             cmdMap.set(cmd, instance)
         }
 
         if (childCmd) {
-            instance = instance.command(childCmd)
+            instance = instance.command(childCmd) as Commander
         }
+
+        this.createProgram(instance, false)
+
+        if (deprecateCmd) {
+            this.createProgram(
+                program.command(deprecateCmd) as Commander,
+                true,
+                [cmd, childCmd].join(' ')
+            )
+        }
+    }
+
+    private createProgram(instance: Commander, deprecate: boolean, newCmd?: string) {
+        const { cmd, desc, options, requiredEnvId = true, withoutAuth = false } = this.options
 
         instance.storeOptionsAsProperties(false).passCommandToAction(false)
 
         options.forEach((option) => {
-            instance = instance.option(option.flags, option.desc)
+            instance.option(option.flags, option.desc)
         })
 
         instance.description(desc)
@@ -108,10 +116,9 @@ export abstract class Command extends EventEmitter {
         instance.action(async (...args) => {
             // 命令的参数
             const params = args.slice(0, -1)
-            // 最后一个参数为 commander 的 options
-            // const cmdOptions: any = args.splice(-1)?.[0]
-            const cmdOptions: any = args.splice(-1)
-            const config = await getCloudBaseConfig(cmdOptions?.parent?.configFile)
+            const cmdOptions = instance.opts()
+            const parentOptions = program.opts()
+            const config = await getCloudBaseConfig(parentOptions?.configFile)
             const envId = cmdOptions?.envId || config?.envId
 
             const loginState = await authSupevisor.getLoginState()
@@ -127,8 +134,6 @@ export abstract class Command extends EventEmitter {
                 )
             }
 
-            validOptions(cmdOptions)
-
             const ctx: ICommandContext = {
                 cmd,
                 envId,
@@ -140,6 +145,10 @@ export abstract class Command extends EventEmitter {
             // 处理前
             this.emit('preHandle', ctx, args)
             await this.preHandle()
+
+            if (deprecate) {
+                console.log(`${logSymbols.warning} 此命令已废弃，请使用 ${newCmd} 代替`)
+            }
 
             // 命令处理
             await this.execute(ctx)

@@ -20,7 +20,9 @@ import { InjectParams, CmdContext, ArgsParams, Log, Logger } from '../../decorat
 export class FunctionDeploy extends Command {
     get options() {
         return {
-            cmd: 'functions:deploy [name]',
+            cmd: 'fn',
+            childCmd: 'deploy [name]',
+            deprecateCmd: 'functions:deploy [name]',
             options: [
                 {
                     flags: '-e, --envId <envId>',

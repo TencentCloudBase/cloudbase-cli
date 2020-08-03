@@ -3,7 +3,7 @@ const os = require('os')
 const path = require('path')
 const chalk = require('chalk')
 const address = require('address')
-const program = require('commander')
+const { program } = require('commander')
 const Sentry = require('@sentry/node')
 const logSymbols = require('log-symbols')
 const didYouMean = require('didyoumean')
@@ -86,8 +86,6 @@ hideArgs.forEach((arg) => {
 // 注册命令
 require('../lib')
 
-// console.log(Object.keys(program._events))
-
 // 设置 Sentry 上报的用户 uin
 Sentry.configureScope((scope) => {
     try {
@@ -108,7 +106,12 @@ program.option('--mode <mode>', '设置当前工作模式')
 program.version(pkg.version, '-v, --version', '输出当前 CloudBase CLI 版本')
 
 // 处理无效命令
-program.action((cmd) => {
+program.action((command) => {
+    const args = command.args
+    if (!args.length) {
+        return
+    }
+    const cmd = args.join(' ')
     console.log(chalk.bold.red('Error: ') + `${cmd} 不是有效的命令！`)
     didYouMean.threshold = 0.5
     didYouMean.caseSensitive = false
@@ -151,6 +154,8 @@ if (process.argv.length < 3) {
     program.outputHelp()
 }
 
+program.addHelpCommand(false)
+
 try {
     program.parse(processArgv)
 } catch (e) {
@@ -160,7 +165,6 @@ try {
 
 function errorHandler(err) {
     process.emit('tcbError')
-    // console.log(err)
     const stackIngoreErrors = ['TencentCloudSDKHttpException', 'CloudBaseError']
     // 忽略自定义错误的错误栈
     if (err && err.stack && !stackIngoreErrors.includes(err.name)) {

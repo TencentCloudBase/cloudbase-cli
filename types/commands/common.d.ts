@@ -6,6 +6,7 @@ interface ICommandOption {
     desc: string;
 }
 export interface ICommandOptions {
+    deprecateCmd?: string;
     cmd: string;
     childCmd?: string;
     options: ICommandOption[];
@@ -18,6 +19,7 @@ export declare function registerCommands(): void;
 export declare abstract class Command extends EventEmitter {
     on(event: 'preHandle' | 'afterHandle', listener: (ctx: ICommandContext, args: any[]) => void): this;
     init(): void;
+    private createProgram;
     private preHandle;
     private afterHandle;
     abstract execute(...args: any[]): void;
