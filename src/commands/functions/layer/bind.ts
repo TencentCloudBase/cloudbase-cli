@@ -132,8 +132,9 @@ export class UnAttachFileLayer extends Command {
     }
 
     @InjectParams()
-    async execute(@EnvId() envId, @ArgsOptions() options) {
+    async execute(@EnvId() envId, @ArgsParams() params, @ArgsOptions() options) {
         const { codeSecret } = options
+        const fnName = params?.[0]
 
         const loading = loadingFactory()
         loading.start('数据加载中...')
@@ -141,7 +142,7 @@ export class UnAttachFileLayer extends Command {
         const detail = await getFunctionDetail({
             envId,
             codeSecret,
-            functionName: name
+            functionName: fnName
         })
 
         if (!detail?.Layers?.length) {
@@ -168,7 +169,7 @@ export class UnAttachFileLayer extends Command {
         loading.start('文件层解绑中...')
         await unAttachLayer({
             envId,
-            functionName: name,
+            functionName: fnName,
             layerName: layer.LayerName,
             layerVersion: layer.LayerVersion,
             codeSecret

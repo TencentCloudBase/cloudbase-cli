@@ -19,5 +19,5 @@ export declare class UnAttachFileLayer extends Command {
         }[];
         desc: string;
     };
-    execute(envId: any, options: any): Promise<void>;
+    execute(envId: any, params: any, options: any): Promise<void>;
 }
