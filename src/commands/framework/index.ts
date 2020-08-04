@@ -22,7 +22,7 @@ async function callFramework(ctx, command, module) {
                 envId
             },
             config,
-            logLevel: ctx.options.verbose ? 'debug' : 'info',
+            logLevel: process.argv.includes('--verbose') ? 'debug' : 'info',
             resourceProviders: {
                 hosting: Hosting,
                 function: Function

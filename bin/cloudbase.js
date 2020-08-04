@@ -14,7 +14,7 @@ const store = require('../lib/utils/store')
 const { ALL_COMMANDS } = require('../lib/constant')
 const { getProxy } = require('../lib/utils/tools/proxy')
 
-let processArgv = process.argv
+let processArgv = [...process.argv]
 const isBeta = pkg.version.indexOf('-') > -1
 process.CLI_VERSION = pkg.version
 
