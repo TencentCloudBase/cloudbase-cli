@@ -12,7 +12,6 @@ import {
     getCloudBaseConfig,
     authSupevisor
 } from '../utils'
-import logSymbols from 'log-symbols'
 
 interface ICommandOption {
     flags: string
@@ -85,7 +84,6 @@ export abstract class Command extends EventEmitter {
         // 子命令
         if (cmdMap.has(cmd)) {
             instance = cmdMap.get(cmd)
-            instance.command(cmd)
         } else {
             // 新命令或原有的旧命令格式
             instance = program.command(cmd) as Commander
@@ -153,6 +151,7 @@ export abstract class Command extends EventEmitter {
             const params = args.slice(0, -1)
             const cmdOptions = instance.opts()
             const parentOptions = program.opts()
+
             const config = await getCloudBaseConfig(parentOptions?.configFile)
             const envId = cmdOptions?.envId || config?.envId
 
