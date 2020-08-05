@@ -3,6 +3,12 @@ import { Logger } from '../../decorators';
 export declare class BindCustomDomainCommand extends Command {
     get options(): {
         cmd: string;
+        childCmd: {
+            cmd: string;
+            desc: string;
+        };
+        childSubCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;
@@ -14,6 +20,9 @@ export declare class BindCustomDomainCommand extends Command {
 export declare class GetCustomDomainsCommand extends Command {
     get options(): {
         cmd: string;
+        childCmd: string;
+        childSubCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;
@@ -25,6 +34,9 @@ export declare class GetCustomDomainsCommand extends Command {
 export declare class UnbindCustomDomainCommand extends Command {
     get options(): {
         cmd: string;
+        childCmd: string;
+        childSubCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;

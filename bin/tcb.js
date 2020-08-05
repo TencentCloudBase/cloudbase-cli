@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 const os = require('os')
-const path = require('path')
 const chalk = require('chalk')
 const address = require('address')
 const { program } = require('commander')
@@ -58,24 +57,8 @@ notifier.notify({
     isGlobal: true
 })
 
-if (processArgv.includes('--tcb-test')) {
-    console.log(
-        chalk.bold.yellow(
-            '====\n您已经进入 test 模式！\n移除 --tcb-test 选项退出 test 模式！\n===='
-        )
-    )
-    try {
-        const envs = require(path.join(process.cwd(), './tcb-test.js'))
-        for (const key in envs) {
-            process.env[key] = envs[key]
-        }
-    } catch (err) {
-        console.log(err)
-    }
-}
-
 // 需要隐藏的选项
-const hideArgs = ['--tcb-test', '--verbose']
+const hideArgs = []
 hideArgs.forEach((arg) => {
     const index = processArgv.indexOf(arg)
     if (index > -1) {
@@ -100,8 +83,11 @@ Sentry.configureScope((scope) => {
 })
 
 // 设置 options 选项
-program.option('--config-file <path>', '设置配置文件，默认为 ./cloudbaserc.js 或 .cloudbaserc.json')
-program.option('--mode <mode>', '设置当前工作模式')
+program.storeOptionsAsProperties(false)
+program.option('--verbose', '打印出内部运行信息')
+program.option('--mode <mode>', '指定加载 env 文件的环境')
+program.option('--config-file <path>', '设置配置文件，默认为 cloudbaserc.json')
+program.option('-h, --help', '输出帮助信息')
 
 program.version(pkg.version, '-v, --version', '输出当前 CloudBase CLI 版本')
 
@@ -122,45 +108,25 @@ program.action((command) => {
     console.log(`使用 ${chalk.bold('cloudbase -h')} 查看所有命令~`)
 })
 
-// 修改 help 提示信息
-program._helpDescription = '输出帮助信息'
-program.on('--help', function () {
-    const tips = `\nTips:
-
-${chalk.gray('–')} 简写
-
-  ${chalk.cyan('使用 tcb 替代 cloudbase')}
-
-${chalk.gray('–')} 登录
-
-  ${chalk.cyan('$ cloudbase login')}
-
-${chalk.gray('–')} 初始化云开发项目
-
-  ${chalk.cyan('$ cloudbase init')}
-
-${chalk.gray('–')} 部署云函数
-
-  ${chalk.cyan('$ cloudbase functions:deploy')}
-
-${chalk.gray('–')} 查看命令使用介绍
-
-  ${chalk.cyan('$ cloudbase env:list -h')}`
-    console.log(tips)
-})
-
 // 当没有输入任何命令时，显示帮助信息
 if (process.argv.length < 3) {
-    program.outputHelp()
+    // TODO: framework 智能命令
+    // program.outputHelp()
 }
-
-program.addHelpCommand(false)
 
 try {
     program.parse(processArgv)
 } catch (e) {
     const errMsg = `${logSymbols.error} ${e.message || '参数异常，请检查您是否使用了正确的命令！'}`
     console.log(errMsg)
+}
+
+// 输出 help 信息
+const options = program.opts()
+
+if (options.help) {
+    const { outputHelpInfo } = require('../lib/help')
+    outputHelpInfo()
 }
 
 function errorHandler(err) {

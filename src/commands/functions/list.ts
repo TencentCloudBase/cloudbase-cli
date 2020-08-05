@@ -16,7 +16,9 @@ const StatusMap = {
 export class ListFunction extends Command {
     get options() {
         return {
-            cmd: 'functions:list',
+            cmd: 'fn',
+            childCmd: 'list',
+            deprecateCmd: 'functions:list',
             options: [
                 {
                     flags: '-e, --envId <envId>',

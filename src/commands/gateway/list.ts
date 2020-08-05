@@ -9,7 +9,9 @@ import { printHorizontalTable, loadingFactory, formatDate } from '../../utils'
 export class ListServiceCommand extends Command {
     get options() {
         return {
-            cmd: 'service:list',
+            cmd: 'service',
+            childCmd: 'list',
+            deprecateCmd: 'service:list',
             options: [
                 {
                     flags: '-e, --envId <envId>',

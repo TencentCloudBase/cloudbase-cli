@@ -6,12 +6,14 @@ import { CloudBaseError } from '../../../error'
 import { Command, ICommand } from '../../common'
 import { InjectParams, EnvId, ArgsOptions } from '../../../decorators'
 import { downloadLayer, listLayers, listLayerVersions } from '../../../function'
+import { layerCommonOptions } from './common'
 
 @ICommand()
 export class DownloadFileLayer extends Command {
     get options() {
         return {
-            cmd: 'functions:layer:download',
+            ...layerCommonOptions('download'),
+            deprecateCmd: 'functions:layer:download',
             options: [
                 {
                     flags: '-e, --envId <envId>',

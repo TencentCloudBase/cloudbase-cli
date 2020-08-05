@@ -8,7 +8,10 @@ import { batchDeleteTriggers, deleteFunctionTrigger } from '../../function'
 export class DeleteTrigger extends Command {
     get options() {
         return {
-            cmd: 'functions:trigger:delete [functionName] [triggerName]',
+            cmd: 'fn',
+            childCmd: { cmd: 'trigger', desc: '函数触发器操作' },
+            childSubCmd: 'delete [functionName] [triggerName]',
+            deprecateCmd: 'functions:trigger:delete [functionName] [triggerName]',
             options: [
                 {
                     flags: '-e, --envId <envId>',

@@ -8,7 +8,13 @@ import { batchUpdateFunctionConfig, updateFunctionConfig } from '../../function'
 export class ConfigUpdate extends Command {
     get options() {
         return {
-            cmd: 'functions:config:update [name]',
+            cmd: 'fn',
+            childCmd: {
+                cmd: 'config',
+                desc: '函数配置管理'
+            },
+            childSubCmd: 'update [name]',
+            deprecateCmd: 'functions:config:update [name]',
             options: [
                 {
                     flags: '-e, --envId <envId>',

@@ -3,6 +3,12 @@ import { Logger } from '../../decorators';
 export declare class ConfigUpdate extends Command {
     get options(): {
         cmd: string;
+        childCmd: {
+            cmd: string;
+            desc: string;
+        };
+        childSubCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;

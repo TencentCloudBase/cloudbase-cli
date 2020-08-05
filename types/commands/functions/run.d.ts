@@ -5,6 +5,8 @@ export declare function debugByConfig(ctx: ICommandContext, name: string): Promi
 export declare class FunctionDebug extends Command {
     get options(): {
         cmd: string;
+        childCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;

@@ -16,7 +16,10 @@ const SERVICE_STATUS_MAP = {
 export class BindCustomDomainCommand extends Command {
     get options() {
         return {
-            cmd: 'service:domain:bind <domain>',
+            cmd: 'service',
+            childCmd: { cmd: 'domain', desc: '云接入域名管理' },
+            childSubCmd: 'bind <domain>',
+            deprecateCmd: 'service:domain:bind <domain>',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -57,7 +60,10 @@ export class BindCustomDomainCommand extends Command {
 export class GetCustomDomainsCommand extends Command {
     get options() {
         return {
-            cmd: 'service:domain:list',
+            cmd: 'service',
+            childCmd: 'domain',
+            childSubCmd: 'list',
+            deprecateCmd: 'service:domain:list',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -114,7 +120,10 @@ export class GetCustomDomainsCommand extends Command {
 export class UnbindCustomDomainCommand extends Command {
     get options() {
         return {
-            cmd: 'service:domain:unbind <domain>',
+            cmd: 'service',
+            childCmd: 'domain',
+            childSubCmd: 'unbind <domain>',
+            deprecateCmd: 'service:domain:unbind <domain>',
             options: [
                 {
                     flags: '-e, --envId <envId>',

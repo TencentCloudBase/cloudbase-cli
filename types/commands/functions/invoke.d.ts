@@ -3,6 +3,8 @@ import { Logger } from '../../decorators';
 export declare class InvokeFunction extends Command {
     get options(): {
         cmd: string;
+        childCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;

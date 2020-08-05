@@ -3,6 +3,8 @@ import { Logger } from '../../decorators';
 export declare class HostingDetail extends Command {
     get options(): {
         cmd: string;
+        childCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;
@@ -14,6 +16,8 @@ export declare class HostingDetail extends Command {
 export declare class HostingDeploy extends Command {
     get options(): {
         cmd: string;
+        childCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;
@@ -25,6 +29,8 @@ export declare class HostingDeploy extends Command {
 export declare class HostingDeleteFiles extends Command {
     get options(): {
         cmd: string;
+        childCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;
@@ -36,6 +42,8 @@ export declare class HostingDeleteFiles extends Command {
 export declare class HostingList extends Command {
     get options(): {
         cmd: string;
+        childCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;

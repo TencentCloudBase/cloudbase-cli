@@ -17,7 +17,9 @@ const StatusMap = {
 export class FunctionDetail extends Command {
     get options() {
         return {
-            cmd: 'functions:detail <name>',
+            cmd: 'fn',
+            childCmd: 'detail <name>',
+            deprecateCmd: 'functions:detail <name>',
             options: [
                 {
                     flags: '-e, --envId <envId>',

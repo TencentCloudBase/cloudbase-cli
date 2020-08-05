@@ -3,6 +3,12 @@ import { Logger } from '../../decorators';
 export declare class ListAuthDoaminCommand extends Command {
     get options(): {
         cmd: string;
+        childCmd: {
+            cmd: string;
+            desc: string;
+        };
+        childSubCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;
@@ -14,6 +20,12 @@ export declare class ListAuthDoaminCommand extends Command {
 export declare class CreateAuthDomainCommand extends Command {
     get options(): {
         cmd: string;
+        childCmd: {
+            cmd: string;
+            desc: string;
+        };
+        childSubCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;
@@ -25,6 +37,12 @@ export declare class CreateAuthDomainCommand extends Command {
 export declare class DeleteAuthDomainCommand extends Command {
     get options(): {
         cmd: string;
+        childCmd: {
+            cmd: string;
+            desc: string;
+        };
+        childSubCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;

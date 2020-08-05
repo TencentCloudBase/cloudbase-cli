@@ -3,6 +3,8 @@ import { Logger } from '../../decorators';
 export declare class UploadCommand extends Command {
     get options(): {
         cmd: string;
+        childCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;
@@ -14,6 +16,8 @@ export declare class UploadCommand extends Command {
 export declare class DownloadCommand extends Command {
     get options(): {
         cmd: string;
+        childCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;
@@ -25,6 +29,8 @@ export declare class DownloadCommand extends Command {
 export declare class DeleteFileCommand extends Command {
     get options(): {
         cmd: string;
+        childCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;
@@ -36,6 +42,8 @@ export declare class DeleteFileCommand extends Command {
 export declare class StorageListCommand extends Command {
     get options(): {
         cmd: string;
+        childCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;
@@ -47,6 +55,8 @@ export declare class StorageListCommand extends Command {
 export declare class GetUrlCommand extends Command {
     get options(): {
         cmd: string;
+        childCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;
@@ -58,6 +68,8 @@ export declare class GetUrlCommand extends Command {
 export declare class StorageDetailCommand extends Command {
     get options(): {
         cmd: string;
+        childCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;
@@ -69,6 +81,8 @@ export declare class StorageDetailCommand extends Command {
 export declare class GetAclCommand extends Command {
     get options(): {
         cmd: string;
+        childCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;
@@ -80,6 +94,8 @@ export declare class GetAclCommand extends Command {
 export declare class setAclCommand extends Command {
     get options(): {
         cmd: string;
+        childCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;

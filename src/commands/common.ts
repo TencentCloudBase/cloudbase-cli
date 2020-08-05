@@ -1,7 +1,7 @@
 import chalk from 'chalk'
-import { program, Command as Commander } from 'commander'
 import * as Sentry from '@sentry/node'
 import { EventEmitter } from 'events'
+import { program, Command as Commander } from 'commander'
 import { CloudBaseError } from '../error'
 import { ICommandContext } from '../types'
 import {
@@ -12,7 +12,6 @@ import {
     getCloudBaseConfig,
     authSupevisor
 } from '../utils'
-import logSymbols from 'log-symbols'
 
 interface ICommandOption {
     flags: string
@@ -25,7 +24,13 @@ export interface ICommandOptions {
     // 基础资源命令
     cmd: string
     // 嵌套子命令
-    childCmd?: string
+    childCmd?:
+        | string
+        | {
+              cmd: string
+              desc: string
+          }
+    childSubCmd?: string
     // 命令选项
     options: ICommandOption[]
     // 命令描述
@@ -71,7 +76,7 @@ export abstract class Command extends EventEmitter {
 
     // 初始化命令
     public init() {
-        const { cmd, childCmd, deprecateCmd } = this.options
+        const { cmd, childCmd, childSubCmd, deprecateCmd } = this.options
 
         // 不能使用 new Commander 重复声明同一个命令，需要缓存 cmd 实例
         let instance: Commander
@@ -79,15 +84,39 @@ export abstract class Command extends EventEmitter {
         // 子命令
         if (cmdMap.has(cmd)) {
             instance = cmdMap.get(cmd)
-            instance.command(cmd)
         } else {
             // 新命令或原有的旧命令格式
             instance = program.command(cmd) as Commander
+            instance._helpDescription = '输出帮助信息'
+            instance.addHelpCommand('help [command]', '查看命令帮助信息')
             cmdMap.set(cmd, instance)
         }
 
         if (childCmd) {
-            instance = instance.command(childCmd) as Commander
+            let cmdKey: string
+            let cmdName: string
+            let desc: string
+
+            if (typeof childCmd === 'string') {
+                cmdKey = `${cmd}-${childCmd}`
+                cmdName = childCmd
+            } else {
+                cmdKey = `${cmd}-${childCmd.cmd}`
+                cmdName = childCmd.cmd
+                desc = childCmd.desc
+            }
+
+            if (cmdMap.has(cmdKey)) {
+                instance = cmdMap.get(cmdKey)
+            } else {
+                instance = instance.command(cmdName) as Commander
+                desc && instance.description(desc)
+                cmdMap.set(cmdKey, instance)
+            }
+
+            if (childSubCmd) {
+                instance = instance.command(childSubCmd) as Commander
+            }
         }
 
         this.createProgram(instance, false)
@@ -118,6 +147,7 @@ export abstract class Command extends EventEmitter {
             const params = args.slice(0, -1)
             const cmdOptions = instance.opts()
             const parentOptions = program.opts()
+
             const config = await getCloudBaseConfig(parentOptions?.configFile)
             const envId = cmdOptions?.envId || config?.envId
 
@@ -146,8 +176,15 @@ export abstract class Command extends EventEmitter {
             this.emit('preHandle', ctx, args)
             await this.preHandle()
 
+            // 废弃警告
             if (deprecate) {
-                console.log(`${logSymbols.warning} 此命令已废弃，请使用 ${newCmd} 代替`)
+                console.log(
+                    chalk.bold.yellowBright(
+                        '\n',
+                        `⚠️  此命令将被废弃，请使用新的命令 ${newCmd} 代替`
+                    ),
+                    '\n'
+                )
             }
 
             // 命令处理

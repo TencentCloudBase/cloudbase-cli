@@ -2,6 +2,8 @@ import { Command } from '../common';
 export declare class CreateService extends Command {
     get options(): {
         cmd: string;
+        childCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;

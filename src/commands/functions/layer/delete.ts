@@ -4,12 +4,14 @@ import { loadingFactory } from '../../../utils'
 import { CloudBaseError } from '../../../error'
 import { InjectParams, EnvId } from '../../../decorators'
 import { deleteLayer, listLayers, listLayerVersions } from '../../../function'
+import { layerCommonOptions } from './common'
 
 @ICommand()
 export class DeleteFileLayer extends Command {
     get options() {
         return {
-            cmd: 'functions:layer:delete',
+            ...layerCommonOptions('delete'),
+            deprecateCmd: 'functions:layer:delete',
             options: [
                 {
                     flags: '-e, --envId <envId>',

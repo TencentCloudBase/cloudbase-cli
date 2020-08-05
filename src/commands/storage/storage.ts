@@ -41,7 +41,9 @@ function checkCloudPath(cloudPath: string) {
 export class UploadCommand extends Command {
     get options() {
         return {
-            cmd: 'storage:upload <localPath> [cloudPath]',
+            cmd: 'storage',
+            childCmd: 'upload <localPath> [cloudPath]',
+            deprecateCmd: 'storage:upload <localPath> [cloudPath]',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -157,7 +159,9 @@ export class UploadCommand extends Command {
 export class DownloadCommand extends Command {
     get options() {
         return {
-            cmd: 'storage:download <cloudPath> <localPath>',
+            cmd: 'storage',
+            childCmd: 'download <cloudPath> <localPath>',
+            deprecateCmd: 'storage:download <cloudPath> <localPath>',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -210,7 +214,9 @@ export class DownloadCommand extends Command {
 export class DeleteFileCommand extends Command {
     get options() {
         return {
-            cmd: 'storage:delete <cloudPath>',
+            cmd: 'storage',
+            childCmd: 'delete <cloudPath>',
+            deprecateCmd: 'storage:delete <cloudPath>',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -249,7 +255,9 @@ export class DeleteFileCommand extends Command {
 export class StorageListCommand extends Command {
     get options() {
         return {
-            cmd: 'storage:list [cloudPath]',
+            cmd: 'storage',
+            childCmd: 'list [cloudPath]',
+            deprecateCmd: 'storage:list [cloudPath]',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -299,7 +307,9 @@ export class StorageListCommand extends Command {
 export class GetUrlCommand extends Command {
     get options() {
         return {
-            cmd: 'storage:url <cloudPath>',
+            cmd: 'storage',
+            childCmd: 'url <cloudPath>',
+            deprecateCmd: 'storage:url <cloudPath>',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -326,7 +336,9 @@ export class GetUrlCommand extends Command {
 export class StorageDetailCommand extends Command {
     get options() {
         return {
-            cmd: 'storage:detail <cloudPath>',
+            cmd: 'storage',
+            childCmd: 'detail <cloudPath>',
+            deprecateCmd: 'storage:detail <cloudPath>',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -355,7 +367,9 @@ export class StorageDetailCommand extends Command {
 export class GetAclCommand extends Command {
     get options() {
         return {
-            cmd: 'storage:get-acl',
+            cmd: 'storage',
+            childCmd: 'get-acl',
+            deprecateCmd: 'storage:get-acl',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -379,7 +393,9 @@ export class GetAclCommand extends Command {
 export class setAclCommand extends Command {
     get options() {
         return {
-            cmd: 'storage:set-acl',
+            cmd: 'storage',
+            childCmd: 'set-acl',
+            deprecateCmd: 'storage:set-acl',
             options: [
                 {
                     flags: '-e, --envId <envId>',

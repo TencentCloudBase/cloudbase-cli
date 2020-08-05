@@ -7,7 +7,9 @@ import { InjectParams, EnvId, ArgsOptions, ArgsParams, Log, Logger } from '../..
 export class FunctionCopy extends Command {
     get options() {
         return {
-            cmd: 'functions:copy <name> [newFunctionName]',
+            cmd: 'fn',
+            childCmd: 'copy <name> [newFunctionName]',
+            deprecateCmd: 'functions:copy <name> [newFunctionName]',
             options: [
                 {
                     flags: '-e, --envId <envId>',

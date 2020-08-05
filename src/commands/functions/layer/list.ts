@@ -2,6 +2,7 @@ import { Command, ICommand } from '../../common'
 import { loadingFactory, printHorizontalTable } from '../../../utils'
 import { InjectParams, EnvId, ArgsOptions, Log, Logger } from '../../../decorators'
 import { listLayers, getFunctionDetail, listLayerVersions } from '../../../function'
+import { layerCommonOptions } from './common'
 
 /**
  * 展示文件层列表
@@ -13,7 +14,8 @@ import { listLayers, getFunctionDetail, listLayerVersions } from '../../../funct
 export class ListFileLayer extends Command {
     get options() {
         return {
-            cmd: 'functions:layer:list',
+            ...layerCommonOptions('list'),
+            deprecateCmd: 'functions:layer:list',
             options: [
                 {
                     flags: '-e, --envId <envId>',

@@ -9,7 +9,9 @@ import { InjectParams, CmdContext, ArgsParams, Log, Logger } from '../../decorat
 export class InvokeFunction extends Command {
     get options() {
         return {
-            cmd: 'functions:invoke [name]',
+            cmd: 'fn',
+            childCmd: 'invoke [name]',
+            deprecateCmd: 'functions:invoke [name]',
             options: [
                 {
                     flags: '-e, --envId <envId>',

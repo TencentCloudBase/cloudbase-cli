@@ -42,7 +42,9 @@ async function callFramework(ctx, command, moudle, params?) {
 export class FrameworkDeploy extends Command {
     get options() {
         return {
-            cmd: 'framework:deploy [module]',
+            cmd: 'framework',
+            childCmd: 'deploy [module]',
+            deprecateCmd: 'framework:deploy [module]',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -65,7 +67,9 @@ export class FrameworkDeploy extends Command {
 export class FrameworkCompile extends Command {
     get options() {
         return {
-            cmd: 'framework:compile [module]',
+            cmd: 'framework',
+            childCmd: 'compile [module]',
+            deprecateCmd: 'framework:compile [module]',
             options: [
                 {
                     flags: '-e, --envId <envId>',

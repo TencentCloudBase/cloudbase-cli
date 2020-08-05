@@ -8,7 +8,9 @@ import { InjectParams, CmdContext, ArgsParams, Log, Logger } from '../../decorat
 export class FunctionLog extends Command {
     get options() {
         return {
-            cmd: 'functions:log <name>',
+            cmd: 'fn',
+            childCmd: 'log <name>',
+            deprecateCmd: 'functions:log <name>',
             options: [
                 {
                     flags: '-e, --envId <envId>',

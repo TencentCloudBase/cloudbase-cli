@@ -40,7 +40,9 @@ const HostingStatusMap = {
 export class HostingDetail extends Command {
     get options() {
         return {
-            cmd: 'hosting:detail',
+            cmd: 'hosting',
+            childCmd: 'detail',
+            deprecateCmd: 'hosting:detail',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -55,7 +57,7 @@ export class HostingDetail extends Command {
     async execute(@EnvId() envId, @Log() log: Logger) {
         const res = await getHostingInfo({ envId })
 
-        const website = res.data && res.data[0]
+        const website = res?.data?.[0]
 
         if (!website) {
             const link = genClickableLink('https://console.cloud.tencent.com/tcb')
@@ -77,7 +79,9 @@ export class HostingDetail extends Command {
 export class HostingDeploy extends Command {
     get options() {
         return {
-            cmd: 'hosting:deploy [filePath] [cloudPath]',
+            cmd: 'hosting',
+            childCmd: 'deploy [filePath] [cloudPath]',
+            deprecateCmd: 'hosting:deploy [filePath] [cloudPath]',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -158,7 +162,7 @@ export class HostingDeploy extends Command {
             envId
         })
 
-        const website = info.data && info.data[0]
+        const website = info?.data?.[0]
 
         const link = genClickableLink(`https://${website.cdnDomain}`)
         log.success(`\n部署完成 👉 ${link}`)
@@ -201,7 +205,9 @@ export class HostingDeploy extends Command {
 export class HostingDeleteFiles extends Command {
     get options() {
         return {
-            cmd: 'hosting:delete [cloudPath]',
+            cmd: 'hosting',
+            childCmd: 'delete [cloudPath]',
+            deprecateCmd: 'hosting:delete [cloudPath]',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -257,7 +263,9 @@ export class HostingDeleteFiles extends Command {
 export class HostingList extends Command {
     get options() {
         return {
-            cmd: 'hosting:list',
+            cmd: 'hosting',
+            childCmd: 'list',
+            deprecateCmd: 'hosting:list',
             options: [
                 {
                     flags: '-e, --envId <envId>',

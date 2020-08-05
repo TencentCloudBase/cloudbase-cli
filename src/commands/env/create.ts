@@ -9,7 +9,9 @@ import { InjectParams, ArgsParams } from '../../decorators'
 export class CreateCommand extends Command {
     get options() {
         return {
-            cmd: 'env:create <alias>',
+            cmd: 'env',
+            childCmd: 'create <alias>',
+            deprecateCmd: 'env:create <alias>',
             options: [],
             desc: '创建云开发免费环境',
             requiredEnvId: false

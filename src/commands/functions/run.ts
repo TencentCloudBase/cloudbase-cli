@@ -202,7 +202,9 @@ export async function debugByConfig(ctx: ICommandContext, name: string) {
 export class FunctionDebug extends Command {
     get options() {
         return {
-            cmd: 'functions:run',
+            cmd: 'fn',
+            childCmd: 'run',
+            deprecateCmd: 'functions:run',
             options: [
                 {
                     flags: '--path <path>',

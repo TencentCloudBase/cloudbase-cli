@@ -3,6 +3,8 @@ import { Logger } from '../../decorators';
 export declare class EnvListCommand extends Command {
     get options(): {
         cmd: string;
+        childCmd: string;
+        deprecateCmd: string;
         options: any[];
         desc: string;
         requiredEnvId: boolean;
@@ -12,6 +14,8 @@ export declare class EnvListCommand extends Command {
 export declare class EnvRenameCommand extends Command {
     get options(): {
         cmd: string;
+        childCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;

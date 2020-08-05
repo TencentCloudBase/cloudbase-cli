@@ -6,12 +6,14 @@ import { loadingFactory } from '../../../utils'
 import { CloudBaseError } from '../../../error'
 import { getFunctionDetail, sortLayer } from '../../../function'
 import { InjectParams, EnvId, ArgsOptions } from '../../../decorators'
+import { layerCommonOptions } from './common'
 
 @ICommand()
 export class SortFileLayer extends Command {
     get options() {
         return {
-            cmd: 'functions:layer:sort <name>',
+            ...layerCommonOptions('sort <name>'),
+            deprecateCmd: 'functions:layer:sort <name>',
             options: [
                 {
                     flags: '-e, --envId <envId>',

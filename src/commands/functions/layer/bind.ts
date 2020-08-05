@@ -11,6 +11,7 @@ import { Command, ICommand } from '../../common'
 import { loadingFactory } from '../../../utils'
 import { CloudBaseError } from '../../../error'
 import { InjectParams, EnvId, ArgsOptions, ArgsParams } from '../../../decorators'
+import { layerCommonOptions } from './common'
 
 const LayerStatusMap = {
     Active: '正常',
@@ -23,7 +24,8 @@ const LayerStatusMap = {
 export class AttachFileLayer extends Command {
     get options() {
         return {
-            cmd: 'functions:layer:bind <name>',
+            ...layerCommonOptions('bind <name>'),
+            deprecateCmd: 'functions:layer:bind <name>',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -116,7 +118,8 @@ export class AttachFileLayer extends Command {
 export class UnAttachFileLayer extends Command {
     get options() {
         return {
-            cmd: 'functions:layer:unbind <name>',
+            ...layerCommonOptions('unbind <name>'),
+            deprecateCmd: 'functions:layer:unbind <name>',
             options: [
                 {
                     flags: '-e, --envId <envId>',

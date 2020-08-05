@@ -8,7 +8,11 @@ interface ICommandOption {
 export interface ICommandOptions {
     deprecateCmd?: string;
     cmd: string;
-    childCmd?: string;
+    childCmd?: string | {
+        cmd: string;
+        desc: string;
+    };
+    childSubCmd?: string;
     options: ICommandOption[];
     desc: string;
     requiredEnvId?: boolean;

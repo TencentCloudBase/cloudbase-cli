@@ -15,7 +15,13 @@ const platformMap = {
 export class ListLoginCommand extends Command {
     get options() {
         return {
-            cmd: 'env:login:list',
+            cmd: 'env',
+            childCmd: {
+                cmd: 'login',
+                desc: '登录授权管理'
+            },
+            childSubCmd: 'list',
+            deprecateCmd: 'env:login:list',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -47,7 +53,10 @@ export class ListLoginCommand extends Command {
 export class CreateLoginCommand extends Command {
     get options() {
         return {
-            cmd: 'env:login:create',
+            cmd: 'env',
+            childCmd: 'login',
+            childSubCmd: 'create',
+            deprecateCmd: 'env:login:create',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -136,7 +145,10 @@ export class CreateLoginCommand extends Command {
 export class UpdateLogin extends Command {
     get options() {
         return {
-            cmd: 'env:login:update',
+            cmd: 'env',
+            childCmd: 'login',
+            childSubCmd: 'update',
+            deprecateCmd: 'env:login:update',
             options: [
                 {
                     flags: '-e, --envId <envId>',

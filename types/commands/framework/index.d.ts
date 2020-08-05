@@ -4,6 +4,8 @@ import { Logger } from '../../decorators';
 export declare class FrameworkDeploy extends Command {
     get options(): {
         cmd: string;
+        childCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;
@@ -15,6 +17,8 @@ export declare class FrameworkDeploy extends Command {
 export declare class FrameworkCompile extends Command {
     get options(): {
         cmd: string;
+        childCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;
