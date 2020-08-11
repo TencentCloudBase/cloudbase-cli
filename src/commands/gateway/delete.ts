@@ -8,7 +8,7 @@ import { deleteGateway, queryGateway } from '../../gateway'
 export class DeleteServiceCommand extends Command {
     get options() {
         return {
-            cmd: 'service',
+            cmd: 'access',
             childCmd: 'delete',
             deprecateCmd: 'service:delete',
             options: [

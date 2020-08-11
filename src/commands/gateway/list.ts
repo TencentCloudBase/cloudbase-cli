@@ -9,7 +9,7 @@ import { printHorizontalTable, loadingFactory, formatDate } from '../../utils'
 export class ListServiceCommand extends Command {
     get options() {
         return {
-            cmd: 'service',
+            cmd: 'access',
             childCmd: 'list',
             deprecateCmd: 'service:list',
             options: [

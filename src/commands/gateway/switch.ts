@@ -8,7 +8,7 @@ import { switchHttpService, getHttpServicePrivilege, switchHttpServiceAuth } fro
 export class ServiceSwitchCommand extends Command {
     get options() {
         return {
-            cmd: 'service',
+            cmd: 'access',
             childCmd: 'switch',
             deprecateCmd: 'service:switch',
             options: [
@@ -57,7 +57,7 @@ export class ServiceSwitchCommand extends Command {
 export class ServiceAuthSwitch extends Command {
     get options() {
         return {
-            cmd: 'service',
+            cmd: 'access',
             childCmd: {
                 cmd: 'auth',
                 desc: '云接入服务访问鉴权管理'

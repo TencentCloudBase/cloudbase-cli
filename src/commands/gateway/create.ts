@@ -11,7 +11,7 @@ import { InjectParams, EnvId, ArgsOptions } from '../../decorators'
 export class CreateService extends Command {
     get options() {
         return {
-            cmd: 'service',
+            cmd: 'access',
             childCmd: 'create',
             deprecateCmd: 'service:create',
             options: [
