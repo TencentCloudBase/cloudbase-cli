@@ -1,6 +1,6 @@
 import arg from 'arg'
 import path from 'path'
-import { AuthSupevisor, ConfigParser } from '@cloudbase/toolbox'
+import { AuthSupevisor, ConfigParser, ICloudBaseConfig } from '@cloudbase/toolbox'
 import { getProxy } from './tools'
 
 // https://www.npmjs.com/package/arg
@@ -26,14 +26,15 @@ export const getArgs = (): arg.Result<IArgs> => {
     return args
 }
 
-export const getCloudBaseConfig = async (configPath?: string) => {
+// 获取 cloudbase 配置
+export const getCloudBaseConfig = async (configPath?: string): Promise<ICloudBaseConfig> => {
     const args = getArgs()
 
     let specificConfigPath = configPath || args['--config-path']
     specificConfigPath = specificConfigPath ? path.resolve(specificConfigPath) : undefined
 
     const parser = new ConfigParser({
-        configPath: specificConfigPath 
+        configPath: specificConfigPath
     })
     const config = await parser.get()
     return config

@@ -18,6 +18,5 @@ export declare class InitCommand extends Command {
     checkTcbService(log?: Logger): Promise<boolean>;
     waitForServiceEnable(): Promise<unknown>;
     extractTemplate(projectPath: string, templatePath: string, remoteUrl?: string): Promise<void>;
-    copyServerTemplate(projectPath: string): Promise<void>;
     initSuccessOutput(projectName: any, log?: Logger): void;
 }

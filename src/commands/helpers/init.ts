@@ -406,12 +406,6 @@ export class InitCommand extends Command {
         })
     }
 
-    async copyServerTemplate(projectPath: string) {
-        // 模板目录
-        const templatePath = path.resolve(__dirname, '../../templates', 'server/node')
-        fse.copySync(templatePath, projectPath)
-    }
-
     // 项目初始化成功后打印提示语
     @InjectParams()
     initSuccessOutput(projectName, @Log() log?: Logger) {

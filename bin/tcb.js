@@ -110,8 +110,9 @@ program.action((command) => {
 
 // 当没有输入任何命令时，显示帮助信息
 if (process.argv.length < 3) {
-    // TODO: framework 智能命令
-    // program.outputHelp()
+    // framework 智能命令
+    const { smartDeploy } = require('../lib')
+    smartDeploy()
 }
 
 try {
