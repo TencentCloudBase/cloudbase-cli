@@ -1,4 +1,5 @@
 import fs from 'fs'
+import os from 'os'
 import _ from 'lodash'
 import open from 'open'
 import path from 'path'
@@ -21,12 +22,15 @@ import {
     checkAndGetCredential,
     templateDownloadReport,
     getCloudBaseConfig,
-    authSupevisor
+    authSupevisor,
+    loadingFactory
 } from '../utils'
 import { login } from '../auth'
 import { Logger } from '../decorators'
 import * as Hosting from '../hosting'
+import * as Function from '../function'
 import { ENV_STATUS, STATUS_TEXT } from '../constant'
+import chalk from 'chalk'
 
 // 云函数
 const listUrl = 'https://tcli.service.tcloudbase.com/templates'
@@ -46,8 +50,10 @@ const log = new Logger()
 /**
  * 智能命令
  */
-
 export async function smartDeploy() {
+    const loading = loadingFactory()
+    loading.start('环境检测中')
+
     // 检查登录
     await checkLogin()
 
@@ -55,6 +61,14 @@ export async function smartDeploy() {
     const isInitNow = await checkTcbService()
 
     const files = await fs.promises.readdir(process.cwd())
+
+    loading.stop()
+    const home = os.homedir()
+    const current = process.cwd()
+    let relative = current
+    if (current.indexOf(home) > -1) {
+        relative = path.relative(home, current)
+    }
 
     // 当期目录为空，执行初始化项目操作
     if (!files.length) {
@@ -67,7 +81,7 @@ export async function smartDeploy() {
     const { setup } = await prompt({
         type: 'confirm',
         name: 'setup',
-        message: '是否使用云开发部署当期项目？',
+        message: `是否使用云开发部署当期项目 <${chalk.bold.cyan(relative)}> ？`,
         initial: true
     })
 
