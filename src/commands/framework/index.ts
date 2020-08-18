@@ -7,7 +7,7 @@ import * as Hosting from '../../hosting'
 import * as Function from '../../function'
 import { authSupevisor } from '../../utils'
 
-async function callFramework(ctx, command, module) {
+async function callFramework(ctx, command, moudle, params?) {
     const { envId, config } = ctx
     const loginState = await authSupevisor.getLoginState()
     const { token, secretId, secretKey } = loginState
@@ -29,7 +29,8 @@ async function callFramework(ctx, command, module) {
             }
         },
         command,
-        module
+        moudle,
+        params
     )
 }
 
@@ -76,5 +77,27 @@ export class FrameworkCompile extends Command {
     async execute(@CmdContext() ctx: ICommandContext, @Log() logger: Logger, @ArgsParams() params) {
         const [module] = params || []
         await callFramework(ctx, 'compile', module)
+    }
+}
+
+@ICommand()
+export class FrameworkRun extends Command {
+    get options() {
+        return {
+            cmd: 'framework:run [module] [runCommand]',
+            options: [
+                {
+                    flags: '-e, --envId <envId>',
+                    desc: '环境 Id'
+                },
+            ],
+            desc: '云开发 Serverless 应用框架：执行本地命令'
+        }
+    }
+
+    @InjectParams()
+    async execute(@CmdContext() ctx: ICommandContext, @Log() logger: Logger, @ArgsParams() params) {
+        const [module, runCommand] = params || []
+        await callFramework(ctx, 'run', module, { runCommand })
     }
 }
