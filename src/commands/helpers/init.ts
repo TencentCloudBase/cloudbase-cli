@@ -241,7 +241,11 @@ export class InitCommand extends Command {
         if (!filepath) {
             fs.writeFileSync(
                 path.join(projectPath, 'cloudbaserc.json'),
-                JSON.stringify({ envId: env })
+                JSON.stringify({
+                    envId: env,
+                    version: '2.0',
+                    $schema: 'https://framework-1258016615.tcloudbaseapp.com/schema/latest.json'
+                })
             )
         } else {
             const configContent = fs.readFileSync(filepath).toString()
