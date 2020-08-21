@@ -181,7 +181,7 @@ export abstract class Command extends EventEmitter {
                 console.log(
                     chalk.bold.yellowBright(
                         '\n',
-                        `⚠️  此命令将被废弃，请使用新的命令 ${newCmd} 代替`
+                        `⚠️  此命令将被废弃，请使用新的命令 tcb ${newCmd} 代替`
                     ),
                     '\n'
                 )

@@ -93,12 +93,14 @@ export async function smartDeploy() {
     const config = await getCloudBaseConfig()
     // 配置文件不存在
     if (!config?.envId) {
-        // 哈喽
         const envId = await selectEnv(isInitNow)
         fs.writeFileSync(path.join(process.cwd(), 'cloudbaserc.json'), JSON.stringify({ envId }))
+        // 调用 Framework
+        await callFramework(envId, config)
+    } else {
+        // 调用 Framework
+        await callFramework(config.envId, config)
     }
-    // 调用 Framework
-    await callFramework(config.envId, config)
 }
 
 // 获取模板
