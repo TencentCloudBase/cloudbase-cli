@@ -30,6 +30,8 @@ export declare class FrameworkCompile extends Command {
 export declare class FrameworkRun extends Command {
     get options(): {
         cmd: string;
+        childCmd: string;
+        deprecateCmd: string;
         options: {
             flags: string;
             desc: string;

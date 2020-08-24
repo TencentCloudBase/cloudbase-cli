@@ -7,7 +7,7 @@ import * as Hosting from '../../hosting'
 import * as Function from '../../function'
 import { authSupevisor } from '../../utils'
 
-async function callFramework(ctx, command, moudle, params?) {
+async function callFramework(ctx, command, module, params?) {
     const { envId, config } = ctx
     const { bumpVersion, versionRemark } = ctx.options
 
@@ -33,7 +33,7 @@ async function callFramework(ctx, command, moudle, params?) {
             versionRemark
         },
         command,
-        moudle,
+        module,
         params
     )
 }
@@ -97,7 +97,9 @@ export class FrameworkCompile extends Command {
 export class FrameworkRun extends Command {
     get options() {
         return {
-            cmd: 'framework:run [module] [runCommand]',
+            cmd: 'framework',
+            childCmd: 'run [module] [runCommand]',
+            deprecateCmd: 'framework:run [module] [runCommand]',
             options: [
                 {
                     flags: '-e, --envId <envId>',
