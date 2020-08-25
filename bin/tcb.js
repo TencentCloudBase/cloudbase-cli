@@ -41,30 +41,7 @@ Sentry.init({
     ]
 })
 
-// 检查更新
-const ONE_DAY = 86400000
-// Beta 版 1 个小时检查一次，稳定版 1 天检查一次
-const CheckInterval = isBeta ? 3600000 : ONE_DAY
-
-const notifier = updateNotifier({
-    pkg,
-    distTag: isBeta ? 'beta' : 'latest',
-    // 检查更新间隔 1 天
-    updateCheckInterval: CheckInterval
-})
-
-notifier.notify({
-    isGlobal: true
-})
-
-// 需要隐藏的选项
-const hideArgs = []
-hideArgs.forEach((arg) => {
-    const index = processArgv.indexOf(arg)
-    if (index > -1) {
-        processArgv.splice(index, 1)
-    }
-})
+console.log(chalk.gray(`CloudBase CLI ${pkg.version}`))
 
 // 注册命令
 require('../lib')
@@ -152,3 +129,28 @@ function errorHandler(err) {
 
 process.on('uncaughtException', errorHandler)
 process.on('unhandledRejection', errorHandler)
+
+// 检查更新
+const ONE_DAY = 86400000
+// Beta 版 1 个小时检查一次，稳定版 1 天检查一次
+const CheckInterval = isBeta ? 3600000 : ONE_DAY
+
+const notifier = updateNotifier({
+    pkg,
+    distTag: isBeta ? 'beta' : 'latest',
+    // 检查更新间隔 1 天
+    updateCheckInterval: CheckInterval
+})
+
+notifier.notify({
+    isGlobal: true
+})
+
+// 需要隐藏的选项
+const hideArgs = []
+hideArgs.forEach((arg) => {
+    const index = processArgv.indexOf(arg)
+    if (index > -1) {
+        processArgv.splice(index, 1)
+    }
+})

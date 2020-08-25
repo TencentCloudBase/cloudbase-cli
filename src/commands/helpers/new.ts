@@ -3,6 +3,7 @@ import _ from 'lodash'
 import open from 'open'
 import path from 'path'
 import chalk from 'chalk'
+import execa from 'execa'
 import fse from 'fs-extra'
 import { prompt } from 'enquirer'
 import { searchConfig, unzipStream, getDataFromWeb, isCamRefused } from '@cloudbase/toolbox'
@@ -21,7 +22,7 @@ import {
 } from '../../utils'
 import { login } from '../../auth'
 import { ENV_STATUS, STATUS_TEXT } from '../../constant'
-import { InjectParams, ArgsOptions, Log, Logger } from '../../decorators'
+import { InjectParams, Log, Logger, CmdContext } from '../../decorators'
 
 // 云函数
 const listUrl = 'https://tcli.service.tcloudbase.com/templates'
@@ -37,39 +38,23 @@ const getTemplateAddress = (templatePath: string) =>
 const ENV_INIT_TIP = '环境初始化中，预计需要三分钟'
 
 @ICommand()
-export class InitCommand extends Command {
+export class NewCommand extends Command {
     get options() {
         return {
-            cmd: 'init',
-            options: [
-                {
-                    flags: '--template <template>',
-                    desc: '指定项目模板名称'
-                },
-                {
-                    flags: '--without-template',
-                    desc: '不使用模板，在当前项目初始化'
-                },
-                {
-                    flags: '--project <project>',
-                    desc: '指定项目名称'
-                }
-            ],
-            desc: '创建并初始化一个新的云开发项目',
+            cmd: 'new <appName> [templateUrl]',
+            options: [],
+            desc: '创建一个新的云开发应用',
             requiredEnvId: false,
             withoutAuth: true
         }
     }
 
     @InjectParams()
-    async execute(@ArgsOptions() options, @Log() log?: Logger) {
-        console.log(
-            chalk.bold.yellowBright(
-                '\n',
-                '⚠️ 此命令将被废弃，请使用新的命令 => tcb new <appName> [template]'
-            ),
-            '\n'
-        )
+    async execute(@CmdContext() ctx, @Log() log?: Logger) {
+        const { params } = ctx
+
+        const appName = params?.[0]
+        const templateUrl = params?.[1]
 
         // 检查登录
         await this.checkLogin()
@@ -133,7 +118,7 @@ export class InitCommand extends Command {
             choices,
             type: 'select',
             name: 'env',
-            message: '选择关联环境',
+            message: '选择关联的云开发环境',
             result(choice) {
                 return this.map(choice)[choice]
             }
@@ -157,26 +142,31 @@ export class InitCommand extends Command {
         // 检查环境状态
         await this.checkEnvStatus(env)
 
-        let projectName
         let projectPath
 
-        if (!options.withoutTemplate) {
-            // 拉取模板
+        if (templateUrl && isGitUrl(templateUrl)) {
+            // git 仓库
+            await execa('git', ['clone', templateUrl, appName], {
+                stdio: 'inherit'
+            })
+            projectPath = path.join(process.cwd(), appName)
+        } else {
+            // 获取模板
             const templates = await execWithLoading(() => fetch(listUrl), {
-                startTip: '拉取云开发模板列表中'
+                startTip: '获取应用模板列表中'
             })
 
             let templateName
             let tempateId
 
             // 确定模板名称
-            if (options.template) {
-                tempateId = options.template
+            if (templateUrl) {
+                tempateId = templateUrl
             } else {
                 let { selectTemplateName } = await prompt({
                     type: 'select',
                     name: 'selectTemplateName',
-                    message: '选择云开发模板',
+                    message: '选择应用模板',
                     choices: templates.map((item) => item.name)
                 })
                 templateName = selectTemplateName
@@ -191,27 +181,14 @@ export class InitCommand extends Command {
                 return
             }
 
-            // 确定项目名称
-            if (options.project) {
-                projectName = options.project
-            } else {
-                const { projectName: promptProjectName } = await prompt({
-                    type: 'input',
-                    name: 'projectName',
-                    message: '请输入项目名称',
-                    initial: selectedTemplate.path
-                })
-
-                projectName = promptProjectName
-            }
-
             // 确定项目权限
-            projectPath = path.join(process.cwd(), projectName)
+            projectPath = path.join(process.cwd(), appName)
+
             if (checkFullAccess(projectPath)) {
                 const { cover } = await prompt({
                     type: 'confirm',
                     name: 'cover',
-                    message: `已存在同名文件夹：${projectName}，是否覆盖？`,
+                    message: `已存在同名文件夹：${appName}，是否覆盖？`,
                     initial: false
                 })
                 // 不覆盖，操作终止
@@ -237,9 +214,6 @@ export class InitCommand extends Command {
                     startTip: '下载文件中'
                 }
             )
-        } else {
-            projectName = ''
-            projectPath = path.join(process.cwd(), projectName)
         }
 
         // 配置文件初始化，写入环境id
@@ -261,7 +235,7 @@ export class InitCommand extends Command {
         }
 
         // 成功提示
-        this.initSuccessOutput(projectName)
+        this.initSuccessOutput(appName)
     }
 
     // 检查登录
@@ -416,16 +390,20 @@ export class InitCommand extends Command {
 
     // 项目初始化成功后打印提示语
     @InjectParams()
-    initSuccessOutput(projectName, @Log() log?: Logger) {
-        log.success(`初始化项目${projectName}成功！\n`)
+    initSuccessOutput(appName: string, @Log() log?: Logger) {
+        log.success(`创建应用 ${appName} 成功！\n`)
 
-        if (projectName) {
-            const command = chalk.bold.cyan(`cd ${projectName}`)
-            log.info(`👉 执行命令 ${command} 进入项目文件夹`)
+        if (appName) {
+            const command = chalk.bold.cyan(`cd ${appName}`)
+            log.info(`👉 执行命令 ${command} 进入文件夹`)
         }
 
-        log.info(
-            `👉 开发完成后，执行命令 ${chalk.bold.cyan('cloudbase framework:deploy')} 一键部署`
-        )
+        log.info(`👉 开发完成后，执行命令 ${chalk.bold.cyan('tcb')} 一键部署`)
     }
+}
+
+// 判断是否为 Git 仓库地址
+export function isGitUrl(url: string) {
+    const regex = /(?:git|ssh|https?|git@[-\w.]+):(\/\/)?(.*?)(\.git)(\/?|\#[-\d\w._]+?)$/
+    return regex.test(url)
 }
