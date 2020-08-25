@@ -13,7 +13,7 @@ export const outputHelpInfo = () => {
     logout                          登出腾讯云账号
     open            [link]          在浏览器中打开云开发相关连接
     storage         [cmd]           云存储资源管理操作
-    service         [cmd]           云接入管理操作`
+    access          [cmd]           云接入管理操作`
 
     const options = `
   选项
@@ -27,25 +27,21 @@ export const outputHelpInfo = () => {
     const tips = `
   Tips:
 
-    ${chalk.gray('–')} 简写
-
-      ${chalk.cyan('使用 tcb 替代 cloudbase')}
-
     ${chalk.gray('–')} 登录
 
-      ${chalk.cyan('$ cloudbase login')}
+      ${chalk.cyan('$ tcb login')}
 
     ${chalk.gray('–')} 初始化云开发项目
 
-      ${chalk.cyan('$ cloudbase init')}
+      ${chalk.cyan('$ tcb init')}
 
     ${chalk.gray('–')} 部署云函数
 
-      ${chalk.cyan('$ cloudbase functions:deploy')}
+      ${chalk.cyan('$ tcb fn deploy')}
 
     ${chalk.gray('–')} 查看命令使用介绍
 
-      ${chalk.cyan('$ cloudbase env:list -h')}`
+      ${chalk.cyan('$ tcb fn -h')}`
 
     console.log(commands, '\n', options, '\n', tips)
 }

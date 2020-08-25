@@ -70,18 +70,18 @@ export async function smartDeploy() {
         relative = path.relative(home, current)
     }
 
-    // 当期目录为空，执行初始化项目操作
+    // 当前目录为空，执行初始化项目操作
     if (!files.length) {
-        log.info('当期目录为空，初始化云开发项目\n')
+        log.info('当前目录为空，初始化云开发项目\n')
         const envId = await selectEnv(isInitNow)
         await initProjectWithTemplate(envId)
     }
 
-    // 初始化项目成功，或当期目录已经存在项目，继续使用 Framework 执行部署
+    // 初始化项目成功，或当前目录已经存在项目，继续使用 Framework 执行部署
     const { setup } = await prompt({
         type: 'confirm',
         name: 'setup',
-        message: `是否使用云开发部署当期项目 <${chalk.bold.cyan(relative)}> ？`,
+        message: `是否使用云开发部署当前项目 <${chalk.bold.cyan(relative)}> ？`,
         initial: true
     })
 
