@@ -118,10 +118,6 @@ export abstract class Command extends EventEmitter {
                 instance = instance.command(childSubCmd) as Commander
             }
         }
-    }
-
-    private createProgram(instance: Commander, deprecate: boolean, newCmd?: string) {
-        const { cmd, desc, options, requiredEnvId = true, withoutAuth = false } = this.options
 
         this.createProgram(instance, false)
 
