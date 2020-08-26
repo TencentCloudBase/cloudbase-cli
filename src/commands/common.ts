@@ -122,11 +122,15 @@ export abstract class Command extends EventEmitter {
         this.createProgram(instance, false)
 
         if (deprecateCmd) {
-            this.createProgram(
-                program.command(deprecateCmd) as Commander,
-                true,
-                [cmd, childCmd].join(' ')
-            )
+            // 构建新的命令提示
+            const newCmd = [cmd, childCmd, childSubCmd]
+                .filter((_) => _)
+                .map((item) => {
+                    if (typeof item === 'string') return item
+                    return item.cmd
+                })
+                .join(' ')
+            this.createProgram(program.command(deprecateCmd) as Commander, true, newCmd)
         }
     }
 
