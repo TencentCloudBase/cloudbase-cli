@@ -160,8 +160,16 @@ try {
 
 function errorHandler(err) {
     process.emit('tcbError')
-    // console.log(err)
+
+    if (err.type === 'request-timeout') {
+        console.log(
+            logSymbols.error +
+                '请求超时，请检查你的网络，如果终端无法直接访问公网，请设置终端 HTTP 请求代理！'
+        )
+    }
+
     const stackIngoreErrors = ['TencentCloudSDKHttpException', 'CloudBaseError']
+
     // 忽略自定义错误的错误栈
     if (err && err.stack && !stackIngoreErrors.includes(err.name)) {
         console.log(err.stack)

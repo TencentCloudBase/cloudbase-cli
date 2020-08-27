@@ -27,7 +27,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@cloudbase/cloud-api": "^0.1.7",
+        "@cloudbase/cloud-api": "^0.1.9",
         "@cloudbase/framework-core": "^1.0.0",
         "@cloudbase/manager-node": "^3.7.1",
         "@cloudbase/toolbox": "^0.4.13",

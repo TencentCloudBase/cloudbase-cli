@@ -93,7 +93,7 @@ async function checkHostingStatus(envId: string) {
 export async function enableHosting(options: IBaseOptions) {
     const { envId } = options
     const hostings = await getHostingInfo(options)
-    if (hostings.data && hostings.data.length) {
+    if (hostings?.data?.length) {
         const website = hostings.data[0]
         // offline 状态的服务可重新开启
         if (website.status !== 'offline') {
