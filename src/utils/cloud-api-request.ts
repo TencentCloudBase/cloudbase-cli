@@ -44,7 +44,6 @@ export class CloudApiService {
     }
 
     async request(action: string, data: Record<string, any> = {}, method: 'POST' | 'GET' = 'POST') {
-        console.log('request', action)
         return this.apiService.request(action, data, method)
     }
 }
