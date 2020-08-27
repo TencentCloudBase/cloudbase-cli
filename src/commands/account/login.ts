@@ -184,9 +184,9 @@ export class LoginCommand extends Command {
             if (e.code === 'ResourceNotFound.UserNotExists') {
                 log.error('您还没有可用的环境，请使用 cloudbase env:create $name 创建环境！')
             } else {
+                console.error(e)
                 throw e
             }
-            process.exit(1)
         }
     }
 }

@@ -173,6 +173,7 @@ function errorHandler(err) {
         errMsg += err.requestId ? `\n${err.requestId}` : ''
         console.log(errMsg)
     }
+
     process.emit('tcbExit')
     setTimeout(() => {
         process.exit(1)
