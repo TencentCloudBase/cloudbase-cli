@@ -41,7 +41,8 @@ const ENV_INIT_TIP = '环境初始化中，预计需要三分钟'
 export class NewCommand extends Command {
     get options() {
         return {
-            cmd: 'new <appName> [templateUrl]',
+            // templateUrl 是 Git 地址或模板名
+            cmd: 'new [appName] [templateUrl]',
             options: [],
             desc: '创建一个新的云开发应用',
             requiredEnvId: false,
@@ -150,6 +151,8 @@ export class NewCommand extends Command {
                 stdio: 'inherit'
             })
             projectPath = path.join(process.cwd(), appName)
+        } else if (!appName) {
+            projectPath = path.resolve(process.cwd())
         } else {
             // 获取模板
             const templates = await execWithLoading(() => fetch(listUrl), {
@@ -391,7 +394,7 @@ export class NewCommand extends Command {
     // 项目初始化成功后打印提示语
     @InjectParams()
     initSuccessOutput(appName: string, @Log() log?: Logger) {
-        log.success(`创建应用 ${appName} 成功！\n`)
+        log.success(appName ? `创建应用 ${appName} 成功！\n` : '创建应用成功！')
 
         if (appName) {
             const command = chalk.bold.cyan(`cd ${appName}`)
