@@ -64,8 +64,8 @@ program.storeOptionsAsProperties(false)
 program.option('--verbose', '打印出内部运行信息')
 program.option('--mode <mode>', '指定加载 env 文件的环境')
 program.option('--config-file <path>', '设置配置文件，默认为 cloudbaserc.json')
-program.option('-h, --help', '输出帮助信息')
-
+// HACK: 隐藏自动生成的 help 信息
+program.helpOption(false)
 program.version(pkg.version, '-v, --version', '输出当前 CloudBase CLI 版本')
 
 // 处理无效命令
@@ -92,19 +92,25 @@ if (process.argv.length < 3) {
     smartDeploy()
 }
 
+// HACK: -h, --help 输出 help 信息
+if (process.argv.length === 3 && ['-h', '--help'].includes(process.argv[2])) {
+    // 需要隐藏的选项
+    const hideArgs = ['-h', '--help']
+    hideArgs.forEach((arg) => {
+        const index = processArgv.indexOf(arg)
+        if (index > -1) {
+            processArgv.splice(index, 1)
+        }
+    })
+    const { outputHelpInfo } = require('../lib/help')
+    outputHelpInfo()
+}
+
 try {
     program.parse(processArgv)
 } catch (e) {
     const errMsg = `${logSymbols.error} ${e.message || '参数异常，请检查您是否使用了正确的命令！'}`
     console.log(errMsg)
-}
-
-// 输出 help 信息
-const options = program.opts()
-
-if (options.help) {
-    const { outputHelpInfo } = require('../lib/help')
-    outputHelpInfo()
 }
 
 function errorHandler(err) {
@@ -144,13 +150,4 @@ const notifier = updateNotifier({
 
 notifier.notify({
     isGlobal: true
-})
-
-// 需要隐藏的选项
-const hideArgs = []
-hideArgs.forEach((arg) => {
-    const index = processArgv.indexOf(arg)
-    if (index > -1) {
-        processArgv.splice(index, 1)
-    }
 })

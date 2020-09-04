@@ -110,6 +110,7 @@ export abstract class Command extends EventEmitter {
                 instance = cmdMap.get(cmdKey)
             } else {
                 instance = instance.command(cmdName) as Commander
+                instance._helpDescription = '查看命令帮助信息'
                 desc && instance.description(desc)
                 cmdMap.set(cmdKey, instance)
             }
