@@ -9,6 +9,8 @@ import { authSupevisor } from '../../utils'
 
 async function callFramework(ctx, command, moudle, params?) {
     const { envId, config } = ctx
+    const { bumpVersion, versionRemark } = ctx.options
+
     const loginState = await authSupevisor.getLoginState()
     const { token, secretId, secretKey } = loginState
 
@@ -26,7 +28,9 @@ async function callFramework(ctx, command, moudle, params?) {
             resourceProviders: {
                 hosting: Hosting,
                 function: Function
-            }
+            },
+            bumpVersion: Boolean(bumpVersion),
+            versionRemark
         },
         command,
         moudle,
@@ -67,7 +71,12 @@ export class FrameworkCompile extends Command {
                     flags: '-e, --envId <envId>',
                     desc: '环境 Id'
                 },
-                { flags: '--verbose', desc: '是否打印详细日志' }
+                { flags: '--verbose', desc: '是否打印详细日志' },
+                { flags: '--bumpVersion', desc: '是否生成新版本' },
+                {
+                    flags: '--versionRemark <versionRemark>',
+                    desc: '新版本描述信息'
+                }
             ],
             desc: '云开发 Serverless 应用框架：编译应用描述文件'
         }
@@ -89,7 +98,7 @@ export class FrameworkRun extends Command {
                 {
                     flags: '-e, --envId <envId>',
                     desc: '环境 Id'
-                },
+                }
             ],
             desc: '云开发 Serverless 应用框架：执行本地命令'
         }
