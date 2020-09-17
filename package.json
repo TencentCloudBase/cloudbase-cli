@@ -59,7 +59,8 @@
         "tar-fs": "^2.0.1",
         "terminal-link": "^2.1.1",
         "unzipper": "^0.10.10",
-        "update-notifier": "^4.0.0"
+        "update-notifier": "^4.0.0",
+        "xdg-basedir": "^4.0.0"
     },
     "devDependencies": {
         "@types/jest": "^25.1.4",
