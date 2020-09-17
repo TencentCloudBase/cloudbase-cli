@@ -10,7 +10,7 @@ import {
 
 const tcbService = CloudApiService.getInstance('tcb')
 
-// 云接入开关
+// HTTP 访问服务开关
 export async function switchHttpService(options: { envId: string; enable: boolean }) {
     const { envId, enable } = options
 
@@ -30,7 +30,7 @@ export async function switchHttpService(options: { envId: string; enable: boolea
     return res
 }
 
-// 云接入鉴权开关
+// HTTP 访问服务鉴权开关
 export async function switchHttpServiceAuth(options: { envId: string; enable: boolean }) {
     const { envId, enable } = options
 
@@ -50,7 +50,7 @@ export async function switchHttpServiceAuth(options: { envId: string; enable: bo
     return res
 }
 
-// 获取云接入权限信息
+// 获取HTTP 访问服务权限信息
 export async function getHttpServicePrivilege(options: { envId: string }) {
     const { envId } = options
 

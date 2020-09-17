@@ -129,7 +129,7 @@ export class InitCommand extends Command {
             }
         ]
 
-        let { env } = await prompt({
+        let { env } = await prompt<any>({
             choices,
             type: 'select',
             name: 'env',
@@ -173,7 +173,7 @@ export class InitCommand extends Command {
             if (options.template) {
                 tempateId = options.template
             } else {
-                let { selectTemplateName } = await prompt({
+                let { selectTemplateName } = await prompt<any>({
                     type: 'select',
                     name: 'selectTemplateName',
                     message: '选择云开发模板',
@@ -195,7 +195,7 @@ export class InitCommand extends Command {
             if (options.project) {
                 projectName = options.project
             } else {
-                const { projectName: promptProjectName } = await prompt({
+                const { projectName: promptProjectName } = await prompt<any>({
                     type: 'input',
                     name: 'projectName',
                     message: '请输入项目名称',
@@ -208,7 +208,7 @@ export class InitCommand extends Command {
             // 确定项目权限
             projectPath = path.join(process.cwd(), projectName)
             if (checkFullAccess(projectPath)) {
-                const { cover } = await prompt({
+                const { cover } = await prompt<any>({
                     type: 'confirm',
                     name: 'cover',
                     message: `已存在同名文件夹：${projectName}，是否覆盖？`,
@@ -345,7 +345,7 @@ export class InitCommand extends Command {
         }
 
         if (!Initialized) {
-            const { jump } = await prompt({
+            const { jump } = await prompt<any>({
                 type: 'confirm',
                 name: 'jump',
                 message:

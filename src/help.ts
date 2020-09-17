@@ -13,7 +13,7 @@ export const outputHelpInfo = () => {
     logout                                     登出腾讯云账号
     open            [link]                     在浏览器中打开云开发相关连接
     storage         [cmd]                      云存储资源管理操作
-    access          [cmd]                      云接入管理操作`
+    service         [cmd]                      HTTP 访问服务管理操作`
 
     const options = `
   选项

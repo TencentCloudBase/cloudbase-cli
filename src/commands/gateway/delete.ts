@@ -8,7 +8,7 @@ import { deleteGateway, queryGateway } from '../../gateway'
 export class DeleteServiceCommand extends Command {
     get options() {
         return {
-            cmd: 'access',
+            cmd: 'service',
             childCmd: 'delete',
             deprecateCmd: 'service:delete',
             options: [
@@ -43,7 +43,7 @@ export class DeleteServiceCommand extends Command {
                 envId
             })
 
-            const { selected } = await prompt({
+            const { selected } = await prompt<any>({
                 type: 'select',
                 name: 'selected',
                 message: '请选择需要删除的 Service',

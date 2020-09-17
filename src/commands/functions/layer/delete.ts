@@ -43,7 +43,7 @@ export class DeleteFileLayer extends Command {
             throw new CloudBaseError('当前环境没有可用的文件层，请先创建文件层！')
         }
 
-        const { layer } = await prompt({
+        const { layer } = await prompt<any>({
             type: 'select',
             name: 'layer',
             message: '选择文件层名称',
@@ -56,7 +56,7 @@ export class DeleteFileLayer extends Command {
 
         versions = versions.map((item) => String(item.LayerVersion))
 
-        const { version } = await prompt({
+        const { version } = await prompt<any>({
             type: 'select',
             name: 'version',
             message: '选择文件层版本',

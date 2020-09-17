@@ -16,8 +16,8 @@ const SERVICE_STATUS_MAP = {
 export class BindCustomDomainCommand extends Command {
     get options() {
         return {
-            cmd: 'access',
-            childCmd: { cmd: 'domain', desc: '云接入域名管理' },
+            cmd: 'service',
+            childCmd: { cmd: 'domain', desc: 'HTTP 访问服务域名管理' },
             childSubCmd: 'bind <domain>',
             deprecateCmd: 'service:domain:bind <domain>',
             options: [
@@ -26,7 +26,7 @@ export class BindCustomDomainCommand extends Command {
                     desc: '环境 Id'
                 }
             ],
-            desc: '绑定自定义云接入域名'
+            desc: '绑定自定义HTTP 访问服务域名'
         }
     }
 
@@ -37,7 +37,7 @@ export class BindCustomDomainCommand extends Command {
         console.log(domain)
 
         if (!domain) {
-            throw new CloudBaseError('请指定需要绑定的云接入域名！')
+            throw new CloudBaseError('请指定需要绑定的HTTP 访问服务域名！')
         }
 
         const loading = loadingFactory()
@@ -60,7 +60,7 @@ export class BindCustomDomainCommand extends Command {
 export class GetCustomDomainsCommand extends Command {
     get options() {
         return {
-            cmd: 'access',
+            cmd: 'service',
             childCmd: 'domain',
             childSubCmd: 'list',
             deprecateCmd: 'service:domain:list',
@@ -74,7 +74,7 @@ export class GetCustomDomainsCommand extends Command {
                     desc: '域名'
                 }
             ],
-            desc: '查询自定义云接入域名'
+            desc: '查询自定义HTTP 访问服务域名'
         }
     }
 
@@ -83,11 +83,11 @@ export class GetCustomDomainsCommand extends Command {
         const { domain: domainName } = options
 
         if (!envId && !domainName) {
-            throw new CloudBaseError('请指定需要查询的环境 ID 或云接入域名！')
+            throw new CloudBaseError('请指定需要查询的环境 ID 或HTTP 访问服务域名！')
         }
 
         const loading = loadingFactory()
-        loading.start('查询云接入域名中...')
+        loading.start('查询HTTP 访问服务域名中...')
 
         try {
             const res = await queryGatewayDomain({
@@ -95,7 +95,7 @@ export class GetCustomDomainsCommand extends Command {
                 domain: domainName
             })
 
-            loading.succeed('查询云接入域名成功！')
+            loading.succeed('查询HTTP 访问服务域名成功！')
 
             if (!res?.ServiceSet?.length) {
                 log.info('HTTP Service 域名为空！')
@@ -120,7 +120,7 @@ export class GetCustomDomainsCommand extends Command {
 export class UnbindCustomDomainCommand extends Command {
     get options() {
         return {
-            cmd: 'access',
+            cmd: 'service',
             childCmd: 'domain',
             childSubCmd: 'unbind <domain>',
             deprecateCmd: 'service:domain:unbind <domain>',
@@ -130,7 +130,7 @@ export class UnbindCustomDomainCommand extends Command {
                     desc: '环境 Id'
                 }
             ],
-            desc: '解绑自定义云接入域名'
+            desc: '解绑自定义HTTP 访问服务域名'
         }
     }
 
@@ -139,7 +139,7 @@ export class UnbindCustomDomainCommand extends Command {
         const domain = params?.[0]
 
         if (!domain) {
-            throw new CloudBaseError('请指定需要解绑的云接入域名！')
+            throw new CloudBaseError('请指定需要解绑的HTTP 访问服务域名！')
         }
 
         const loading = loadingFactory()

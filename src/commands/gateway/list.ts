@@ -9,7 +9,7 @@ import { printHorizontalTable, loadingFactory, formatDate } from '../../utils'
 export class ListServiceCommand extends Command {
     get options() {
         return {
-            cmd: 'access',
+            cmd: 'service',
             childCmd: 'list',
             deprecateCmd: 'service:list',
             options: [
@@ -30,7 +30,7 @@ export class ListServiceCommand extends Command {
                     desc: 'Service Id'
                 }
             ],
-            desc: '获取云接入列表'
+            desc: '获取HTTP 访问服务列表'
         }
     }
 
@@ -39,11 +39,11 @@ export class ListServiceCommand extends Command {
         const { domain: domainName, servicePath, serviceId } = options
 
         if (!envId && !domainName) {
-            throw new CloudBaseError('请指定需要查询的环境 ID 或云接入自定义域名！')
+            throw new CloudBaseError('请指定需要查询的环境 ID 或HTTP 访问服务自定义域名！')
         }
 
         const loading = loadingFactory()
-        loading.start('查询云接入中...')
+        loading.start('查询HTTP 访问服务中...')
 
         try {
             const res = await queryGateway({

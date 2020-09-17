@@ -11,7 +11,7 @@ import { InjectParams, EnvId, ArgsOptions } from '../../decorators'
 export class CreateService extends Command {
     get options() {
         return {
-            cmd: 'access',
+            cmd: 'service',
             childCmd: 'create',
             deprecateCmd: 'service:create',
             options: [
@@ -51,27 +51,27 @@ export class CreateService extends Command {
                 throw new CloudBaseError('当前环境下不存在可用的云函数，请先创建云函数！')
             }
 
-            let { name } = await prompt({
+            let { name } = await prompt<any>({
                 type: 'select',
                 name: 'name',
-                message: '请选择创建云接入的云函数',
+                message: '请选择创建HTTP 访问服务的云函数',
                 choices: functions.map((item) => item.FunctionName)
             })
 
-            let { path } = await prompt({
+            let { path } = await prompt<any>({
                 type: 'input',
                 name: 'path',
-                message: '请输入云接入路径（以 / 开头）'
+                message: '请输入HTTP 访问服务路径（以 / 开头）'
             })
 
             functionName = name
             servicePath = path
         }
 
-        assertTruthy(servicePath, '请指定需要创建的云接入路径！')
+        assertTruthy(servicePath, '请指定需要创建的HTTP 访问服务路径！')
 
         // 创建云函数网关
-        loading.start(`[${functionName}] 云接入创建中...`)
+        loading.start(`[${functionName}] HTTP 访问服务创建中...`)
 
         try {
             // step1: 判断云函数是否存在
@@ -91,7 +91,7 @@ export class CreateService extends Command {
                 name: functionName
             })
             const link = genClickableLink(`https://${envId}.service.tcloudbase.com${servicePath}`)
-            loading.succeed(`云接入创建成功！\n点击访问> ${link}`)
+            loading.succeed(`HTTP 访问服务创建成功！\n点击访问> ${link}`)
         } catch (e) {
             loading.stop()
             if (e.code === 'InvalidParameter.APICreated') {

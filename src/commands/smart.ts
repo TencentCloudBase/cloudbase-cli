@@ -78,7 +78,7 @@ export async function smartDeploy() {
     }
 
     // 初始化项目成功，或当前目录已经存在项目，继续使用 Framework 执行部署
-    const { setup } = await prompt({
+    const { setup } = await prompt<any>({
         type: 'confirm',
         name: 'setup',
         message: `是否使用云开发部署当前项目 <${chalk.bold.cyan(relative)}> ？`,
@@ -111,7 +111,7 @@ async function initProjectWithTemplate(envId: string, projectPath = process.cwd(
     })
 
     // 确定模板名称
-    const { templateName } = await prompt({
+    const { templateName } = await prompt<any>({
         type: 'select',
         name: 'templateName',
         message: '选择云开发模板',
@@ -199,7 +199,7 @@ async function selectEnv(isInitNow: boolean) {
         }
     ]
 
-    let { env } = await prompt({
+    let { env } = await prompt<any>({
         choices,
         type: 'select',
         name: 'env',
@@ -329,7 +329,7 @@ async function checkTcbService(): Promise<boolean> {
     }
 
     if (!Initialized) {
-        const { jump } = await prompt({
+        const { jump } = await prompt<any>({
             type: 'confirm',
             name: 'jump',
             message:

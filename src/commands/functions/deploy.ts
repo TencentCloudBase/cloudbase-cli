@@ -38,7 +38,7 @@ export class FunctionDeploy extends Command {
                 },
                 {
                     flags: '--path <path>',
-                    desc: '自动创建云接入访问路径'
+                    desc: '自动创建HTTP 访问服务访问路径'
                 },
                 {
                     flags: '--all',
@@ -62,11 +62,11 @@ export class FunctionDeploy extends Command {
         const name = params?.[0]
 
         if (access && checkFullAccess(access)) {
-            log.warn('--path 参数已更换为云接入路径，请使用 --dir 指定部署函数的文件夹路径')
+            log.warn('--path 参数已更换为HTTP 访问服务路径，请使用 --dir 指定部署函数的文件夹路径')
         }
 
         if (access && access[0] !== '/') {
-            throw new CloudBaseError('云接入路径必须以 / 开头')
+            throw new CloudBaseError('HTTP 访问服务路径必须以 / 开头')
         }
 
         // 当没有指定函数名称或函数路径时，询问处理否部署全部云函数
@@ -138,7 +138,7 @@ export class FunctionDeploy extends Command {
             const link = genClickableLink(
                 `https://${envId}.service.tcloudbase.com${access || newFunction.path}`
             )
-            console.log(`\n云函数云接入访问链接：${link}`)
+            console.log(`\n云函数HTTP 访问服务访问链接：${link}`)
         }
     }
 
@@ -233,7 +233,7 @@ export class FunctionDeploy extends Command {
     printSuccessTips(envId: string, @Log() log?: Logger) {
         const link = genClickableLink(`https://console.cloud.tencent.com/tcb/scf?envId=${envId}`)
         log.breakLine()
-        log.info(`控制台查看函数详情或创建云接入链接 🔗：${link}`)
+        log.info(`控制台查看函数详情或创建HTTP 访问服务链接 🔗：${link}`)
         log.info(`使用 ${highlightCommand('cloudbase functions:list')} 命令查看已部署云函数`)
     }
 
@@ -247,7 +247,7 @@ export class FunctionDeploy extends Command {
         })
         // 未开启，不生成 HTTP 调用了链接
         if (res?.EnableService === false) return
-        loading.start('生成云函数云接入中...')
+        loading.start('生成云函数HTTP 访问服务中...')
 
         let path
         if (res?.APISet?.length > 0) {
@@ -262,6 +262,6 @@ export class FunctionDeploy extends Command {
         }
         loading.stop()
         const link = genClickableLink(`https://${envId}.service.tcloudbase.com${path}`)
-        console.log(`\n云函数云接入链接：${link}`)
+        console.log(`\n云函数HTTP 访问服务链接：${link}`)
     }
 }

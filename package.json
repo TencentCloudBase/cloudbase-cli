@@ -40,7 +40,7 @@
         "commander": "^6.1.0",
         "del": "^5.1.0",
         "didyoumean": "^1.2.1",
-        "enquirer": "^2.3.4",
+        "enquirer": "^2.3.6",
         "execa": "^4.0.3",
         "fs-extra": "^8.1.0",
         "https-proxy-agent": "^2.2.4",

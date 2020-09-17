@@ -8,7 +8,7 @@ import { switchHttpService, getHttpServicePrivilege, switchHttpServiceAuth } fro
 export class ServiceSwitchCommand extends Command {
     get options() {
         return {
-            cmd: 'access',
+            cmd: 'service',
             childCmd: 'switch',
             deprecateCmd: 'service:switch',
             options: [
@@ -17,7 +17,7 @@ export class ServiceSwitchCommand extends Command {
                     desc: '环境 Id'
                 }
             ],
-            desc: '开启/关闭云接入服务'
+            desc: '开启/关闭HTTP 访问服务'
         }
     }
 
@@ -31,10 +31,10 @@ export class ServiceSwitchCommand extends Command {
 
         loading.stop()
 
-        const { enable } = await prompt({
+        const { enable } = await prompt<any>({
             type: 'select',
             name: 'enable',
-            message: `开启/关闭云接入服务（当前状态：${status}）`,
+            message: `开启/关闭HTTP 访问服务（当前状态：${status}）`,
             choices: ['开启', '关闭']
         })
 
@@ -57,10 +57,10 @@ export class ServiceSwitchCommand extends Command {
 export class ServiceAuthSwitch extends Command {
     get options() {
         return {
-            cmd: 'access',
+            cmd: 'service',
             childCmd: {
                 cmd: 'auth',
-                desc: '云接入服务访问鉴权管理'
+                desc: 'HTTP 访问服务访问鉴权管理'
             },
             childSubCmd: 'switch',
             deprecateCmd: 'service:auth:switch',
@@ -70,7 +70,7 @@ export class ServiceAuthSwitch extends Command {
                     desc: '环境 Id'
                 }
             ],
-            desc: '开启/关闭云接入服务访问鉴权'
+            desc: '开启/关闭HTTP 访问服务访问鉴权'
         }
     }
 
@@ -84,10 +84,10 @@ export class ServiceAuthSwitch extends Command {
 
         loading.stop()
 
-        const { enable } = await prompt({
+        const { enable } = await prompt<any>({
             type: 'select',
             name: 'enable',
-            message: `开启/关闭云接入服务访问鉴权（当前状态：${status}）`,
+            message: `开启/关闭HTTP 访问服务访问鉴权（当前状态：${status}）`,
             choices: ['开启', '关闭']
         })
 

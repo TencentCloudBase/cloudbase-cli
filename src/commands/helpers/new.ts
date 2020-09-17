@@ -115,7 +115,7 @@ export class NewCommand extends Command {
             }
         ]
 
-        let { env } = await prompt({
+        let { env } = await prompt<any>({
             choices,
             type: 'select',
             name: 'env',
@@ -166,7 +166,7 @@ export class NewCommand extends Command {
             if (templateUrl) {
                 tempateId = templateUrl
             } else {
-                let { selectTemplateName } = await prompt({
+                let { selectTemplateName } = await prompt<any>({
                     type: 'select',
                     name: 'selectTemplateName',
                     message: '选择应用模板',
@@ -188,7 +188,7 @@ export class NewCommand extends Command {
             projectPath = path.join(process.cwd(), appName)
 
             if (checkFullAccess(projectPath)) {
-                const { cover } = await prompt({
+                const { cover } = await prompt<any>({
                     type: 'confirm',
                     name: 'cover',
                     message: `已存在同名文件夹：${appName}，是否覆盖？`,
@@ -322,7 +322,7 @@ export class NewCommand extends Command {
         }
 
         if (!Initialized) {
-            const { jump } = await prompt({
+            const { jump } = await prompt<any>({
                 type: 'confirm',
                 name: 'jump',
                 message:

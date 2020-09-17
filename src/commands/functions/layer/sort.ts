@@ -50,7 +50,7 @@ export class SortFileLayer extends Command {
             throw new CloudBaseError('没有可用的文件层，请先创建文件层！')
         }
 
-        let { sortLayers } = await prompt({
+        let { sortLayers } = await prompt<any>({
             type: 'sort',
             name: 'sortLayers',
             message: '选择文件层',
