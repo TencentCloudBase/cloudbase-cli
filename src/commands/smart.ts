@@ -60,7 +60,7 @@ export async function smartDeploy() {
     // 检查是否开通 TCB 服务
     const isInitNow = await checkTcbService()
 
-    const files = await fs.promises.readdir(process.cwd())
+    const files = fs.readdirSync(process.cwd())
 
     loading.stop()
     const home = os.homedir()
@@ -94,7 +94,14 @@ export async function smartDeploy() {
     // 配置文件不存在
     if (!config?.envId) {
         const envId = await selectEnv(isInitNow)
-        fs.writeFileSync(path.join(process.cwd(), 'cloudbaserc.json'), JSON.stringify({ envId }))
+        fs.writeFileSync(
+            path.join(process.cwd(), 'cloudbaserc.json'),
+            JSON.stringify({
+                envId,
+                version: '2.0',
+                $schema: 'https://framework-1258016615.tcloudbaseapp.com/schema/latest.json'
+            })
+        )
         // 调用 Framework
         await callFramework(envId, config)
     } else {

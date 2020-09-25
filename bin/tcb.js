@@ -85,15 +85,18 @@ program.action((command) => {
     console.log(`使用 ${chalk.bold('cloudbase -h')} 查看所有命令~`)
 })
 
-// 当没有输入任何命令时，显示帮助信息
-if (process.argv.length < 3) {
+// HACK: 智能命令
+if (
+    processArgv.length < 3 ||
+    (processArgv.length === 3 && ['--verbose', '--mode'].includes(processArgv[2]))
+) {
     // framework 智能命令
     const { smartDeploy } = require('../lib')
     smartDeploy()
 }
 
 // HACK: -h, --help 输出 help 信息
-if (process.argv.length === 3 && ['-h', '--help'].includes(process.argv[2])) {
+if (processArgv.length === 3 && ['-h', '--help'].includes(processArgv[2])) {
     // 需要隐藏的选项
     const hideArgs = ['-h', '--help']
     hideArgs.forEach((arg) => {
@@ -129,7 +132,7 @@ function errorHandler(err) {
     }
 
     // 输出详细的错误信息
-    if (process.argv.includes('--verbose')) {
+    if (processArgv.includes('--verbose')) {
         console.log(err)
     }
 
