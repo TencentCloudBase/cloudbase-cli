@@ -6,6 +6,7 @@ import { getMacAddress } from './platform'
 
 import { CloudBaseError } from '../error'
 import { Credential, AuthSecret } from '../types'
+import { REQUEST_TIMEOUT } from '../constant'
 
 const refreshTokenUrl = 'https://iaas.cloud.tencent.com/tcb_refresh'
 
@@ -35,7 +36,8 @@ export async function refreshTmpToken(
 
 export async function checkAndGetCredential(throwError = false): Promise<AuthSecret> {
     const credential = await _getCredentail({
-        proxy: getProxy()
+        proxy: getProxy(),
+        timeout: REQUEST_TIMEOUT
     })
 
     if (!credential || _.isEmpty(credential)) {

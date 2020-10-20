@@ -2,6 +2,7 @@ import arg from 'arg'
 import path from 'path'
 import { AuthSupevisor, ConfigParser, ICloudBaseConfig } from '@cloudbase/toolbox'
 import { getProxy } from './tools'
+import { REQUEST_TIMEOUT } from '../constant'
 
 // https://www.npmjs.com/package/arg
 export interface IArgs extends arg.Spec {
@@ -41,8 +42,9 @@ export const getCloudBaseConfig = async (configPath?: string): Promise<ICloudBas
 }
 
 export const authSupevisor = AuthSupevisor.getInstance({
+    cache: true,
     proxy: getProxy(),
-    cache: true
+    timeout: REQUEST_TIMEOUT
 })
 
 export async function getLoginState() {

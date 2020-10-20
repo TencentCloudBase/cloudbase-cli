@@ -22,6 +22,7 @@ export class CloudApiService {
     apiService: _CloudApiService
 
     constructor(service: string, baseParams?: Record<string, any>, version = '') {
+        // 初始化 API 实例
         this.apiService = new _CloudApiService({
             service,
             version,

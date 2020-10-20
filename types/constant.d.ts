@@ -13,7 +13,7 @@ export declare const DefaultCloudBaseConfig: {
     functionRoot: string;
     functions: any[];
 };
-export declare const REQUEST_TIMEOUT = 30000;
+export declare const REQUEST_TIMEOUT = 15000;
 export declare const enum ENV_STATUS {
     UNAVAILABLE = "UNAVAILABLE",
     NORMAL = "NORMAL",

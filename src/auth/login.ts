@@ -47,13 +47,7 @@ export async function loginWithKey(secretId?: string, secretKey?: string, token?
         return LoginRes.INVALID_PARAM('SecretID 或 SecretKey 不能为空')
     }
 
-    let credential
-
-    try {
-        credential = await authSupevisor.loginByApiSecret(secretId, secretKey, token)
-    } catch (e) {
-        return LoginRes.CHECK_LOGIN_FAILED
-    }
+    const credential = await authSupevisor.loginByApiSecret(secretId, secretKey, token)
 
     if (_.isEmpty(credential)) {
         return LoginRes.INVALID_TOKEN

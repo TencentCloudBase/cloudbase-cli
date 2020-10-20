@@ -20,7 +20,7 @@ export const DefaultCloudBaseConfig = {
 }
 
 // 请求超时时间
-export const REQUEST_TIMEOUT = 30000
+export const REQUEST_TIMEOUT = 15000
 
 export const enum ENV_STATUS {
     // 创建中
