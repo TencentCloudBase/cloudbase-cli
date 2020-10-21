@@ -41,9 +41,14 @@ const ENV_INIT_TIP = '环境初始化中，预计需要三分钟'
 export class NewCommand extends Command {
     get options() {
         return {
-            // templateUrl 是 Git 地址或模板名
-            cmd: 'new [appName] [templateUrl]',
-            options: [],
+            // templateUri 是 Git 地址或模板名
+            cmd: 'new [appName] [templateUri]',
+            options: [
+                {
+                    flags: '-e, --envId <envId>',
+                    desc: '环境 Id'
+                }
+            ],
             desc: '创建一个新的云开发应用',
             requiredEnvId: false,
             withoutAuth: true
@@ -52,102 +57,25 @@ export class NewCommand extends Command {
 
     @InjectParams()
     async execute(@CmdContext() ctx, @Log() log?: Logger) {
-        const { params } = ctx
+        const { params, envId } = ctx
 
         const appName = params?.[0]
-        const templateUrl = params?.[1]
+        const templateUri = params?.[1]
 
         // 检查登录
         await this.checkLogin()
 
-        // 检查是否开通 TCB 服务
-        const isInitNow = await this.checkTcbService()
-
-        let envData = []
-
-        // 刚初始化服务，新创建的环境还未就绪
-        if (isInitNow) {
-            envData = await execWithLoading(
-                () => {
-                    // 等待用户完成创建环境的流程
-                    return new Promise((resolve) => {
-                        const timer = setInterval(async () => {
-                            const envs = await listEnvs()
-                            if (envs.length) {
-                                clearInterval(timer)
-                                resolve(envs)
-                            }
-                        }, 2000)
-                    })
-                },
-                {
-                    startTip: '获取环境列表中'
-                }
-            )
-        } else {
-            // 选择环境
-            envData = await execWithLoading(() => listEnvs(), {
-                startTip: '获取环境列表中'
-            })
-        }
-
-        envData = envData || []
-
-        const envs: { name: string; value: string }[] = envData
-            .map((item) => {
-                let name = `${item.Alias} - [${item.EnvId}:${item.PackageName || '按量计费'}]`
-                if (item.Status !== ENV_STATUS.NORMAL) {
-                    name += `（${STATUS_TEXT[item.Status]}）`
-                }
-
-                return {
-                    name,
-                    value: item.EnvId
-                }
-            })
-            .sort((prev, next) => prev.value.charCodeAt(0) - next.value.charCodeAt(0))
-
-        const choices = [
-            ...envs,
-            {
-                name: envData.length ? '创建新环境' : '无可用环境，创建新环境',
-                value: CREATE_ENV
-            }
-        ]
-
-        let { env } = await prompt<any>({
-            choices,
-            type: 'select',
-            name: 'env',
-            message: '选择关联的云开发环境',
-            result(choice) {
-                return this.map(choice)[choice]
-            }
-        })
-
-        // 创建新环境
-        if (env === CREATE_ENV) {
-            log.success('已打开控制台，请前往控制台创建环境')
-            // 从控制台获取创建环境生成的 envId
-            const { envId } = await getDataFromWeb(
-                (port) => `${consoleUrl}&port=${port}`,
-                'getData'
-            )
-            if (!envId) {
-                throw new CloudBaseError('接收环境 Id 信息失败，请重新运行 init 命令！')
-            }
-            log.success(`创建环境成功，环境 Id: ${envId}`)
-            env = envId
-        }
+        // 获取 envId
+        const env = await this.getSelectedEnv(envId)
 
         // 检查环境状态
         await this.checkEnvStatus(env)
 
         let projectPath
 
-        if (templateUrl && isGitUrl(templateUrl)) {
+        if (templateUri && isGitUrl(templateUri)) {
             // git 仓库
-            await execa('git', ['clone', templateUrl, appName], {
+            await execa('git', ['clone', templateUri, appName], {
                 stdio: 'inherit'
             })
             projectPath = path.join(process.cwd(), appName)
@@ -163,8 +91,8 @@ export class NewCommand extends Command {
             let tempateId
 
             // 确定模板名称
-            if (templateUrl) {
-                tempateId = templateUrl
+            if (templateUri) {
+                tempateId = templateUri
             } else {
                 let { selectTemplateName } = await prompt<any>({
                     type: 'select',
@@ -239,6 +167,102 @@ export class NewCommand extends Command {
 
         // 成功提示
         this.initSuccessOutput(appName)
+    }
+
+    // 获取环境 Id 信息
+    async getSelectedEnv(inputEnvId: string, @Log() log?: Logger) {
+        // 检查是否开通 TCB 服务
+        const isInitNow = await this.checkTcbService()
+
+        let envData = []
+
+        // 刚初始化服务，新创建的环境还未就绪
+        if (isInitNow) {
+            envData = await execWithLoading(
+                () => {
+                    // 等待用户完成创建环境的流程
+                    return new Promise((resolve) => {
+                        const timer = setInterval(async () => {
+                            const envs = await listEnvs()
+                            if (envs.length) {
+                                clearInterval(timer)
+                                resolve(envs)
+                            }
+                        }, 2000)
+                    })
+                },
+                {
+                    startTip: '获取环境列表中'
+                }
+            )
+        } else {
+            // 选择环境
+            envData = await execWithLoading(() => listEnvs(), {
+                startTip: '获取环境列表中'
+            })
+        }
+
+        envData = envData || []
+
+        // 检查输入的环境 Id 是否属于用户
+        if (envData?.length && inputEnvId) {
+            const inputEnvIdExist = envData.find((_) => _.EnvId === inputEnvId)
+            if (!inputEnvIdExist) {
+                throw new CloudBaseError(
+                    `你指定的环境 Id ${inputEnvId} 不存在，请指定正确的环境 Id！`
+                )
+            }
+            return inputEnvId
+        }
+
+        const envs: { name: string; value: string }[] = envData
+            .map((item) => {
+                let name = `${item.Alias} - [${item.EnvId}:${item.PackageName || '按量计费'}]`
+                if (item.Status !== ENV_STATUS.NORMAL) {
+                    name += `（${STATUS_TEXT[item.Status]}）`
+                }
+
+                return {
+                    name,
+                    value: item.EnvId
+                }
+            })
+            .sort((prev, next) => prev.value.charCodeAt(0) - next.value.charCodeAt(0))
+
+        const choices = [
+            ...envs,
+            {
+                name: envData.length ? '创建新环境' : '无可用环境，创建新环境',
+                value: CREATE_ENV
+            }
+        ]
+
+        let { env } = await prompt<any>({
+            choices,
+            type: 'select',
+            name: 'env',
+            message: '选择关联的云开发环境',
+            result(choice) {
+                return this.map(choice)[choice]
+            }
+        })
+
+        // 创建新环境
+        if (env === CREATE_ENV) {
+            log.success('已打开控制台，请前往控制台创建环境')
+            // 从控制台获取创建环境生成的 envId
+            const { envId } = await getDataFromWeb(
+                (port) => `${consoleUrl}&port=${port}`,
+                'getData'
+            )
+            if (!envId) {
+                throw new CloudBaseError('接收环境 Id 信息失败，请重新运行 init 命令！')
+            }
+            log.success(`创建环境成功，环境 Id: ${envId}`)
+            env = envId
+        }
+
+        return env
     }
 
     // 检查登录

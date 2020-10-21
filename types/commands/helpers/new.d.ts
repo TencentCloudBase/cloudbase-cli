@@ -3,12 +3,16 @@ import { Logger } from '../../decorators';
 export declare class NewCommand extends Command {
     get options(): {
         cmd: string;
-        options: any[];
+        options: {
+            flags: string;
+            desc: string;
+        }[];
         desc: string;
         requiredEnvId: boolean;
         withoutAuth: boolean;
     };
     execute(ctx: any, log?: Logger): Promise<void>;
+    getSelectedEnv(inputEnvId: string, log?: Logger): Promise<any>;
     checkLogin(log?: Logger): Promise<void>;
     checkEnvStatus(envId: string): Promise<void>;
     checkEnvAvaliable(envId: string): Promise<void>;
