@@ -59,7 +59,7 @@ export class NewCommand extends Command {
     async execute(@CmdContext() ctx, @Log() log?: Logger) {
         const { params, envId } = ctx
 
-        const appName = params?.[0]
+        let appName = params?.[0]
         const templateUri = params?.[1]
 
         // 检查登录
@@ -79,8 +79,6 @@ export class NewCommand extends Command {
                 stdio: 'inherit'
             })
             projectPath = path.join(process.cwd(), appName)
-        } else if (!appName) {
-            projectPath = path.resolve(process.cwd())
         } else {
             // 获取模板
             const templates = await execWithLoading(() => fetch(listUrl), {
@@ -110,6 +108,18 @@ export class NewCommand extends Command {
             if (!selectedTemplate) {
                 log.info(`模板 \`${templateName || tempateId}\` 不存在`)
                 return
+            }
+
+            // appName 不存在时，输入应用
+            if (!appName) {
+                const { projectName } = await prompt<any>({
+                    type: 'input',
+                    name: 'projectName',
+                    message: '请输入项目名称',
+                    initial: selectedTemplate.path
+                })
+
+                appName = projectName
             }
 
             // 确定项目权限
