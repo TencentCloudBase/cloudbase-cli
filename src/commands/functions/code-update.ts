@@ -23,7 +23,7 @@ export class CodeUpdate extends Command {
                 },
                 {
                     flags: '--code-secret <codeSecret>',
-                    desc: '传入此参数将保护代码，格式为 36 位大小字母和数字'
+                    desc: '传入此参数将保护代码，格式为 36 位大小写字母和数字'
                 }
             ],
             desc: '更新云函数代码'
