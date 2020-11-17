@@ -38,5 +38,5 @@ export declare class FrameworkRun extends Command {
         }[];
         desc: string;
     };
-    execute(ctx: ICommandContext, logger: Logger, params: any): Promise<void>;
+    execute(ctx: ICommandContext, logger: Logger, params: any, options: any): Promise<void>;
 }

@@ -1,7 +1,7 @@
 import { run } from '@cloudbase/framework-core'
 import { Command, ICommand } from '../common'
 import { ICommandContext } from '../../types'
-import { InjectParams, CmdContext, ArgsParams, Log, Logger } from '../../decorators'
+import { InjectParams, CmdContext, ArgsParams, Log, Logger, ArgsOptions } from '../../decorators'
 
 import * as Hosting from '../../hosting'
 import * as Function from '../../function'
@@ -98,21 +98,27 @@ export class FrameworkRun extends Command {
     get options() {
         return {
             cmd: 'framework',
-            childCmd: 'run [module] [runCommand]',
-            deprecateCmd: 'framework:run [module] [runCommand]',
+            childCmd: 'run [command]',
+            deprecateCmd: 'framework:run [command]',
             options: [
                 {
                     flags: '-e, --envId <envId>',
                     desc: '环境 Id'
+                },
+                {
+                    flags: '--plugin <plugin>',
+                    desc: '执行命令的插件'
                 }
             ],
-            desc: '云开发 Serverless 应用框架：执行本地命令'
+            desc: '云开发 Serverless 应用框架：执行自定义命令'
         }
     }
 
     @InjectParams()
-    async execute(@CmdContext() ctx: ICommandContext, @Log() logger: Logger, @ArgsParams() params) {
-        const [module, runCommand] = params || []
-        await callFramework(ctx, 'run', module, { runCommand })
+    async execute(@CmdContext() ctx: ICommandContext, @Log() logger: Logger, @ArgsParams() params, @ArgsOptions() options) {
+        const [command] = params || []
+        const { plugin } = options
+
+        await callFramework(ctx, 'run', plugin, { runCommandKey: command })
     }
 }
