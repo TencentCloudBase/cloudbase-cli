@@ -322,7 +322,7 @@ export class NewCommand extends Command {
                     flush(`${ENV_INIT_TIP}  ${++count}S`)
                 }, 1000)
 
-                return new Promise((resolve) => {
+                return new Promise<void>((resolve) => {
                     const timer = setInterval(async () => {
                         const env = await getEnvInfo(envId)
                         // 环境初始化中
@@ -385,7 +385,7 @@ export class NewCommand extends Command {
     }
 
     async waitForServiceEnable() {
-        return new Promise((resolve) => {
+        return new Promise<void>((resolve) => {
             const timer = setInterval(async () => {
                 const app = await getMangerService()
                 try {

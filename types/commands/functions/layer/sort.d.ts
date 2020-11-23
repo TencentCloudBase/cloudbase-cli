@@ -14,5 +14,5 @@ export declare class SortFileLayer extends Command {
         };
         childSubCmd: string;
     };
-    execute(envId: any, options: any): Promise<void>;
+    execute(ctx: any): Promise<void>;
 }

@@ -41,14 +41,14 @@ export class BindCustomDomainCommand extends Command {
         }
 
         const loading = loadingFactory()
-        loading.start(`HTTP Service 域名 [${domain}] 绑定中...`)
+        loading.start(`HTTP 访问服务域名 [${domain}] 绑定中...`)
 
         try {
             await bindGatewayDomain({
                 envId,
                 domain
             })
-            loading.succeed(`HTTP Service 域名[${domain}] 绑定成功！`)
+            loading.succeed(`HTTP 访问服务域名[${domain}] 绑定成功！`)
         } catch (e) {
             loading.stop()
             throw e
@@ -98,7 +98,7 @@ export class GetCustomDomainsCommand extends Command {
             loading.succeed('查询HTTP 访问服务域名成功！')
 
             if (!res?.ServiceSet?.length) {
-                log.info('HTTP Service 域名为空！')
+                log.info('HTTP 访问服务域名为空！')
                 return
             }
 

@@ -303,7 +303,7 @@ async function checkEnvAvaliable(envId: string) {
                 flush(`${ENV_INIT_TIP}  ${++count}S`)
             }, 1000)
 
-            return new Promise((resolve) => {
+            return new Promise<void>((resolve) => {
                 const timer = setInterval(async () => {
                     const env = await getEnvInfo(envId)
                     // 环境初始化中
@@ -366,7 +366,7 @@ async function checkTcbService(): Promise<boolean> {
 
 // 等待服务开通
 async function waitForServiceEnable() {
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
         const timer = setInterval(async () => {
             const app = await getMangerService()
             try {

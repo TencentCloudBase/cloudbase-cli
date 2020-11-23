@@ -30,7 +30,7 @@ export function formatDate(dateParam: string | number | Date, fmtParam: string) 
 }
 
 export async function sleep(time: number) {
-    return new Promise(resolve => {
+    return new Promise<void>(resolve => {
         setTimeout(() => {
             resolve()
         }, time)

@@ -21,14 +21,14 @@ export class CreateService extends Command {
                 },
                 {
                     flags: '-p, --service-path <servicePath>',
-                    desc: 'Service Path，必须以 "/" 开头'
+                    desc: 'HTTP 访问服务路径，如 api'
                 },
                 {
                     flags: '-f, --function <name>',
-                    desc: 'HTTP Service 路径绑定的云函数名称'
+                    desc: 'HTTP 访问服务路径绑定的云函数名称'
                 }
             ],
-            desc: '创建 HTTP Service'
+            desc: '创建 HTTP 访问服务'
         }
     }
 
@@ -61,7 +61,7 @@ export class CreateService extends Command {
             let { path } = await prompt<any>({
                 type: 'input',
                 name: 'path',
-                message: '请输入HTTP 访问服务路径（以 / 开头）'
+                message: '请输入HTTP 访问服务路径'
             })
 
             functionName = name
@@ -72,6 +72,9 @@ export class CreateService extends Command {
 
         // 创建云函数网关
         loading.start(`[${functionName}] HTTP 访问服务创建中...`)
+
+        // 补充 / 符号
+        servicePath = servicePath[0] === '/' ? servicePath : `/${servicePath}`
 
         try {
             // step1: 判断云函数是否存在

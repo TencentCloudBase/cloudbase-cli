@@ -32,7 +32,7 @@ export async function downloadFunctionCode(options: IFunctionCodeOptions) {
     const zipPath = path.join(destPath, `${functionName}.zip`)
     const dest = fs.createWriteStream(zipPath)
     res.body.pipe(dest)
-    return new Promise(resolve => {
+    return new Promise<void>(resolve => {
         // 解压文件
         dest.on('close', () => {
             // 不解压 ZIP 文件

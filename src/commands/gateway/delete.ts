@@ -18,18 +18,18 @@ export class DeleteServiceCommand extends Command {
                 },
                 {
                     flags: '-p, --service-path <servicePath>',
-                    desc: 'Service Path，删除此 Path 对应的 HTTP Service'
+                    desc: 'HTTP 访问服务路径，删除此路径对应的 HTTP 访问服务'
                 },
                 {
                     flags: '-i, --service-id <serviceId>',
-                    desc: 'Service Id，删除此 Id 对应的 HTTP Service'
+                    desc: 'HTTP 访问服务 Id，删除此 Id 对应的 HTTP 访问服务'
                 },
                 {
                     flags: '-n, --name <name>',
-                    desc: '云函数函数名称，删除此函数绑定的所有 HTTP Service'
+                    desc: '云函数函数名称，删除此函数绑定的所有 HTTP 访问服务'
                 }
             ],
-            desc: '删除 HTTP Service'
+            desc: '删除 HTTP 访问服务'
         }
     }
 
@@ -58,8 +58,12 @@ export class DeleteServiceCommand extends Command {
             serviceId = selected?.[0]
         }
 
+        if (servicePath) {
+            servicePath = servicePath[0] === '/' ? servicePath : `/${servicePath}`
+        }
+
         const loading = loadingFactory()
-        loading.start('HTTP Service 删除中...')
+        loading.start('HTTP 访问服务删除中...')
 
         try {
             await deleteGateway({
@@ -68,7 +72,7 @@ export class DeleteServiceCommand extends Command {
                 path: servicePath,
                 gatewayId: serviceId
             })
-            loading.succeed('HTTP Service 删除成功！')
+            loading.succeed('HTTP 访问服务删除成功！')
         } catch (e) {
             loading.stop()
             throw e

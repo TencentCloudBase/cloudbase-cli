@@ -56,7 +56,7 @@ export class ListServiceCommand extends Command {
             loading.stop()
 
             if (res?.APISet?.length === 0) {
-                log.info('HTTP Service 为空')
+                log.info('HTTP 访问服务为空')
                 return
             }
 

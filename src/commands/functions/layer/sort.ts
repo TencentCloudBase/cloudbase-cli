@@ -5,7 +5,7 @@ import { Command, ICommand } from '../../common'
 import { loadingFactory } from '../../../utils'
 import { CloudBaseError } from '../../../error'
 import { getFunctionDetail, sortLayer } from '../../../function'
-import { InjectParams, EnvId, ArgsOptions } from '../../../decorators'
+import { InjectParams, CmdContext } from '../../../decorators'
 import { layerCommonOptions } from './common'
 
 @ICommand()
@@ -29,15 +29,17 @@ export class SortFileLayer extends Command {
     }
 
     @InjectParams()
-    async execute(@EnvId() envId, @ArgsOptions() options) {
+    async execute(@CmdContext() ctx) {
+        const { envId, options, params } = ctx
         const { codeSecret } = options
+        const fnName = params?.[0]
 
         const loading = loadingFactory()
         loading.start('数据加载中...')
         const detail = await getFunctionDetail({
             envId,
             codeSecret,
-            functionName: name
+            functionName: fnName
         })
         loading.stop()
 
@@ -66,7 +68,7 @@ export class SortFileLayer extends Command {
         loading.start('文件层排序中...')
         await sortLayer({
             envId,
-            functionName: name,
+            functionName: fnName,
             layers: sortLayers
         })
         loading.succeed('文件层排序成功！')

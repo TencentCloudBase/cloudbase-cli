@@ -5,5 +5,5 @@ interface IFunctionCodeOptions {
     codeSecret?: string;
     unzip?: boolean;
 }
-export declare function downloadFunctionCode(options: IFunctionCodeOptions): Promise<unknown>;
+export declare function downloadFunctionCode(options: IFunctionCodeOptions): Promise<void>;
 export {};

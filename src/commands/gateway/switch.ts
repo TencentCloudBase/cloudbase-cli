@@ -39,13 +39,13 @@ export class ServiceSwitchCommand extends Command {
         })
 
         try {
-            loading.start(`HTTP Service 服务${enable}中`)
+            loading.start(`HTTP 访问服务${enable}中`)
 
             await switchHttpService({
                 envId,
                 enable: enable === '开启'
             })
-            loading.succeed(`HTTP Service 服务${enable}成功！`)
+            loading.succeed(`HTTP 访问服务${enable}成功！`)
         } catch (e) {
             loading.stop()
             throw e
@@ -92,13 +92,13 @@ export class ServiceAuthSwitch extends Command {
         })
 
         try {
-            loading.start(`HTTP Service 服务访问鉴权${enable}中`)
+            loading.start(`HTTP 访问服务访问鉴权${enable}中`)
 
             await switchHttpServiceAuth({
                 envId,
                 enable: enable === '开启'
             })
-            loading.succeed(`HTTP Service 服务访问鉴权${enable}成功！`)
+            loading.succeed(`HTTP 访问服务访问鉴权${enable}成功！`)
         } catch (e) {
             loading.stop()
             throw e

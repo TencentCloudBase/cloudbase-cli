@@ -17,7 +17,7 @@ export declare class NewCommand extends Command {
     checkEnvStatus(envId: string): Promise<void>;
     checkEnvAvaliable(envId: string): Promise<void>;
     checkTcbService(log?: Logger): Promise<boolean>;
-    waitForServiceEnable(): Promise<unknown>;
+    waitForServiceEnable(): Promise<void>;
     extractTemplate(projectPath: string, templatePath: string, remoteUrl?: string): Promise<void>;
     initSuccessOutput(appName: string, log?: Logger): void;
 }
