@@ -38,6 +38,8 @@ module.exports = {
             case 1:
                 invokeInfo.cmd = 'RELOAD'
                 invokeInfo.context = GLOBAL_USER_FILE_PATH + GLOBAL_FUNCTION_HANDLER
+                invokeInfo.globalHandler = GLOBAL_FUNCTION_HANDLER
+                invokeInfo.filePath = GLOBAL_USER_FILE_PATH
                 break
             case 2:
                 invokeInfo.cmd = 'EVENT'

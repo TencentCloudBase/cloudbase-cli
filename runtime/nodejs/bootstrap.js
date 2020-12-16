@@ -67,8 +67,9 @@ function waitForInvoke() {
 function invoke(invokeInfo) {
     if (invokeInfo.cmd === 'RELOAD') {
         runtime.log(`get reload request: ${invokeInfo.context}`)
-        var ff = invokeInfo.context.split('.')
-        initHandler(ff[ff.length - 2], ff[ff.length - 1])
+        // 路径中可能包含 . 符号
+        var ff = invokeInfo.globalHandler.split('.')
+        initHandler(invokeInfo.filePath + ff[0], ff[1])
         runtime.log('handlers reloaded')
         _result = 'reload'
         finish(null, null, false)
