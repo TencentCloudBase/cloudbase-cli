@@ -30,7 +30,7 @@
     "dependencies": {
         "@cloudbase/cloud-api": "^0.2.0",
         "@cloudbase/framework-core": "^1.5.0",
-        "@cloudbase/manager-node": "^3.8.1",
+        "@cloudbase/manager-node": "^3.8.2",
         "@cloudbase/toolbox": "^0.5.3",
         "@koa/cors": "^3.1.0",
         "@koa/router": "^10.0.0",
