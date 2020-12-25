@@ -10,8 +10,6 @@ export declare class LowCodeWatch extends Command {
         }[];
         desc: string;
         requiredEnvId: boolean;
-        withoutAuth: boolean;
     };
     execute(ctx: any, log?: Logger): Promise<void>;
-    checkLogin(log?: Logger): Promise<void>;
 }

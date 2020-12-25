@@ -28,32 +28,11 @@ export class LowCodeWatch extends Command {
             ],
             desc: '开启云开发低码的本地构建模式',
             requiredEnvId: false,
-            withoutAuth: true
         }
     }
 
     @InjectParams()
     async execute(@CmdContext() ctx, @Log() log?: Logger) {
-		const { options } = ctx
-		
-        // 检查登录
-        await this.checkLogin()
-
         await startLocalCIServer(8288)
-    }
-
-    // 检查登录
-    @InjectParams()
-    async checkLogin(@Log() log?: Logger) {
-        const credential = await checkAndGetCredential()
-        // 没有登录，拉起 Web 登录
-        if (_.isEmpty(credential)) {
-            log.info('你还没有登录，请在控制台中授权登录')
-
-            await execWithLoading(() => login(), {
-                startTip: '获取授权中...',
-                successTip: '授权登录成功！'
-            })
-        }
     }
 }
