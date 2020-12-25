@@ -9,3 +9,4 @@ export * from './gateway';
 export * from './third';
 export * from './framework';
 export * from './smart';
+export * from './lowcode';

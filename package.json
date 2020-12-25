@@ -1,10 +1,11 @@
 {
     "name": "@cloudbase/cli",
-    "version": "1.0.7",
+    "version": "1.0.8-17",
     "description": "cli tool for cloudbase",
     "main": "lib/index.js",
     "scripts": {
         "build": "rimraf lib types && tsc",
+        "watch": "rimraf lib types && tsc -w",
         "eslint": "eslint \"./**/*.ts\"",
         "test": "jest --runInBand --forceExit --detectOpenHandles --coverage --verbose --testTimeout=10000",
         "publish": "node scripts/publish.js",
@@ -16,8 +17,8 @@
         "url": "https://github.com/TencentCloudBase/cloud-base-cli.git"
     },
     "bin": {
-        "tcb": "./bin/tcb.js",
-        "cloudbase": "./bin/cloudbase.js"
+        "tcb": "bin/tcb.js",
+        "cloudbase": "bin/cloudbase.js"
     },
     "husky": {
         "hooks": {
@@ -28,14 +29,17 @@
     "license": "ISC",
     "dependencies": {
         "@cloudbase/cloud-api": "^0.2.0",
-        "@cloudbase/framework-core": "^1.4.7",
+        "@cloudbase/framework-core": "^1.5.0",
         "@cloudbase/manager-node": "^3.8.2",
         "@cloudbase/toolbox": "^0.5.3",
+        "@koa/cors": "^3.1.0",
+        "@koa/router": "^10.0.0",
         "@sentry/node": "^5.10.2",
         "address": "^1.1.2",
         "archiver": "^3.1.1",
         "arg": "^4.1.3",
         "chalk": "^2.4.2",
+        "chokidar": "^3.4.3",
         "cli-table3": "^0.5.1",
         "commander": "^6.1.0",
         "del": "^5.1.0",
@@ -45,6 +49,8 @@
         "fs-extra": "^8.1.0",
         "https-proxy-agent": "^2.2.4",
         "inquirer": "^6.5.0",
+        "koa": "^2.13.0",
+        "koa-bodyparser": "^4.3.0",
         "lodash": "^4.17.19",
         "log-symbols": "^3.0.0",
         "lowdb": "^1.0.0",
@@ -64,6 +70,7 @@
     },
     "devDependencies": {
         "@types/jest": "^25.1.4",
+        "@types/koa": "^2.11.6",
         "@types/lodash": "^4.14.149",
         "@types/node": "^12.12.38",
         "@types/node-fetch": "^2.5.4",
