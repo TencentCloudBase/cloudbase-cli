@@ -83,7 +83,7 @@ export const DEFAULT_RC_CONTENT = {
     name: '{{env.APP_NAME}}',
     plugins: {
       lowcode: {
-        use: '@cloudbase/framework-plugin-low-code@beta',
+        use: '@cloudbase/framework-plugin-low-code@release',
         inputs: {
           debug: true,
         },
@@ -136,7 +136,7 @@ export class Builder {
       ...params,
       mainAppSerializeData: {
         ...JSON.parse(params?.mainAppSerializeData),
-        dataSources: params?.datasources?.rows || []
+        dataSources: params?.datasources || []
       },
       datasources: null,
     }
