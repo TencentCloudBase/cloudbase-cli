@@ -28,10 +28,10 @@
     "author": "cwuyiqing@gmail.com",
     "license": "ISC",
     "dependencies": {
-        "@cloudbase/cloud-api": "^0.2.0",
+        "@cloudbase/cloud-api": "^0.3.2",
         "@cloudbase/framework-core": "^1.5.0",
         "@cloudbase/manager-node": "^3.8.2",
-        "@cloudbase/toolbox": "^0.5.3",
+        "@cloudbase/toolbox": "^0.6.0",
         "@koa/cors": "^3.1.0",
         "@koa/router": "^10.0.0",
         "@sentry/node": "^5.10.2",

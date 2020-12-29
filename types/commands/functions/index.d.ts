@@ -11,4 +11,3 @@ export * from './trigger-create';
 export * from './trigger-delete';
 export * from './code-update';
 export * from './code-download';
-export * from './layer';

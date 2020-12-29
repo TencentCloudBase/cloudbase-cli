@@ -19,6 +19,7 @@ export const outputHelpInfo = () => {
   选项
 
     --verbose                                  打印出内部运行信息
+    -r, --region                               指定环境地域
     --mode <mode>                              指定加载 env 文件的环境
     --config-file <path>                       指定配置文件路径
     -v, --version                              输出当前版本

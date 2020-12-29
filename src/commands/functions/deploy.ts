@@ -15,6 +15,13 @@ import {
 import { ICreateFunctionOptions } from '../../types'
 import { DefaultFunctionDeployConfig } from '../../constant'
 import { InjectParams, CmdContext, ArgsParams, Log, Logger } from '../../decorators'
+import { getRegion } from '@cloudbase/toolbox'
+
+const regionIdMap = {
+    'ap-guangzhou': 1,
+    'ap-shanghai': 4,
+    'ap-beijing': 8
+}
 
 @ICommand()
 export class FunctionDeploy extends Command {
@@ -217,7 +224,7 @@ export class FunctionDeploy extends Command {
                     })
                     loading.succeed(`[${func.name}] 云函数部署成功！`)
                     // await genApiGateway(envId, name)
-                    this.printSuccessTips(envId)
+                    await this.printSuccessTips(envId)
                 } catch (e) {
                     loading.stop()
                     throw e
@@ -230,8 +237,11 @@ export class FunctionDeploy extends Command {
     }
 
     @InjectParams()
-    printSuccessTips(envId: string, @Log() log?: Logger) {
-        const link = genClickableLink(`https://console.cloud.tencent.com/tcb/scf?envId=${envId}`)
+    async printSuccessTips(envId: string, @Log() log?: Logger) {
+        let url = `https://console.cloud.tencent.com/tcb/scf?envId=${envId}`
+        const region = await getRegion()
+        url += `&rid=${regionIdMap[region]}`
+        const link = genClickableLink(url)
         log.breakLine()
         log.info(`控制台查看函数详情或创建HTTP 访问服务链接 🔗：${link}`)
         log.info(`使用 ${highlightCommand('cloudbase functions:list')} 命令查看已部署云函数`)

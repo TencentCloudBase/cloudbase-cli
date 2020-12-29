@@ -64,6 +64,8 @@ program.storeOptionsAsProperties(false)
 program.option('--verbose', '打印出内部运行信息')
 program.option('--mode <mode>', '指定加载 env 文件的环境')
 program.option('--config-file <path>', '设置配置文件，默认为 cloudbaserc.json')
+program.option('-r, --region <region>', '指定环境地域')
+
 // HACK: 隐藏自动生成的 help 信息
 program.helpOption(false)
 program.version(pkg.version, '-v, --version', '输出当前 CloudBase CLI 版本')

@@ -3,6 +3,7 @@ import os from 'os'
 import _ from 'lodash'
 import open from 'open'
 import path from 'path'
+import chalk from 'chalk'
 import { prompt } from 'enquirer'
 import { run } from '@cloudbase/framework-core'
 import {
@@ -30,7 +31,6 @@ import { Logger } from '../decorators'
 import * as Hosting from '../hosting'
 import * as Function from '../function'
 import { ENV_STATUS, STATUS_TEXT } from '../constant'
-import chalk from 'chalk'
 
 // 云函数
 const listUrl = 'https://tcli.service.tcloudbase.com/templates'

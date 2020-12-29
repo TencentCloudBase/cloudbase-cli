@@ -9,6 +9,7 @@ export * from './progress-bar'
 export * from './function-packer'
 export * from './manager-service'
 
+export * from './config'
 export * from './auth'
 export * from './store'
 export * from './cloud'

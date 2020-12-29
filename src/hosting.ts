@@ -1,28 +1,13 @@
 import path from 'path'
-import CloudBase from '@cloudbase/manager-node'
-import { StorageService } from '@cloudbase/manager-node/types/storage'
 import {
     CloudApiService,
     firstLetterToLowerCase,
     isDirectory,
-    checkAndGetCredential,
-    getProxy,
     genClickableLink,
-    checkReadable
+    checkReadable,
+    getStorageService
 } from './utils'
 import { CloudBaseError } from './error'
-
-async function getStorageService(envId: string): Promise<StorageService> {
-    const { secretId, secretKey, token } = await checkAndGetCredential(true)
-    const app = new CloudBase({
-        secretId,
-        secretKey,
-        token,
-        envId,
-        proxy: getProxy()
-    })
-    return app.storage
-}
 
 interface IBaseOptions {
     envId: string

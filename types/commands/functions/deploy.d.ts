@@ -16,6 +16,6 @@ export declare class FunctionDeploy extends Command {
     execute(ctx: any, params: any, log: Logger): Promise<void>;
     deployAllFunction(options: any): Promise<void>;
     handleDeployFail(e: CloudBaseError, options: ICreateFunctionOptions): Promise<void>;
-    printSuccessTips(envId: string, log?: Logger): void;
+    printSuccessTips(envId: string, log?: Logger): Promise<void>;
     genApiGateway(envId: string, name: string): Promise<void>;
 }

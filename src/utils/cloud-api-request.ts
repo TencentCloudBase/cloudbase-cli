@@ -1,4 +1,4 @@
-import { getCredentialWithoutCheck } from '@cloudbase/toolbox'
+import { getCredentialWithoutCheck, getRegion } from '@cloudbase/toolbox'
 import { CloudApiService as _CloudApiService, Credential } from '@cloudbase/cloud-api'
 import { CloudBaseError } from '../error'
 import { getProxy } from './tools'
@@ -45,6 +45,7 @@ export class CloudApiService {
     }
 
     async request(action: string, data: Record<string, any> = {}, method: 'POST' | 'GET' = 'POST') {
-        return this.apiService.request(action, data, method)
+        const region = await getRegion()
+        return this.apiService.request({ action, data, method, region })
     }
 }
