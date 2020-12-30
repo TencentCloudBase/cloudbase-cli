@@ -74,7 +74,7 @@ export class GetCustomDomainsCommand extends Command {
                     desc: '域名'
                 }
             ],
-            desc: '查询自定义HTTP 访问服务域名'
+            desc: '查询 HTTP 访问服务自定义域名'
         }
     }
 

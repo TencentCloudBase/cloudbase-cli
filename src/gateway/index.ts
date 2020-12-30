@@ -64,10 +64,11 @@ export async function createGateway(options: ICreateFunctionGatewayOptions) {
     const { envId, path, name } = options
 
     const res: any = await tcbService.request('CreateCloudBaseGWAPI', {
-        ServiceId: envId,
-        Path: path,
         Type: 1,
-        Name: name
+        Path: path,
+        Name: name,
+        ServiceId: envId,
+        EnableUnion: true
     })
     return res
 }
@@ -81,8 +82,8 @@ export async function queryGateway(options: IQueryGatewayOptions) {
         Domain: domain,
         Path: path,
         APIId: gatewayId,
-        Type: 1,
-        Name: name
+        Name: name,
+        EnableUnion: true
     })
     return res
 }
@@ -105,7 +106,7 @@ export async function deleteGateway(options: IDeleteGatewayOptions) {
 export async function bindGatewayDomain(options: IBindGatewayDomainOptions) {
     const { envId, domain } = options
 
-    const res: any = await tcbService.request('BindCloudBaseGWDomain', {
+    const res: any = await tcbService.request('BindCloudBaseAccessDomain', {
         ServiceId: envId,
         Domain: domain
     })
@@ -118,7 +119,8 @@ export async function queryGatewayDomain(options: IQueryGatewayDomainOptions) {
 
     const res: any = await tcbService.request('DescribeCloudBaseGWService', {
         ServiceId: envId,
-        Domain: domain
+        Domain: domain,
+        EnableUnion: true
     })
     return res
 }

@@ -19,6 +19,7 @@ export class CloudApiService {
         return apiService
     }
 
+    region: string
     apiService: _CloudApiService
 
     constructor(service: string, baseParams?: Record<string, any>, version = '') {
@@ -45,7 +46,7 @@ export class CloudApiService {
     }
 
     async request(action: string, data: Record<string, any> = {}, method: 'POST' | 'GET' = 'POST') {
-        const region = await getRegion()
+        const region = this.region || (await getRegion())
         return this.apiService.request({ action, data, method, region })
     }
 }

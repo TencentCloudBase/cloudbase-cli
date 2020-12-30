@@ -30,7 +30,7 @@ export class ListServiceCommand extends Command {
                     desc: 'Service Id'
                 }
             ],
-            desc: '获取HTTP 访问服务列表'
+            desc: '获取 HTTP 访问服务列表'
         }
     }
 
@@ -60,11 +60,11 @@ export class ListServiceCommand extends Command {
                 return
             }
 
-            const head = ['Id', '路径', '函数名称', '创建时间']
+            const head = ['触发路径', '关联资源', '触发类型', '创建时间']
             const tableData = res.APISet.map((item) => [
-                item.APIId,
                 item.Path,
                 item.Name,
+                item.Type === 1 ? '云函数' : '云托管',
                 formatDate(item.CreateTime * 1000, 'yyyy-MM-dd hh:mm:ss')
             ])
             printHorizontalTable(head, tableData)

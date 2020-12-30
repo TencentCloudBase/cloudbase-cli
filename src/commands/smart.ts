@@ -11,6 +11,7 @@ import {
     unzipStream,
     getDataFromWeb,
     isCamRefused,
+    ConfigParser,
     ICloudBaseConfig
 } from '@cloudbase/toolbox'
 import { CloudBaseError } from '../error'
@@ -24,13 +25,16 @@ import {
     templateDownloadReport,
     getCloudBaseConfig,
     authSupevisor,
-    loadingFactory
+    loadingFactory,
+    CloudApiService
 } from '../utils'
 import { login } from '../auth'
 import { Logger } from '../decorators'
 import * as Hosting from '../hosting'
 import * as Function from '../function'
 import { ENV_STATUS, STATUS_TEXT } from '../constant'
+
+const tcbService = CloudApiService.getInstance('tcb')
 
 // 云函数
 const listUrl = 'https://tcli.service.tcloudbase.com/templates'
@@ -63,6 +67,8 @@ export async function smartDeploy() {
     const files = fs.readdirSync(process.cwd())
 
     loading.stop()
+
+    // 获取当前目录
     const home = os.homedir()
     const current = process.cwd()
     let relative = current
@@ -70,11 +76,15 @@ export async function smartDeploy() {
         relative = path.relative(home, current)
     }
 
+    // 当期区域
+    let region
+
     // 当前目录为空，执行初始化项目操作
     if (!files.length) {
         log.info('当前目录为空，初始化云开发项目\n')
+        region = await selectRegion()
         const envId = await selectEnv(isInitNow)
-        await initProjectWithTemplate(envId)
+        await initProjectWithTemplate(envId, region)
     }
 
     // 初始化项目成功，或当前目录已经存在项目，继续使用 Framework 执行部署
@@ -91,27 +101,32 @@ export async function smartDeploy() {
 
     // 检测是否有 cloudbase 配置
     const config = await getCloudBaseConfig()
+    let envId = config?.envId
+
+    if (!config?.region && !region) {
+        region = await selectRegion()
+    }
+
     // 配置文件不存在
-    if (!config?.envId) {
-        const envId = await selectEnv(isInitNow)
+    if (!envId) {
+        envId = await selectEnv(isInitNow)
         fs.writeFileSync(
             path.join(process.cwd(), 'cloudbaserc.json'),
             JSON.stringify({
                 envId,
+                region,
                 version: '2.0',
                 $schema: 'https://framework-1258016615.tcloudbaseapp.com/schema/latest.json'
             })
         )
-        // 调用 Framework
-        await callFramework(envId, config)
-    } else {
-        // 调用 Framework
-        await callFramework(config.envId, config)
     }
+
+    // 调用 Framework
+    await callFramework(envId, config)
 }
 
 // 获取模板
-async function initProjectWithTemplate(envId: string, projectPath = process.cwd()) {
+async function initProjectWithTemplate(envId: string, region: string, projectPath = process.cwd()) {
     // 拉取模板
     const templates = await execWithLoading(() => fetch(listUrl), {
         startTip: '拉取云开发模板列表中'
@@ -142,14 +157,52 @@ async function initProjectWithTemplate(envId: string, projectPath = process.cwd(
 
     // 配置文件未找到
     if (!filepath) {
-        fs.writeFileSync(path.join(projectPath, 'cloudbaserc.json'), JSON.stringify({ envId }))
+        fs.writeFileSync(
+            path.join(projectPath, 'cloudbaserc.json'),
+            JSON.stringify({ envId, region })
+        )
     } else {
         const configContent = fs.readFileSync(filepath).toString()
         fs.writeFileSync(filepath, configContent.replace('{{envId}}', envId))
     }
 
+    const configPath = filepath || path.join(projectPath, 'cloudbaserc.json')
+
+    const parser = new ConfigParser({
+        configPath
+    })
+
+    // 把 region 写入到配置文件中
+    parser.update('region', region)
+
     // 成功提示
     log.success('初始化项目成功！\n')
+}
+
+// 选择地域
+async function selectRegion() {
+    const { region } = await prompt<any>({
+        choices: [
+            {
+                name: '上海',
+                value: 'ap-shanghai'
+            },
+            {
+                name: '广州',
+                value: 'ap-guangzhou'
+            }
+        ],
+        type: 'select',
+        name: 'region',
+        message: '请选择环境所在地域',
+        result(choice) {
+            return this.map(choice)[choice]
+        }
+    })
+
+    tcbService.region = region
+
+    return region
 }
 
 // 获取用户选择的环境
@@ -210,7 +263,7 @@ async function selectEnv(isInitNow: boolean) {
         choices,
         type: 'select',
         name: 'env',
-        message: '选择关联环境',
+        message: '请选择关联环境',
         result(choice) {
             return this.map(choice)[choice]
         }

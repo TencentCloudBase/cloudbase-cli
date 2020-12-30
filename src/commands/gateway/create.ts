@@ -1,7 +1,7 @@
 import { prompt } from 'enquirer'
 import { Command, ICommand } from '../common'
 import { CloudBaseError } from '../../error'
-import { createGateway } from '../../gateway'
+import { createGateway, queryGatewayDomain } from '../../gateway'
 import { listFunction } from '../../function'
 import { assertTruthy } from '../../utils/validator'
 import { loadingFactory, genClickableLink } from '../../utils'
@@ -93,7 +93,10 @@ export class CreateService extends Command {
                 path: servicePath,
                 name: functionName
             })
-            const link = genClickableLink(`https://${envId}.service.tcloudbase.com${servicePath}`)
+
+            // 查询访问域名
+            const res = await queryGatewayDomain({ envId })
+            const link = genClickableLink(`https://${res.DefaultDomain}${servicePath}`)
             loading.succeed(`HTTP 访问服务创建成功！\n点击访问> ${link}`)
         } catch (e) {
             loading.stop()
