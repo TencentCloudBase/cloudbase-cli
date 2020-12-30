@@ -228,7 +228,7 @@ export class HostingDeleteFiles extends Command {
         let isDir = options.dir
 
         // 删除所有文件，危险操作，需要提示
-        if (cloudPath === '') {
+        if (!cloudPath) {
             const { confirm } = await inquirer.prompt({
                 type: 'confirm',
                 name: 'confirm',
@@ -240,6 +240,12 @@ export class HostingDeleteFiles extends Command {
             }
             isDir = true
         }
+
+        // cloudPath 为 / 时，只能删除文件夹
+        if (cloudPath === '/') {
+            isDir = true
+        }
+
         const fileText = isDir ? '文件夹' : '文件'
 
         const loading = loadingFactory()
@@ -247,9 +253,9 @@ export class HostingDeleteFiles extends Command {
 
         try {
             await hostingDelete({
+                envId,
                 isDir,
-                cloudPath,
-                envId
+                cloudPath
             })
             loading.succeed(`删除${fileText}成功！`)
         } catch (e) {

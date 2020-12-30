@@ -215,8 +215,8 @@ export class DeleteFileCommand extends Command {
     get options() {
         return {
             cmd: 'storage',
-            childCmd: 'delete <cloudPath>',
-            deprecateCmd: 'storage:delete <cloudPath>',
+            childCmd: 'delete [cloudPath]',
+            deprecateCmd: 'storage:delete [cloudPath]',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -233,15 +233,34 @@ export class DeleteFileCommand extends Command {
 
     @InjectParams()
     async execute(@EnvId() envId, @ArgsOptions() options, @ArgsParams() params) {
+        let isDir = options.dir
         const cloudPath = params?.[0]
+        const loading = loadingFactory()
         const storageService = await getStorageService(envId)
 
-        const { dir } = options
-        const fileText = dir ? '文件夹' : '文件'
-        const loading = loadingFactory()
+        // 删除所有文件，危险操作，需要提示
+        if (!cloudPath) {
+            const { confirm } = await inquirer.prompt({
+                type: 'confirm',
+                name: 'confirm',
+                message: '指定云端路径为空，将会删除所有文件，是否继续',
+                default: false
+            })
+            if (!confirm) {
+                throw new CloudBaseError('操作终止！')
+            }
+            isDir = true
+        }
+
+        // cloudPath 为 / 时，只能删除文件夹
+        if (cloudPath === '/') {
+            isDir = true
+        }
+
+        const fileText = isDir ? '文件夹' : '文件'
         loading.start(`删除${fileText}中`)
 
-        if (dir) {
+        if (isDir) {
             await storageService.deleteDirectory(cloudPath)
         } else {
             await storageService.deleteFile([cloudPath])
