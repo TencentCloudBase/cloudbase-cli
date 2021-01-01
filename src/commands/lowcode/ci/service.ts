@@ -74,7 +74,7 @@ interface IDeployDetailParams {
   idx: string
 }
 
-const DEFAULT_FRAMEWORK_COMMAND = 'CI=true cloudbase framework deploy'
+const DEFAULT_FRAMEWORK_COMMAND = 'cloudbase framework deploy'
 export const DEFAULT_RC_CONTENT = {
   version: '2.0',
   envId: '{{env.ENV_ID}}',
@@ -423,7 +423,7 @@ export class Watcher {
     return new Promise((resolve, reject) => {
       const cmd = exec(command, {
         cwd: projectPath,
-        env: process.env
+        env: { ...{CI: 'true'}, ...process.env }
       })
       cmd.stdout?.pipe(process.stdout)
       cmd.stderr?.pipe(process.stderr)
