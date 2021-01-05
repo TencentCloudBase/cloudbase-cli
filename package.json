@@ -8,7 +8,6 @@
         "watch": "rimraf lib types && tsc -w",
         "eslint": "eslint \"./**/*.ts\"",
         "test": "jest --runInBand --forceExit --detectOpenHandles --coverage --verbose --testTimeout=10000",
-        "publish": "node scripts/publish.js",
         "tsc": "tsc",
         "pkg": "pkg ./bin/cloudbase.js --out-path ./pkg"
     },
