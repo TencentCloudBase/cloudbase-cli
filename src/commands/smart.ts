@@ -11,8 +11,7 @@ import {
     unzipStream,
     getDataFromWeb,
     isCamRefused,
-    ConfigParser,
-    ICloudBaseConfig
+    ConfigParser
 } from '@cloudbase/toolbox'
 import { CloudBaseError } from '../error'
 import { listEnvs, getEnvInfo } from '../env'
@@ -82,6 +81,7 @@ export async function smartDeploy() {
     // 当前目录为空，执行初始化项目操作
     if (!files.length) {
         log.info('当前目录为空，初始化云开发项目\n')
+        // 先选择 region，再选择环境
         region = await selectRegion()
         const envId = await selectEnv(isInitNow)
         await initProjectWithTemplate(envId, region)
@@ -103,6 +103,7 @@ export async function smartDeploy() {
     const config = await getCloudBaseConfig()
     let envId = config?.envId
 
+    // 配置文件中不存在 region，选择 region
     if (!config?.region && !region) {
         region = await selectRegion()
     }
@@ -121,8 +122,12 @@ export async function smartDeploy() {
         )
     }
 
+    // 把 region 写入到配置文件中
+    const parser = new ConfigParser()
+    parser.update('region', region)
+
     // 调用 Framework
-    await callFramework(envId, config)
+    await callFramework(envId)
 }
 
 // 获取模板
@@ -287,9 +292,10 @@ async function selectEnv(isInitNow: boolean) {
     return env
 }
 
-async function callFramework(envId: string, config: ICloudBaseConfig) {
+async function callFramework(envId: string) {
     const loginState = await authSupevisor.getLoginState()
     const { token, secretId, secretKey } = loginState
+    const config = await getCloudBaseConfig()
 
     await run(
         {
