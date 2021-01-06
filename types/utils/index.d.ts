@@ -14,3 +14,4 @@ export * from './config';
 export * from './auth';
 export * from './store';
 export * from './notice';
+export * from './parallel';

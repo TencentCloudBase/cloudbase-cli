@@ -1,21 +1,23 @@
 import path from 'path'
 import inquirer from 'inquirer'
+import { getRegion } from '@cloudbase/toolbox'
 import { Command, ICommand } from '../common'
 import { CloudBaseError } from '../../error'
 import { createFunction } from '../../function'
 import { queryGateway, createGateway } from '../../gateway'
 import {
+    logger,
     random,
+    isDirectory,
     loadingFactory,
     genClickableLink,
     highlightCommand,
     checkFullAccess,
-    isDirectory
+    AsyncTaskParallelController
 } from '../../utils'
 import { ICreateFunctionOptions } from '../../types'
 import { DefaultFunctionDeployConfig } from '../../constant'
 import { InjectParams, CmdContext, ArgsParams, Log, Logger } from '../../decorators'
-import { getRegion } from '@cloudbase/toolbox'
 
 const regionIdMap = {
     'ap-guangzhou': 1,
@@ -170,8 +172,8 @@ export class FunctionDeploy extends Command {
         }
 
         // 批量部署云函数
-        const promises = functions.map(async (func) => {
-            const loading = loadingFactory()
+        const loading = loadingFactory()
+        const tasks = functions.map((func) => async () => {
             loading.start('云函数部署中')
             try {
                 await createFunction({
@@ -195,7 +197,21 @@ export class FunctionDeploy extends Command {
             }
         })
 
-        await Promise.all(promises)
+        if (tasks.length > 5) {
+            logger.info('函数数量较多，将使用队列部署')
+        }
+
+        // 控制函数创建并发
+        const asyncTaskController = new AsyncTaskParallelController(5, 50)
+        asyncTaskController.loadTasks(tasks)
+        const results = await asyncTaskController.run()
+
+        // 输出信息
+        const success = results.filter((_) => !_)
+        logger.success(`成功部署 ${success?.length} 个函数`)
+        // 部署失败
+        const err = results.filter((_) => _)
+        err?.length && logger.error(`${err?.length} 个云函数部署失败`)
     }
 
     async handleDeployFail(e: CloudBaseError, options: ICreateFunctionOptions) {
