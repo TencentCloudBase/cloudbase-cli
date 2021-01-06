@@ -18,3 +18,4 @@ export declare class Logger {
     printClickableLink(link: string): void;
     time(label: string, fn: Promise<any> | (() => Promise<any>)): Promise<any>;
 }
+export declare const logger: Logger;

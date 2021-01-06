@@ -1,8 +1,8 @@
 import { getCredentialWithoutCheck, getRegion } from '@cloudbase/toolbox'
 import { CloudApiService as _CloudApiService, Credential } from '@cloudbase/cloud-api'
-import { CloudBaseError } from '../error'
-import { getProxy } from './tools'
-import { REQUEST_TIMEOUT } from '../constant'
+import { CloudBaseError } from '../../error'
+import { REQUEST_TIMEOUT } from '../../constant'
+import { getProxy } from './proxy'
 
 let commonCredential: Credential
 
@@ -10,6 +10,7 @@ export class CloudApiService {
     // 缓存请求实例
     static serviceCacheMap: Record<string, CloudApiService> = {}
 
+    // 单例模式
     static getInstance(service: string) {
         if (CloudApiService.serviceCacheMap?.[service]) {
             return CloudApiService.serviceCacheMap[service]

@@ -1,5 +1,6 @@
+import _ from 'lodash'
 import { AuthSupevisor } from '@cloudbase/toolbox'
-import { getProxy } from './tools'
+import { getProxy } from './net'
 import { REQUEST_TIMEOUT } from '../constant'
 
 export const authSupevisor = AuthSupevisor.getInstance({

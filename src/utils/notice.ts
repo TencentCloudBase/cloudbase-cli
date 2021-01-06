@@ -1,5 +1,5 @@
-import { postFetch } from '../http-request'
-import { commonStore } from '../store'
+import { postFetch } from './net'
+import { commonStore } from './store'
 
 const url = 'https://tcli.service.tcloudbase.com/notify'
 

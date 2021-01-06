@@ -1,4 +1,4 @@
-import { postFetch } from '../http-request'
+import { postFetch } from '../net'
 import { getMacAddressMd5, getOSInfo } from '../platform'
 import { getUin } from '../store'
 

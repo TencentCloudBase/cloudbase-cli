@@ -1,39 +1,25 @@
-import arg from 'arg'
 import path from 'path'
+import yargs, { Arguments } from 'yargs'
 import { ConfigParser, ICloudBaseConfig } from '@cloudbase/toolbox'
 
-// https://www.npmjs.com/package/arg
-export interface IArgs extends arg.Spec {
-    '--config-path': string
-    '--envId': string
-    '-e': string
-    '--region': string
-    '-r': string
+export interface IArgs {
+    envId: string
+    region: string
+    verbose: boolean
+    configPath: string
+    [x: string]: unknown
 }
 
-export const getArgs = (): arg.Result<IArgs> => {
-    const args = arg<IArgs>(
-        {
-            '--config-path': String(),
-            '--envId': String(),
-            '--verbose': String(),
-            '--region': String(),
-
-            // Alias
-            '-e': '--envId',
-            '-r': '--region'
-        },
-        { permissive: true, argv: process.argv.slice(2) }
-    )
-
-    return args
+export const getArgs = (): Arguments<IArgs> => {
+    // console.log(yargs.argv)
+    return yargs.alias('e', 'envId').alias('r', 'region').argv as any
 }
 
 // 获取 cloudbase 配置
 export const getCloudBaseConfig = async (configPath?: string): Promise<ICloudBaseConfig> => {
     const args = getArgs()
 
-    let specificConfigPath = configPath || args['--config-path']
+    let specificConfigPath = configPath || args.configPath
     specificConfigPath = specificConfigPath ? path.resolve(specificConfigPath) : undefined
 
     const parser = new ConfigParser({

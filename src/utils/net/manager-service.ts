@@ -2,7 +2,7 @@ import CloudBase from '@cloudbase/manager-node'
 import { StorageService } from '@cloudbase/manager-node/types/storage'
 import { getRegion } from '@cloudbase/toolbox'
 import { checkAndGetCredential } from './credential'
-import { getProxy } from './tools'
+import { getProxy } from './proxy'
 
 export async function getMangerService(envId = ''): Promise<CloudBase> {
     const { secretId, secretKey, token } = await checkAndGetCredential(true)

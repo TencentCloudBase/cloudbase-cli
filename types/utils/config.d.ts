@@ -1,11 +1,11 @@
-import arg from 'arg';
+import { Arguments } from 'yargs';
 import { ICloudBaseConfig } from '@cloudbase/toolbox';
-export interface IArgs extends arg.Spec {
-    '--config-path': string;
-    '--envId': string;
-    '-e': string;
-    '--region': string;
-    '-r': string;
+export interface IArgs {
+    envId: string;
+    region: string;
+    verbose: boolean;
+    configPath: string;
+    [x: string]: unknown;
 }
-export declare const getArgs: () => arg.Result<IArgs>;
+export declare const getArgs: () => Arguments<IArgs>;
 export declare const getCloudBaseConfig: (configPath?: string) => Promise<ICloudBaseConfig>;

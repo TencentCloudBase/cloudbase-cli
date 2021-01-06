@@ -1,12 +1,14 @@
 import _ from 'lodash'
 import { checkAndGetCredential as _getCredentail } from '@cloudbase/toolbox'
-import { fetch } from './http-request'
-import { md5, getProxy } from './tools'
-import { getMacAddress } from './platform'
+import { CloudBaseError } from '../../error'
+import { REQUEST_TIMEOUT } from '../../constant'
+import { Credential, AuthSecret } from '../../types'
 
-import { CloudBaseError } from '../error'
-import { Credential, AuthSecret } from '../types'
-import { REQUEST_TIMEOUT } from '../constant'
+import { md5 } from '../tools'
+import { getMacAddress } from '../platform'
+import { getProxy } from './proxy'
+import { fetch } from './http-request'
+
 
 const refreshTokenUrl = 'https://iaas.cloud.tencent.com/tcb_refresh'
 

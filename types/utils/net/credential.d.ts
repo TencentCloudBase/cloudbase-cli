@@ -1,4 +1,4 @@
-import { Credential, AuthSecret } from '../types';
+import { Credential, AuthSecret } from '../../types';
 export declare function refreshTmpToken(metaData: Credential & {
     isLogout?: boolean;
 }): Promise<Credential>;

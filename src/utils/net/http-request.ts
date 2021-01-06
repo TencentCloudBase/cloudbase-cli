@@ -1,8 +1,8 @@
 import _fetch, { RequestInit } from 'node-fetch'
 import HttpsProxyAgent from 'https-proxy-agent'
-import { CloudBaseError } from '../error'
-import { getProxy } from './tools'
-import { REQUEST_TIMEOUT } from '../constant'
+import { REQUEST_TIMEOUT } from '../../constant'
+import { CloudBaseError } from '../../error'
+import { getProxy } from './proxy'
 
 function handleTimeout(e) {
     if (e.type === 'request-timeout') {

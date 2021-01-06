@@ -13,6 +13,7 @@ class Loading {
         })
     }
 
+    // eslint-disable-next-line
     set text(text: string) {
         this.spinner.text = text
     }

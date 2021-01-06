@@ -78,3 +78,5 @@ export class Logger {
         return promise
     }
 }
+
+export const logger = new Logger()

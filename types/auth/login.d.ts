@@ -1,5 +1,5 @@
-import { ILoginOptions } from '../types';
 import { Credential } from '@cloudbase/toolbox';
+import { ILoginOptions } from '../types';
 export declare function loginByWebAuth(): Promise<{
     code: string;
     msg: string;
@@ -17,3 +17,4 @@ export declare function login(options?: ILoginOptions): Promise<{
     msg: string;
     credential?: Credential;
 }>;
+export declare function checkLogin(): Promise<void>;

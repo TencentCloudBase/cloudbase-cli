@@ -12,13 +12,6 @@ export declare class NewCommand extends Command {
         withoutAuth: boolean;
     };
     execute(ctx: any, log?: Logger): Promise<void>;
-    getSelectedEnv(inputEnvId: string, log?: Logger): Promise<any>;
-    checkLogin(log?: Logger): Promise<void>;
-    checkEnvStatus(envId: string): Promise<void>;
-    checkEnvAvaliable(envId: string): Promise<void>;
-    checkTcbService(log?: Logger): Promise<boolean>;
-    waitForServiceEnable(): Promise<void>;
-    extractTemplate(projectPath: string, templatePath: string, remoteUrl?: string): Promise<void>;
     initSuccessOutput(appName: string, log?: Logger): void;
 }
 export declare function isGitUrl(url: string): boolean;

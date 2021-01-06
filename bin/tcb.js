@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const os = require('os')
+const yargs = require('yargs')
 const chalk = require('chalk')
 const address = require('address')
 const { program } = require('commander')
@@ -7,11 +8,12 @@ const Sentry = require('@sentry/node')
 const logSymbols = require('log-symbols')
 const didYouMean = require('didyoumean')
 const updateNotifier = require('update-notifier')
+const frameworkPkg = require('@cloudbase/framework-core/package.json')
 
 const pkg = require('../package.json')
 const store = require('../lib/utils/store')
 const { ALL_COMMANDS } = require('../lib/constant')
-const { getProxy } = require('../lib/utils/tools/proxy')
+const { getProxy } = require('../lib/utils/net')
 
 let processArgv = process.argv
 const isBeta = pkg.version.indexOf('-') > -1
@@ -41,7 +43,9 @@ Sentry.init({
     ]
 })
 
+// 输出版本信息
 console.log(chalk.gray(`CloudBase CLI ${pkg.version}`))
+console.log(chalk.gray(`CloudBase Framework ${frameworkPkg.version}`))
 
 // 注册命令
 require('../lib')
@@ -68,7 +72,12 @@ program.option('-r, --region <region>', '指定环境地域')
 
 // HACK: 隐藏自动生成的 help 信息
 program.helpOption(false)
-program.version(pkg.version, '-v, --version', '输出当前 CloudBase CLI 版本')
+// -v 时输出的版本信息
+program.version(
+    `\nCLI: ${pkg.version}\nFramework: ${frameworkPkg.version}`,
+    '-v, --version',
+    '输出当前 CloudBase CLI 版本'
+)
 
 // 处理无效命令
 program.action((command) => {
@@ -87,28 +96,24 @@ program.action((command) => {
     console.log(`使用 ${chalk.bold('cloudbase -h')} 查看所有命令~`)
 })
 
-// HACK: 智能命令
-if (
-    processArgv.length < 3 ||
-    (processArgv.length === 3 && ['--verbose', '--mode'].includes(processArgv[2]))
-) {
-    // framework 智能命令
-    const { smartDeploy } = require('../lib')
-    smartDeploy()
-}
-
-// HACK: -h, --help 输出 help 信息
-if (processArgv.length === 3 && ['-h', '--help'].includes(processArgv[2])) {
-    // 需要隐藏的选项
-    const hideArgs = ['-h', '--help']
-    hideArgs.forEach((arg) => {
-        const index = processArgv.indexOf(arg)
-        if (index > -1) {
-            processArgv.splice(index, 1)
-        }
-    })
-    const { outputHelpInfo } = require('../lib/help')
-    outputHelpInfo()
+// 没有使用命令
+if (yargs.argv._.length === 0) {
+    if (['-h', '--help'].includes(processArgv[2])) {
+        // 需要隐藏的选项
+        const hideArgs = ['-h', '--help']
+        hideArgs.forEach((arg) => {
+            const index = processArgv.indexOf(arg)
+            if (index > -1) {
+                processArgv.splice(index, 1)
+            }
+        })
+        const { outputHelpInfo } = require('../lib/help')
+        outputHelpInfo()
+    } else if (!['-v', '--help'].includes(processArgv[2])) {
+        // HACK: framework 智能命令
+        const { smartDeploy } = require('../lib')
+        smartDeploy()
+    }
 }
 
 try {
@@ -118,6 +123,9 @@ try {
     console.log(errMsg)
 }
 
+/**
+ * 处理异常
+ */
 function errorHandler(err) {
     process.emit('tcbError')
     const stackIngoreErrors = ['TencentCloudSDKHttpException', 'CloudBaseError']

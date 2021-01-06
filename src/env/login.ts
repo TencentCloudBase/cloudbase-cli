@@ -1,5 +1,5 @@
 import crypto from 'crypto'
-import { CloudApiService } from '../utils'
+import { CloudApiService } from '../utils/net'
 import { CloudBaseError } from '../error'
 
 const publicRsaKey = `

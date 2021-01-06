@@ -1,4 +1,4 @@
-import { Logger } from './params/_log'
+import { Logger } from '../utils'
 
 /**
  * 废弃命令

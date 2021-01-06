@@ -1,4 +1,4 @@
-import { CloudApiService, getMangerService } from '../utils'
+import { CloudApiService, getMangerService } from '../utils/net'
 export * from './domain'
 export * from './login'
 

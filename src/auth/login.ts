@@ -1,7 +1,12 @@
 import _ from 'lodash'
-import { authSupevisor } from '../utils'
-import { ILoginOptions } from '../types'
 import { Credential } from '@cloudbase/toolbox'
+import { authSupevisor, checkAndGetCredential, execWithLoading, checkEnvAvaliable } from '../utils'
+import { ILoginOptions } from '../types'
+import { ENV_STATUS } from '../constant'
+import { Logger } from '../decorators'
+import { getEnvInfo } from '../env'
+
+const log = new Logger()
 
 // 登录返回 code 与信息
 const LoginRes = {
@@ -61,4 +66,28 @@ export async function login(
 ): Promise<{ code: string; msg: string; credential?: Credential }> {
     const { secretId, secretKey, key, token } = options
     return key ? loginWithKey(secretId, secretKey, token) : loginByWebAuth()
+}
+
+// 检查是否登录，没有登录时，自动拉起浏览器授权
+export async function checkLogin() {
+    const credential = await checkAndGetCredential()
+    // 没有登录，拉起 Web 登录
+    if (_.isEmpty(credential)) {
+        log.info('你还没有登录，请在控制台中授权登录')
+
+        const res = await execWithLoading(() => login(), {
+            startTip: '获取授权中...',
+            successTip: '授权登录成功！'
+        })
+
+        const envId = res?.credential?.envId
+
+        // 登录返回 envId，检查环境初始化
+        if (envId) {
+            const env = await getEnvInfo(envId)
+            if (env.Status === ENV_STATUS.UNAVAILABLE) {
+                await checkEnvAvaliable(envId)
+            }
+        }
+    }
 }
