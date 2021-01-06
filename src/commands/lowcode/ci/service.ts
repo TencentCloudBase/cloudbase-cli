@@ -83,7 +83,7 @@ export const DEFAULT_RC_CONTENT = {
     name: '{{env.APP_NAME}}',
     plugins: {
       lowcode: {
-        use: '@cloudbase/framework-plugin-low-code@release',
+        use: '@cloudbase/framework-plugin-low-code@stable',
         inputs: {
           debug: true,
         },
