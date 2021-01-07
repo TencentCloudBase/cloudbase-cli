@@ -9,7 +9,8 @@
         "eslint": "eslint \"./**/*.ts\"",
         "test": "jest --runInBand --forceExit --detectOpenHandles --coverage --verbose --testTimeout=10000",
         "tsc": "tsc",
-        "pkg": "pkg ./bin/cloudbase.js --out-path ./pkg"
+        "pkg": "pkg ./bin/cloudbase.js --out-path ./pkg",
+        "postinstall": "node ./post-install.js || exit 0"
     },
     "repository": {
         "type": "git",
