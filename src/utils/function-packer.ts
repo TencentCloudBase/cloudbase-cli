@@ -3,8 +3,7 @@ import del from 'del'
 import path from 'path'
 import makeDir from 'make-dir'
 import { random } from './tools'
-import { zipDir, checkFullAccess } from './fs'
-import { CloudBaseError } from '../error'
+import { CloudBaseError, zipDir, checkFullAccess } from '@cloudbase/toolbox'
 
 export enum CodeType {
     File,
