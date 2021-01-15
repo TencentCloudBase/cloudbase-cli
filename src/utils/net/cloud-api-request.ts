@@ -1,10 +1,14 @@
-import { getCredentialWithoutCheck, getRegion } from '@cloudbase/toolbox'
-import { CloudApiService as _CloudApiService, Credential } from '@cloudbase/cloud-api'
+import { getCredentialWithoutCheck, getRegion, Credential } from '@cloudbase/toolbox'
+import { CloudApiService as _CloudApiService } from '@cloudbase/cloud-api'
 import { CloudBaseError } from '../../error'
 import { REQUEST_TIMEOUT } from '../../constant'
 import { getProxy } from './proxy'
 
 let commonCredential: Credential
+
+// token 将在 n 分钟内过期
+const isTokenExpired = (credential: Credential, gap = 120) =>
+    credential.accessTokenExpired && Number(credential.accessTokenExpired) < Date.now() + gap * 1000
 
 export class CloudApiService {
     // 缓存请求实例
@@ -32,7 +36,8 @@ export class CloudApiService {
             proxy: getProxy(),
             timeout: REQUEST_TIMEOUT,
             getCredential: async () => {
-                if (commonCredential?.secretId) {
+                // 存在未过期的 token
+                if (commonCredential?.secretId && !isTokenExpired(commonCredential)) {
                     return commonCredential
                 }
 
@@ -40,8 +45,13 @@ export class CloudApiService {
                 if (!credential) {
                     throw new CloudBaseError('无有效身份信息，请使用 cloudbase login 登录')
                 }
+
                 commonCredential = credential
-                return credential
+
+                return {
+                    ...credential,
+                    tokenExpired: credential.accessTokenExpired
+                }
             }
         })
     }

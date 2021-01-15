@@ -19,19 +19,19 @@ function printSuggestion() {
 
 ${chalk.gray('–')} 创建免费环境
 
-  ${chalk.cyan('$ cloudbase env:create envName')}
+  ${chalk.cyan('$ tcb env create envName')}
 
 ${chalk.gray('–')} 初始化云开发项目
 
-  ${chalk.cyan('$ cloudbase init')}
+  ${chalk.cyan('$ tcb new')}
 
 ${chalk.gray('–')} 部署云函数
 
-  ${chalk.cyan('$ cloudbase functions:deploy')}
+  ${chalk.cyan('$ tcb fn deploy')}
 
 ${chalk.gray('–')} 查看命令使用介绍
 
-  ${chalk.cyan('$ cloudbase -h')}
+  ${chalk.cyan('$ tcb -h')}
 
 Tips：可以使用简写命令 tcb 代替 cloudbase`
     console.log(tips)
