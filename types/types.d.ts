@@ -1,5 +1,4 @@
 /// <reference types="node" />
-import { CloudBaseError } from './error';
 export declare type CustomEvent = 'logout';
 export interface ICommandContext {
     cmd: string;
@@ -18,7 +17,6 @@ declare global {
         }
     }
 }
-export declare type TExportFunctionVoid = () => Promise<void | CloudBaseError>;
 export interface PermanentCredential {
     secretId?: string;
     secretKey?: string;

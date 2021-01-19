@@ -25,6 +25,15 @@ export const getCloudBaseConfig = async (configPath?: string): Promise<ICloudBas
     const parser = new ConfigParser({
         configPath: specificConfigPath
     })
-    const config = await parser.get()
+    const config: ICloudBaseConfig = await parser.get()
+
+    // 合并默认配置
+    if (config?.functionDefaultConfig && config?.functions?.length) {
+        config.functions = config.functions.map((rawConfig) => ({
+            ...config.functionDefaultConfig,
+            ...rawConfig
+        }))
+    }
+
     return config
 }

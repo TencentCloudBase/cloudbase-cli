@@ -21,9 +21,6 @@ declare global {
         }
     }
 }
-/* eslint-enable */
-
-export type TExportFunctionVoid = () => Promise<void | CloudBaseError>
 
 export interface PermanentCredential {
     secretId?: string
