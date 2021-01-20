@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import path from 'path'
 import yargs, { Arguments } from 'yargs'
 import { ConfigParser, ICloudBaseConfig } from '@cloudbase/toolbox'
@@ -29,10 +30,9 @@ export const getCloudBaseConfig = async (configPath?: string): Promise<ICloudBas
 
     // 合并默认配置
     if (config?.functionDefaultConfig && config?.functions?.length) {
-        config.functions = config.functions.map((rawConfig) => ({
-            ...config.functionDefaultConfig,
-            ...rawConfig
-        }))
+        config.functions = config.functions.map((rawConfig) =>
+            _.merge({}, config.functionDefaultConfig, rawConfig)
+        )
     }
 
     return config
