@@ -52,3 +52,15 @@ export declare class HostingList extends Command {
     };
     execute(envId: any): Promise<void>;
 }
+export declare class HostingDownloadCommand extends Command {
+    get options(): {
+        cmd: string;
+        childCmd: string;
+        options: {
+            flags: string;
+            desc: string;
+        }[];
+        desc: string;
+    };
+    execute(envId: any, options: any, params: any): Promise<void>;
+}

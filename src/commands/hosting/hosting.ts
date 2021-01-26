@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import inquirer from 'inquirer'
 import logSymbols from 'log-symbols'
+import { HostingService } from '@cloudbase/manager-node/types/hosting'
 
 import { Command, ICommand } from '../common'
 
@@ -21,7 +22,8 @@ import {
     formateFileSize,
     createUploadProgressBar,
     genClickableLink,
-    checkFullAccess
+    checkFullAccess,
+    getMangerService
 } from '../../utils'
 
 import { InjectParams, EnvId, ArgsParams, ArgsOptions, Log, Logger } from '../../decorators'
@@ -34,6 +36,11 @@ const HostingStatusMap = {
     offline: '已下线',
     create_fail: '初始化失败', // eslint-disable-line
     destroy_fail: '销毁失败' // eslint-disable-line
+}
+
+async function getHostingService(envId: string): Promise<HostingService> {
+    const { hosting } = await getMangerService(envId)
+    return hosting
 }
 
 @ICommand()
@@ -308,5 +315,60 @@ export class HostingList extends Command {
             loading.fail('获取文件列表失败！')
             throw new CloudBaseError(e.message)
         }
+    }
+}
+
+@ICommand()
+export class HostingDownloadCommand extends Command {
+    get options() {
+        return {
+            cmd: 'hosting',
+            childCmd: 'download <cloudPath> [localPath]',
+            options: [
+                {
+                    flags: '-e, --envId <envId>',
+                    desc: '环境 Id'
+                },
+                {
+                    flags: '-d, --dir',
+                    desc: '下载目标是否为文件夹'
+                }
+            ],
+            desc: '下载文件/文件夹，文件夹需指定 --dir 选项'
+        }
+    }
+
+    @InjectParams()
+    async execute(@EnvId() envId, @ArgsOptions() options, @ArgsParams() params) {
+        let cloudPath: string = params?.[0]
+        const localPath = params?.[1] || '.'
+        const hostingService = await getHostingService(envId)
+        const resolveLocalPath = path.resolve(localPath)
+
+        const { dir } = options
+        const fileText = dir ? '文件夹' : '文件'
+
+        const loading = loadingFactory()
+
+        loading.start(`下载${fileText}中`)
+
+        // cloudPath 以 / 开头
+        if (/^\/.+/.test(cloudPath)) {
+            cloudPath = cloudPath.slice(1)
+        }
+
+        if (dir) {
+            await hostingService.downloadDirectory({
+                cloudPath,
+                localPath: resolveLocalPath
+            })
+        } else {
+            await hostingService.downloadFile({
+                cloudPath,
+                localPath: resolveLocalPath
+            })
+        }
+
+        loading.succeed(`下载${fileText}成功！`)
     }
 }

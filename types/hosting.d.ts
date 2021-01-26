@@ -13,6 +13,7 @@ interface IHostingCloudOptions extends IBaseOptions {
     isDir: boolean;
 }
 export declare function getHostingInfo(options: IBaseOptions): Promise<any>;
+export declare function checkHostingStatus(envId: string): Promise<any>;
 export declare function enableHosting(options: IBaseOptions): Promise<{
     code: number;
     requestId: any;

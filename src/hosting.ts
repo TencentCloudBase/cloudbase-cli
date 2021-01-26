@@ -47,7 +47,7 @@ export async function getHostingInfo(options: IBaseOptions) {
     return data
 }
 
-async function checkHostingStatus(envId: string) {
+export async function checkHostingStatus(envId: string) {
     const hostings = await getHostingInfo({ envId })
 
     const link = genClickableLink('https://console.cloud.tencent.com/tcb')
