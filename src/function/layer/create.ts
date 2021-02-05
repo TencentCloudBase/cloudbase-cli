@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
-import { CloudBaseError } from '../../error'
-import { CloudApiService, zipDir, checkFullAccess, isDirectory, delSync } from '../../utils'
+import { CloudBaseError, zipDir } from '@cloudbase/toolbox'
+import { CloudApiService, checkFullAccess, isDirectory, delSync } from '../../utils'
 
 const scfService = new CloudApiService('scf')
 

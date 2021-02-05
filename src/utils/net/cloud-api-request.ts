@@ -1,8 +1,7 @@
-import { getCredentialWithoutCheck, getRegion, Credential } from '@cloudbase/toolbox'
+import { getCredentialWithoutCheck, getRegion, Credential, getProxy } from '@cloudbase/toolbox'
 import { CloudApiService as _CloudApiService } from '@cloudbase/cloud-api'
 import { CloudBaseError } from '../../error'
 import { REQUEST_TIMEOUT } from '../../constant'
-import { getProxy } from './proxy'
 
 let commonCredential: Credential
 
@@ -50,7 +49,7 @@ export class CloudApiService {
 
                 return {
                     ...credential,
-                    tokenExpired: credential.accessTokenExpired
+                    tokenExpired: Number(credential.accessTokenExpired)
                 }
             }
         })

@@ -6,6 +6,7 @@
     "scripts": {
         "build": "rimraf lib types && tsc",
         "watch": "rimraf lib types && tsc -w",
+        "dev": "rimraf lib types && tsc -w",
         "eslint": "eslint \"./**/*.ts\"",
         "test": "jest --runInBand --forceExit --detectOpenHandles --coverage --verbose --testTimeout=10000",
         "tsc": "tsc",
@@ -28,10 +29,11 @@
     "author": "cwuyiqing@gmail.com",
     "license": "ISC",
     "dependencies": {
-        "@cloudbase/cloud-api": "^0.3.3",
+        "@cloudbase/cloud-api": "^0.3.4-2",
         "@cloudbase/framework-core": "^1.6.1",
+        "@cloudbase/lowcode-cli": "0.0.1-15",
         "@cloudbase/manager-node": "^3.9.0",
-        "@cloudbase/toolbox": "^0.6.3",
+        "@cloudbase/toolbox": "^0.7.0-1",
         "@koa/cors": "^3.1.0",
         "@koa/router": "^10.0.0",
         "@sentry/node": "^5.10.2",
