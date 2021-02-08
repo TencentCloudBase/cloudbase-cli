@@ -6,14 +6,13 @@ import { CloudApiService, execWithLoading, fetchStream } from '../../utils'
 import { CloudBaseError } from '../../error'
 import { unzipStream } from '@cloudbase/toolbox'
 import chalk from 'chalk'
-import { build as buildComps, debug as debugComps, publishComps } from '@cloudbase/lowcode-cli'
+import { build as buildComps, debug as debugComps, publishComps, IPublishCompsInfo } from '@cloudbase/lowcode-cli'
 import { spawn } from 'child_process'
 import { prompt } from 'enquirer'
 import fse from 'fs-extra'
 
 const cloudService = CloudApiService.getInstance('lowcode')
 const DEFAULE_TEMPLATE_PATH = 'https://hole-2ggmiaj108259587-1303199938.tcloudbaseapp.com/comps.zip'
-const DEFAULT_COMPS_NAME = 'my-components'
 
 @ICommand()
 export class LowCodeCreateComps extends Command {
@@ -167,9 +166,13 @@ export class LowCodePublishComps extends Command {
             throw new CloudBaseError(`云端不存在组件库 ${compsName}，请到低码控制台新建该组件库！`)
         }
         // 上传组件库
-        const { id: compsId } = comp
         await _build(compsPath)
-        await _publish(compsPath, compsName, compsId, log)
+        await _publish({
+            id: comp.id,
+            name: compsName,
+            path: compsPath,
+            log,
+        })
 
         log.info('\n👉 组件库已经同步到云端，请到低码控制台发布该组件库！')
     }
@@ -251,10 +254,10 @@ async function _build(compsPath) {
     )
 }
 
-async function _publish(compsPath, compsName, compsId, log: Logger) {
+async function _publish(info: IPublishCompsInfo) {
     await execWithLoading(
         async () => {
-            await publishComps(compsName, compsId, compsPath, log)
+            await publishComps(info)
         },
         {
             startTip: '组件库 - 发布中',
