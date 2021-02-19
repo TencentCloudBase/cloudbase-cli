@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { Command, ICommand } from '../common'
-import { startLocalCIServer } from '@cloudbase/lowcode-cli'
-import { InjectParams, Log, Logger, CmdContext } from '../../decorators'
+import { startLocalCIServer, IWatchAppInfo } from '@cloudbase/lowcode-cli'
+import { InjectParams, Log, Logger, ArgsOptions } from '../../decorators'
 
 @ICommand()
 export class LowCodeWatch extends Command {
@@ -13,6 +13,10 @@ export class LowCodeWatch extends Command {
                 {
                     flags: '--verbose',
                     desc: '是否打印详细日志'
+                },
+                {
+                    flags: '--assets <assets>',
+                    desc: '构建时额外引入的ASSETS'
                 }
             ],
             desc: '开启云开发低码的本地构建模式',
@@ -21,7 +25,11 @@ export class LowCodeWatch extends Command {
     }
 
     @InjectParams()
-    async execute(@CmdContext() ctx, @Log() log?: Logger) {
-        await startLocalCIServer(8288)
+    async execute(@ArgsOptions() options) {
+        const { assets } = options
+        await startLocalCIServer({
+            watchPort: 8288,
+            assets
+        })
     }
 }
