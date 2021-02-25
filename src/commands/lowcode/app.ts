@@ -37,11 +37,9 @@ export class LowCodeWatch extends Command {
     }
 
     @InjectParams()
-    async execute(@ArgsOptions() options) {
-        const { assets } = options
+    async execute(@CmdContext() ctx, @Log() log?: Logger) {
         await startLocalCIServer({
-            watchPort: 8288,
-            assets
+            watchPort: 8288
         })
     }
 }

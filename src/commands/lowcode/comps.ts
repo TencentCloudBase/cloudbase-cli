@@ -191,7 +191,7 @@ export class LowCodePublishComps extends Command {
                 context: config.context || process.cwd(),
                 logger: log
             })
-            log.info('\n👉 组件库已经同步到云端，请到低码控制台发布该组件库！')
+            log.success('组件库 - 已同步到云端，请到低码控制台发布该组件库！')
             return
         }
         // 没有RC配置, 使用旧接口
