@@ -1,6 +1,6 @@
 {
     "name": "@cloudbase/cli",
-    "version": "1.5.2-0",
+    "version": "1.5.2",
     "description": "cli tool for cloudbase",
     "main": "lib/index.js",
     "scripts": {
