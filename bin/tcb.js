@@ -139,6 +139,15 @@ function errorHandler(err) {
         let errMsg = logSymbols.error + ' ' + err.message
         errMsg += err.requestId ? `\n${err.requestId}` : ''
         console.log(errMsg)
+
+        // 多地域错误提示
+        if (errMsg.includes('Environment') && errMsg.includes('not found')) {
+            console.log(
+                chalk.yellow.bold(
+                    '\n此环境可能不属于当前账号，或为非上海地域环境，请检查环境归属，参考多地域使用方法：https://docs.cloudbase.net/cli-v1/region.html'
+                )
+            )
+        }
     }
 
     // 输出详细的错误信息
