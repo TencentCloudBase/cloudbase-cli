@@ -138,6 +138,10 @@ export class LowCodeDebugComps extends Command {
                 {
                     flags: '--debug-port <debugPort>',
                     desc: '调试端口，默认是8388'
+                },
+                {
+                    flags: '--wx-devtool-path <wxDevtoolPath>',
+                    desc: '微信开发者工具的安装路径'
                 }
             ],
             desc: '调试组件库',
@@ -154,7 +158,8 @@ export class LowCodeDebugComps extends Command {
                 ...config,
                 context: config.context || process.cwd(),
                 debugPort: options?.debugPort || 8388,
-                logger: log
+                logger: log,
+                wxDevtoolPath: options?.wxDevtoolPath
             })
             return
         }
