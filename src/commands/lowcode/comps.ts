@@ -21,7 +21,7 @@ import fse from 'fs-extra'
 import { promisifyProcess } from './utils'
 
 const cloudService = CloudApiService.getInstance('lowcode')
-const DEFAULE_TEMPLATE_PATH = 'https://hole-2ggmiaj108259587-1303199938.tcloudbaseapp.com/comps.zip'
+const DEFAULE_TEMPLATE_PATH = 'https://hole-2ggmiaj108259587-1303199938.tcloudbaseapp.com/comps2.zip'
 
 @ICommand()
 export class LowCodeCreateComps extends Command {
@@ -241,10 +241,9 @@ async function _download(compsPath, compsName) {
         
                 // 解压缩文件
                 await unzipStream(res.body, compsPath)
-
-                // 修改package.json
-                _renamePackage(path.resolve(compsPath, 'package.json'), compsName)
-                _renamePackage(path.resolve(compsPath, 'package-lock.json'), compsName)
+                
+                // 修改cloudbaserc.json
+                _renamePackage(path.resolve(compsPath, 'cloudbaserc.json'), compsName)
             })
         },
         {
@@ -258,18 +257,23 @@ async function _renamePackage(configPath, name) {
     if (!fse.existsSync(configPath)) {
         throw new CloudBaseError(`组件库缺少配置文件: ${configPath}`)
     }
-    const packageJson = fse.readJSONSync(configPath)
-    const newPackageJson = { ...packageJson, name }
+    const rcJson = fse.readJSONSync(configPath)
+    const newPackageJson = _.merge({}, rcJson, {
+        lowcodeCustomComponents: {
+            name
+        }
+    })
     fse.writeJSONSync(configPath, newPackageJson, { spaces: 2 })
 }
 
 async function _install(compsPath): Promise<boolean> {
     const res = await execWithLoading(
-        async () => { 
+        async () => {
             const npmOptions = [
                 '--prefer-offline',
                 '--no-audit',
                 '--progress=false',
+                '--registry=https://mirrors.tencent.com/npm/',
             ]
             const childProcess = spawn('npm', ['install', ...npmOptions], {
                 cwd: compsPath,
