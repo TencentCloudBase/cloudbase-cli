@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { Command, ICommand } from '../common'
-import { startLocalCIServer, IWatchAppInfo } from '@cloudbase/lowcode-cli'
-import { InjectParams, Log, Logger, ArgsOptions } from '../../decorators'
+import { watchApp } from '@cloudbase/lowcode-cli'
+import { InjectParams, Log, Logger, CmdContext, ArgsOptions } from '../../decorators'
 
 @ICommand()
 export class LowCodeWatch extends Command {
@@ -25,11 +25,9 @@ export class LowCodeWatch extends Command {
     }
 
     @InjectParams()
-    async execute(@ArgsOptions() options) {
-        const { assets } = options
-        await startLocalCIServer({
-            watchPort: 8288,
-            assets
+    async execute(@CmdContext() ctx, @Log() log?: Logger) {
+        await watchApp({
+            watchPort: 8288
         })
     }
 }

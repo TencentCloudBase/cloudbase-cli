@@ -1,18 +1,27 @@
 import _ from 'lodash'
 import path from 'path'
 import { Command, ICommand } from '../common'
-import { InjectParams, Log, Logger, ArgsParams, ArgsOptions } from '../../decorators'
+import { InjectParams, Log, Logger, ArgsParams, ArgsOptions, CmdContext } from '../../decorators'
 import { CloudApiService, execWithLoading, fetchStream } from '../../utils'
 import { CloudBaseError } from '../../error'
 import { unzipStream } from '@cloudbase/toolbox'
 import chalk from 'chalk'
-import { build as buildComps, debug as debugComps, publishComps, IPublishCompsInfo } from '@cloudbase/lowcode-cli'
+import { 
+    build as buildComps, 
+    debug as debugComps, 
+    publishComps,  
+    graceBuildComps,
+    graceDebugComps,
+    gracePublishComps,
+    IPublishCompsInfo,
+} from '@cloudbase/lowcode-cli'
 import { spawn } from 'child_process'
 import { prompt } from 'enquirer'
 import fse from 'fs-extra'
+import { promisifyProcess } from './utils'
 
 const cloudService = CloudApiService.getInstance('lowcode')
-const DEFAULE_TEMPLATE_PATH = 'https://hole-2ggmiaj108259587-1303199938.tcloudbaseapp.com/comps.zip'
+const DEFAULE_TEMPLATE_PATH = 'https://hole-2ggmiaj108259587-1303199938.tcloudbaseapp.com/comps2.zip'
 
 @ICommand()
 export class LowCodeCreateComps extends Command {
@@ -81,7 +90,7 @@ export class LowCodeCreateComps extends Command {
 }
 
 @ICommand()
-export class LowCodeBuilfComps extends Command {
+export class LowCodeBuildComps extends Command {
     get options() {
         return {
             cmd: 'lowcode',
@@ -98,7 +107,18 @@ export class LowCodeBuilfComps extends Command {
     }
 
     @InjectParams()
-    async execute() {
+    async execute(@CmdContext() ctx, @Log() log) {
+        // 有RC配置, 使用新接口
+        const config = ctx.config.lowcodeCustomComponents
+        if (config) {
+            await graceBuildComps({
+                ...config,
+                context: config.context || process.cwd(),
+                logger: log
+            })
+            return
+        }
+        // 没有RC配置, 使用旧接口
         const compsPath = path.resolve(process.cwd())
         await _build(compsPath)
     }
@@ -118,6 +138,10 @@ export class LowCodeDebugComps extends Command {
                 {
                     flags: '--debug-port <debugPort>',
                     desc: '调试端口，默认是8388'
+                },
+                {
+                    flags: '--wx-devtool-path <wxDevtoolPath>',
+                    desc: '微信开发者工具的安装路径'
                 }
             ],
             desc: '调试组件库',
@@ -126,7 +150,20 @@ export class LowCodeDebugComps extends Command {
     }
 
     @InjectParams()
-    async execute(@ArgsOptions() options) {
+    async execute(@CmdContext() ctx, @ArgsOptions() options, @Log() log) {
+        // 有RC配置, 使用新接口
+        const config = ctx.config.lowcodeCustomComponents
+        if (config) {
+            await graceDebugComps({
+                ...config,
+                context: config.context || process.cwd(),
+                debugPort: options?.debugPort || 8388,
+                logger: log,
+                wxDevtoolPath: options?.wxDevtoolPath
+            })
+            return
+        }
+        // 没有RC配置, 使用旧接口
         const compsPath = path.resolve(process.cwd())
         await debugComps(compsPath, options?.debugPort || 8388)
     }
@@ -150,7 +187,19 @@ export class LowCodePublishComps extends Command {
     }
 
     @InjectParams()
-    async execute(@Log() log?: Logger) {
+    async execute(@CmdContext() ctx, @Log() log?: Logger) {
+        // 有RC配置, 使用新接口
+        const config = ctx.config.lowcodeCustomComponents
+        if (config) {
+            await gracePublishComps({
+                ...config,
+                context: config.context || process.cwd(),
+                logger: log
+            })
+            log.success('组件库 - 已同步到云端，请到低码控制台发布该组件库！')
+            return
+        }
+        // 没有RC配置, 使用旧接口
         // 读取本地组件库信息
         const compsPath = path.resolve(process.cwd())
         const compsName = fse.readJSONSync(path.resolve(compsPath, 'package.json')).name
@@ -192,10 +241,9 @@ async function _download(compsPath, compsName) {
         
                 // 解压缩文件
                 await unzipStream(res.body, compsPath)
-
-                // 修改package.json
-                _renamePackage(path.resolve(compsPath, 'package.json'), compsName)
-                _renamePackage(path.resolve(compsPath, 'package-lock.json'), compsName)
+                
+                // 修改cloudbaserc.json
+                _renamePackage(path.resolve(compsPath, 'cloudbaserc.json'), compsName)
             })
         },
         {
@@ -209,18 +257,23 @@ async function _renamePackage(configPath, name) {
     if (!fse.existsSync(configPath)) {
         throw new CloudBaseError(`组件库缺少配置文件: ${configPath}`)
     }
-    const packageJson = fse.readJSONSync(configPath)
-    const newPackageJson = { ...packageJson, name }
+    const rcJson = fse.readJSONSync(configPath)
+    const newPackageJson = _.merge({}, rcJson, {
+        lowcodeCustomComponents: {
+            name
+        }
+    })
     fse.writeJSONSync(configPath, newPackageJson, { spaces: 2 })
 }
 
 async function _install(compsPath): Promise<boolean> {
     const res = await execWithLoading(
-        async () => { 
+        async () => {
             const npmOptions = [
                 '--prefer-offline',
                 '--no-audit',
                 '--progress=false',
+                '--registry=https://mirrors.tencent.com/npm/',
             ]
             const childProcess = spawn('npm', ['install', ...npmOptions], {
                 cwd: compsPath,
@@ -264,22 +317,4 @@ async function _publish(info: IPublishCompsInfo) {
             successTip: '组件库 - 发布成功'
         }
     )
-}
-
-function promisifyProcess(p) {
-    return new Promise((resolve, reject) => {
-        let stdout = ''
-        let stderr = ''
-
-        p?.stdout?.on('data', (data => {
-            stdout +=String(data)
-        }))
-        p?.stderr?.on('data', (data => {
-            stderr += String(data)
-        }))
-        p.on('error', reject)
-        p.on('exit', exitCode => {
-            exitCode === 0 ? resolve(stdout) : reject(new CloudBaseError(stderr || String(exitCode)))
-        })
-    })
 }
