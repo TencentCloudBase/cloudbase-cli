@@ -1,4 +1,5 @@
 import { Command } from '../common';
+import { Logger } from '../../decorators';
 export declare class LowCodeWatch extends Command {
     get options(): {
         cmd: string;
@@ -10,5 +11,5 @@ export declare class LowCodeWatch extends Command {
         desc: string;
         requiredEnvId: boolean;
     };
-    execute(options: any): Promise<void>;
+    execute(ctx: any, log?: Logger): Promise<void>;
 }

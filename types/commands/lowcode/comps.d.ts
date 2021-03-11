@@ -13,7 +13,7 @@ export declare class LowCodeCreateComps extends Command {
     };
     execute(params: any, log?: Logger): Promise<void>;
 }
-export declare class LowCodeBuilfComps extends Command {
+export declare class LowCodeBuildComps extends Command {
     get options(): {
         cmd: string;
         childCmd: string;
@@ -24,7 +24,7 @@ export declare class LowCodeBuilfComps extends Command {
         desc: string;
         requiredEnvId: boolean;
     };
-    execute(): Promise<void>;
+    execute(ctx: any, log: any): Promise<void>;
 }
 export declare class LowCodeDebugComps extends Command {
     get options(): {
@@ -37,7 +37,7 @@ export declare class LowCodeDebugComps extends Command {
         desc: string;
         requiredEnvId: boolean;
     };
-    execute(options: any): Promise<void>;
+    execute(ctx: any, options: any, log: any): Promise<void>;
 }
 export declare class LowCodePublishComps extends Command {
     get options(): {
@@ -50,5 +50,5 @@ export declare class LowCodePublishComps extends Command {
         desc: string;
         requiredEnvId: boolean;
     };
-    execute(log?: Logger): Promise<void>;
+    execute(ctx: any, log?: Logger): Promise<void>;
 }
