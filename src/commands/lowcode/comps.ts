@@ -21,7 +21,7 @@ import fse from 'fs-extra'
 import { promisifyProcess } from './utils'
 
 const cloudService = CloudApiService.getInstance('lowcode')
-const DEFAULE_TEMPLATE_PATH = 'https://hole-2ggmiaj108259587-1303199938.tcloudbaseapp.com/comps2.zip'
+const DEFAULE_TEMPLATE_PATH = 'https://comp-public-1303824488.cos.ap-shanghai.myqcloud.com/lcc/template.zip'
 
 @ICommand()
 export class LowCodeCreateComps extends Command {
