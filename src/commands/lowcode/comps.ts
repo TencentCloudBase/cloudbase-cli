@@ -15,10 +15,10 @@ import {
     gracePublishComps,
     IPublishCompsInfo,
 } from '@cloudbase/lowcode-cli'
-import { spawn } from 'child_process'
+import { exec } from 'child_process'
 import { prompt } from 'enquirer'
 import fse from 'fs-extra'
-import { promisifyProcess } from './utils'
+import { promisify } from 'util'
 
 const cloudService = CloudApiService.getInstance('lowcode')
 const DEFAULE_TEMPLATE_PATH = 'https://comp-public-1303824488.cos.ap-shanghai.myqcloud.com/lcc/template.zip'
@@ -76,12 +76,9 @@ export class LowCodeCreateComps extends Command {
         // 安装依赖
         const installed = await _install(compsPath)
         // 用户提示
-        if (installed) {
-            log.success('组件库 - 创建成功\n')
-            log.info(`👉 执行命令 ${chalk.bold.cyan(`cd ${compsName}`)} 进入文件夹`)
-        } else {
-            log.error('组件库 - 安装依赖失败\n')
-            log.info(`👉 执行命令 ${chalk.bold.cyan(`cd ${compsName}`)} 进入文件夹`)
+        log.success('组件库 - 创建成功\n')
+        log.info(`👉 执行命令 ${chalk.bold.cyan(`cd ${compsName}`)} 进入文件夹`)
+        if (!installed) {
             log.info(`👉 执行命令 ${chalk.bold.cyan('npm install')} 手动安装依赖`)
         }
         log.info(`👉 执行命令 ${chalk.bold.cyan('tcb lowcode debug')} 调试组件库`)
@@ -274,17 +271,17 @@ async function _install(compsPath): Promise<boolean> {
                 '--no-audit',
                 '--progress=false',
                 '--registry=https://mirrors.tencent.com/npm/',
+                '--legacy-peer-deps',
             ]
-            const childProcess = spawn('npm', ['install', ...npmOptions], {
-                cwd: compsPath,
+            await promisify(exec)(['npm install', ...npmOptions].join(' '), {
+                cwd: compsPath, 
                 env: process.env,
-                stdio: ['inherit', 'pipe', 'pipe'],
             })
-            await promisifyProcess(childProcess)
         },
         {
             startTip: '组件库 - 依赖安装中',
-            successTip: '组件库 - 依赖安装成功'
+            successTip: '组件库 - 依赖安装成功',
+            failTip: '组件库 - 依赖安装失败, 请手动安装依赖'
         }
     ).then(() => {
         return true
