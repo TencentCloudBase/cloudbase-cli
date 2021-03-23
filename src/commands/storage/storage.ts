@@ -76,19 +76,6 @@ export class UploadCommand extends Command {
             totalFiles = files.length
         }
 
-        if (totalFiles > 1000) {
-            const { confirm } = await inquirer.prompt({
-                type: 'confirm',
-                name: 'confirm',
-                message: '上传文件数量大于 1000，是否继续',
-                default: false
-            })
-
-            if (!confirm) {
-                throw new CloudBaseError('上传中止')
-            }
-        }
-
         // 上传进度条
         const onProgress = createUploadProgressBar(
             () => {
