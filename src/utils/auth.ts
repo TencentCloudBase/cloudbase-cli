@@ -6,7 +6,8 @@ import { REQUEST_TIMEOUT } from '../constant'
 export const authSupevisor = AuthSupevisor.getInstance({
     cache: true,
     proxy: getProxy(),
-    timeout: REQUEST_TIMEOUT
+    timeout: REQUEST_TIMEOUT,
+    throwError: true
 })
 
 export async function getLoginState() {

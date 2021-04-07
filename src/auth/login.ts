@@ -32,9 +32,7 @@ const LoginRes = {
 
 // 打开腾讯云-云开发控制台，通过获取临时密钥登录，临时密钥可续期，最长时间为 1 个月
 export async function loginByWebAuth() {
-    const credential = await authSupevisor.loginByWebAuth({
-        throwError: true
-    })
+    const credential = await authSupevisor.loginByWebAuth()
 
     if (_.isEmpty(credential)) {
         return LoginRes.INVALID_TOKEN
