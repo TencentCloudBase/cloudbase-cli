@@ -57,9 +57,11 @@ export class NewCommand extends Command {
 
         if (templateUri && isGitUrl(templateUri)) {
             // git 仓库
-            await execa('git', ['clone', templateUri, appName], {
+            await execa('git', ['clone', '--depth', 1, templateUri, appName], {
                 stdio: 'inherit'
             })
+
+            // 下载 Git 仓库文件，不包含完整的 Git 记录
             projectPath = path.join(process.cwd(), appName)
         } else {
             // 下载模板
