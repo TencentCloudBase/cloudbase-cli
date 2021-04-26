@@ -15,8 +15,8 @@ export class LowCodeWatch extends Command {
                     desc: '是否打印详细日志'
                 },
                 {
-                    flags: '--assets <assets>',
-                    desc: '构建时额外引入的ASSETS'
+                    flags: '--wx-devtool-path <wxDevtoolPath>',
+                    desc: '微信开发者工具的安装路径'
                 }
             ],
             desc: '开启云开发低码的本地构建模式',
@@ -25,9 +25,10 @@ export class LowCodeWatch extends Command {
     }
 
     @InjectParams()
-    async execute(@CmdContext() ctx, @Log() log?: Logger) {
+    async execute(@CmdContext() ctx, @ArgsOptions() options) {
         await watchApp({
-            watchPort: 8288
+            watchPort: 8288,
+            wxDevtoolPath: options?.wxDevtoolPath,
         })
     }
 }
