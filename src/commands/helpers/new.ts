@@ -5,12 +5,15 @@ import execa from 'execa'
 import { getRegion } from '@cloudbase/toolbox'
 
 import { Command, ICommand } from '../common'
-import { getSelectedEnv, downloadTemplate, initProjectConfig, getSelectRegion } from '../../utils'
+import {
+    getSelectedEnv,
+    downloadTemplate,
+    initProjectConfig,
+    getSelectRegion,
+    delSync
+} from '../../utils'
 import { InjectParams, Log, Logger, CmdContext } from '../../decorators'
 import { checkLogin } from '../../auth'
-
-// 云函数
-const listUrl = 'https://tcli.service.tcloudbase.com/templates'
 
 @ICommand()
 export class NewCommand extends Command {
@@ -22,6 +25,10 @@ export class NewCommand extends Command {
                 {
                     flags: '-e, --envId <envId>',
                     desc: '环境 Id'
+                },
+                {
+                    flags: '--clone',
+                    desc: '从 Git 创建模板时是否 Clone 整个仓库'
                 }
             ],
             desc: '创建一个新的云开发应用',
@@ -32,7 +39,8 @@ export class NewCommand extends Command {
 
     @InjectParams()
     async execute(@CmdContext() ctx, @Log() log?: Logger) {
-        const { params, envId } = ctx
+        const { params, options, envId } = ctx
+        const { clone } = options
 
         let appName = params?.[0]
         const templateUri = params?.[1]
@@ -57,9 +65,20 @@ export class NewCommand extends Command {
 
         if (templateUri && isGitUrl(templateUri)) {
             // git 仓库
-            await execa('git', ['clone', templateUri, appName], {
-                stdio: 'inherit'
-            })
+            if (clone) {
+                // clone 完整的仓库
+                await execa('git', ['clone', templateUri, appName], {
+                    stdio: 'inherit'
+                })
+            } else {
+                await execa('git', ['clone', '--depth', 1, templateUri, appName], {
+                    stdio: 'inherit'
+                })
+                // 删除 .git 文件夹
+                await delSync([path.join(process.cwd(), appName, '.git')])
+            }
+
+            // 下载 Git 仓库文件，不包含完整的 Git 记录
             projectPath = path.join(process.cwd(), appName)
         } else {
             // 下载模板
