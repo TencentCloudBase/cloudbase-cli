@@ -7,6 +7,7 @@ export * from './reporter';
 export * from './cli-table';
 export * from './progress-bar';
 export * from './function-packer';
+export * from './prompt';
 export * from './env';
 export * from './log';
 export * from './template';

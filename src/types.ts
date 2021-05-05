@@ -227,3 +227,169 @@ export interface IUnbindGatewayDomainOptions {
     envId: string
     domain: string
 }
+
+export interface IListRunOptions {
+    limit?: number
+    offset?: number
+    envId: string
+}
+
+export interface ICreateRunOptions {
+    envId: string,
+    name: string,
+    remark: string,
+    vpcInfo: {
+        VpcId: string,
+        SubnetIds: string[],
+        CreateType: number
+    },
+    imageRepo?: string,
+    logType: string,
+    esInfo?: {
+        Ip: string,
+        Port: number,
+        Index: string,
+        Account: string,
+        Password: string
+    },
+    isPublic: boolean,
+    publicAccess: number
+}
+
+export interface IListVersionOptions {
+    envId: string,
+    limit?: number,
+    offset?: number,
+    serverName: string
+}
+
+export interface IDeleteVersion {
+    envId: string,
+    serverName: string,
+    versionName: string
+}
+
+export interface IModifyVersion {
+    envId: string,
+    serverName: string,
+    trafficType: string,
+    versionFlowItems: {
+        VersionName: string,
+        FlowRatio: number
+    }[]
+}
+
+export interface IBuildImage {
+    envId: string,
+    serviceName: string
+}
+
+export interface ICreateVersion {
+    envId: string,
+    serverName: string,
+    containerPort: number,
+    uploadType: string,
+    packageName?: string,
+    packageVersion?: string,
+    repositoryType?: string,
+    branch?: string,
+    codeDetail?: { Name: { Name: string, FullName: string } },
+    imageInfo?: {
+        ImageUrl: string,
+        // IsPublic: boolean,
+        // RepositoryName: string,
+        // ServerAddr: string,
+        // TagName: string
+    },
+    flowRatio: number,
+    versionRemark: string,
+
+    enableUnion: true,
+    cpu: number,
+    mem: number,
+    minNum: number,
+    maxNum: number,
+    policyType: string,
+    policyThreshold: number,
+
+    customLogs: string
+    dockerfilePath?: string,
+    envParams: string,
+    initialDelaySeconds: number,
+}
+
+export interface IUpdateVersion {
+    envId: string,
+    serverName: string,
+    versionName: string,
+    containerPort: number,
+    uploadType: string,
+    packageName?: string,
+    packageVersion?: string,
+    repositoryType?: string,
+    branch?: string,
+    codeDetail?: { Name: { Name: string, FullName: string } },
+    imageInfo?: {
+        ImageUrl: string,
+        // IsPublic: boolean,
+        // RepositoryName: string,
+        // ServerAddr: string,
+        // TagName: string
+    },
+    flowRatio: number,
+    versionRemark: string,
+
+    enableUnion: true,
+    cpu: number,
+    mem: number,
+    minNum: number,
+    maxNum: number,
+    policyType: string,
+    policyThreshold: number,
+
+    customLogs: string
+    dockerfilePath?: string,
+    envParams: string,
+    initialDelaySeconds: number,
+}
+
+export interface IListCodeRepo {
+    channel: string,
+    pageNumber: number,
+    pageSize: number
+}
+
+export interface IListBranch {
+    channel: string,
+    pageNumber: number,
+    pageSize: number
+    repoName: { Name: string, FullName: string }
+}
+
+export interface IListImage {
+    envId: string,
+    serviceName: string,
+    limit: 100,
+    offset: 0
+}
+
+export interface IDeleteImage {
+    envId: string,
+    imageUrl: string
+}
+
+export interface ILogCreateVersion {
+    envId: string,
+    runId: string
+}
+
+export interface IDescribeRunVersion {
+    envId: string,
+    serverName: string,
+    versionName: string
+}
+
+export interface IDeleteRun {
+    envId: string,
+    serverName: string
+}
