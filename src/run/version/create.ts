@@ -3,7 +3,6 @@ import {
     ICreateVersion,
     ILogCreateVersion
 } from '../../types'
-import { version } from 'node:process'
 
 const tcbService = CloudApiService.getInstance('tcb')
 

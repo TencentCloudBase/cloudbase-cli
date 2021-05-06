@@ -14,7 +14,7 @@ export const getAuthFlag = async () => {
                     constants.F_OK,
                     err => err ? reject(false) : resolve(true))))
     } catch (e) {
-        throw new CloudBaseError('无法找到~/.docker/config.json文件')
+        return false
     }
 
 

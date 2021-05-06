@@ -48,13 +48,18 @@ export class UploadImage extends Command {
 
         // loading.start('数据加载中...')
 
-        const uin = await getUin()
+        let uin = await getUin()
 
-        if (uin === '无')
-            throw new CloudBaseError('请确认是否登录cloudbase')
+        if (uin === '无') {
+            uin = (await prompt<any>({
+                type: 'input',
+                message: '请输入账号ID（或采用web登录）',
+                name: 'uin'
+            })).uin
+        }
 
         if (!(await getAuthFlag())) {
-            console.log('操作会自动执行docker login')
+            console.log('无法找到~/.docker/config.json或未登录，需要执行docker login')
             const { pw } = await prompt<any>({
                 type: 'password',
                 message: '请输入镜像仓库密码',
