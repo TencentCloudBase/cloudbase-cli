@@ -319,8 +319,8 @@ export interface IListBranch {
 export interface IListImage {
     envId: string;
     serviceName: string;
-    limit: 100;
-    offset: 0;
+    limit: number;
+    offset: number;
 }
 export interface IDeleteImage {
     envId: string;

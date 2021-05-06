@@ -2,7 +2,7 @@ import { prompt } from 'enquirer'
 import { Command, ICommand } from '../common'
 import { CloudBaseError } from '../../error'
 import { getVpcs, getSubnets, getImageRepo, createRun } from '../../run'
-import { loadingFactory, pagingSelectPromp } from '../../utils'
+import { loadingFactory } from '../../utils'
 import { InjectParams, EnvId, ArgsOptions } from '../../decorators'
 import { validateIp } from '../../utils/validator'
 
@@ -33,23 +33,17 @@ export class CreateRun extends Command {
 
     @InjectParams()
     async execute(@EnvId() envId, @ArgsOptions() options) {
-        let { name, remark } = options
+        let { name = '' } = options
+        let remark: string
         let vpcInfo = { VpcId: '', SubnetIds: [], CreateType: 1 }
         let logType = 'cls'
         let esInfo = { Ip: '', Port: 65535, Index: '', Account: '', Password: '' }
         let publicAccess = 1
         let imageRepo: string;
 
-        const loading = loadingFactory()
+        if (name.length === 0) throw new CloudBaseError('请输入服务名')
 
-        if (!name) {
-            name = (await prompt<any>({
-                type: 'input',
-                name: 'name',
-                message: '请输入服务的名称',
-            })).name
-            if (name.length === 0) throw new CloudBaseError('请输入合法有效的名字')
-        }
+        const loading = loadingFactory()
 
         if (!remark) {
             remark = (await prompt<any>({

@@ -13,7 +13,7 @@ import {
     basicOperate,
     logCreate
 } from '../../../run'
-import { loadingFactory, pagingSelectPromp } from '../../../utils'
+import { loadingFactory, pagingSelectPromp, random } from '../../../utils'
 import { InjectParams, EnvId, ArgsOptions } from '../../../decorators'
 import { versionCommonOptions } from './common'
 
@@ -78,10 +78,12 @@ export class CreateVersion extends Command {
         let maxNum: number
         let policyType: string
         let policyThreshold: number
-        let customLogs: string
+        let customLogs: string = 'stdout'
         let dockerfilePath: string = 'Dockerfile'
         let initialDelaySeconds: number = 2
         let envParams: string = '{}'
+
+        const uid = random(4)
 
         const loading = loadingFactory()
 
@@ -100,8 +102,10 @@ export class CreateVersion extends Command {
             })).path
 
             if (statSync(path).isDirectory()) {
-                await packDir(path, './code.zip')
-                path = './code.zip'
+                loading.start('正在压缩中')
+                await packDir(path, `./code${uid}.zip`)
+                loading.succeed('压缩完成')
+                path = `./code${uid}.zip`
             }
         } else if (uploadType === '代码库拉取') {
             let { repoType } = await prompt<any>({
@@ -313,9 +317,11 @@ export class CreateVersion extends Command {
                 let { PackageName, PackageVersion, UploadHeaders, UploadUrl } = await createBuild({ envId, serviceName })
                 await uploadZip(path, UploadUrl, UploadHeaders[0])
                 loading.succeed('上传成功')
-                loading.start('删除本地压缩包')
-                unlinkSync('./code.zip')
-                loading.succeed('成功删除本地压缩包')
+                if (path === `./code${uid}.zip`) {
+                    loading.start('删除本地压缩包')
+                    unlinkSync(path)
+                    loading.succeed('成功删除本地压缩包')
+                }
 
                 let response = await createVersion({
                     envId,

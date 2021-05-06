@@ -1,7 +1,7 @@
 import { Command, ICommand } from '../../common'
 import { CloudBaseError } from '../../../error'
-import { deleteImage, listImage } from '../../../run'
-import { loadingFactory, pagingSelectPromp } from '../../../utils'
+import { deleteImage, describeImageRepo } from '../../../run'
+import { loadingFactory } from '../../../utils'
 import { InjectParams, EnvId, ArgsOptions } from '../../../decorators'
 import { imageCommonOptions } from './common'
 
@@ -18,6 +18,10 @@ export class DeleteImage extends Command {
                 {
                     flags: '-s, --serviceName <serviceName>',
                     desc: '托管服务 name'
+                },
+                {
+                    flags: '-t, --imageTag <imageTag>',
+                    desc: '镜像 tag'
                 }
             ],
             desc: '删除云开发环境下云托管服务的版本'
@@ -27,24 +31,19 @@ export class DeleteImage extends Command {
     @InjectParams()
     async execute(@EnvId() envId, @ArgsOptions() options) {
 
-        let { serviceName = '' } = options
+        let { serviceName = '', imageTag = '' } = options
 
-        if (serviceName.length === 0) {
-            throw new CloudBaseError('必须输入 serviceName')
+        if (serviceName.length === 0 || imageTag.length === 0) {
+            throw new CloudBaseError('必须输入 serviceName 和 imageTag')
         }
 
         const loading = loadingFactory()
 
-        // loading.start('数据加载中...')
+        loading.start('数据加载中...')
 
-        const imageUrl = await pagingSelectPromp(
-            'select',
-            listImage,
-            { envId, serviceName, limit: 0, offset: 0 },
-            '请选择要删除的镜像',
-            item => item.ReferVersions.length === 0,
-            item => item.ImageUrl
-        )
+        const imageRepo = await describeImageRepo({ envId, serverName: serviceName })
+
+        const imageUrl = `ccr.ccs.tencentyun.com/${imageRepo}:${imageTag}`
 
         try {
             const res = await deleteImage({

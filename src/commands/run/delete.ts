@@ -3,7 +3,7 @@ import { Command, ICommand } from '../common'
 import { CloudBaseError } from '../../error'
 import { describeImageRepo, listVersion, deleteImageRepo, deleteRun } from '../../run'
 import { InjectParams, EnvId, ArgsOptions } from '../../decorators'
-import { loadingFactory } from '../../utils'
+import { loadingFactory, pagingSelectPromp } from '../../utils'
 
 const StatusMap = {
     succ: '正常'
@@ -42,7 +42,7 @@ export class DeleteRun extends Command {
 
         loading.start('数据加载中...')
 
-        const versions = await listVersion({ envId, serverName: serviceName })
+        const versions = await listVersion({ envId, serverName: serviceName, limit: 1, offset: 0 })
 
         if (versions.length > 0)
             throw new CloudBaseError('服务下还有版本存在，请先清空版本列表')

@@ -4,7 +4,7 @@ import { IListImage } from '../../types'
 const tcrService = CloudApiService.getInstance('tcr')
 const tcbService = CloudApiService.getInstance('tcb')
 
-// 得到镜像仓库列表
+// 得到可绑定镜像仓库列表
 export const getImageRepo = async () => {
     const { Data: { RepoInfo } } = await tcrService.request('DescribeRepositoryFilterPersonal')
     return RepoInfo
