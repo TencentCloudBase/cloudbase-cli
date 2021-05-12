@@ -1,10 +1,10 @@
 import { prompt } from 'enquirer'
 import { statSync, writeFileSync, unlinkSync } from 'fs'
+import { zipDir } from '@cloudbase/toolbox'
 import { Command, ICommand } from '../../common'
 import { CloudBaseError } from '../../../error'
 import {
     uploadZip,
-    packDir,
     createBuild,
     createVersion,
     listRepo,
@@ -104,7 +104,7 @@ export class CreateVersion extends Command {
 
             if (statSync(path).isDirectory()) {
                 loading.start('正在压缩中')
-                await packDir(path, `./code${uid}.zip`)
+                await zipDir(path, `./code${uid}.zip`)
                 loading.succeed('压缩完成')
                 path = `./code${uid}.zip`
             }

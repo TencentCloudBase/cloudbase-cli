@@ -5,10 +5,6 @@ import { describeImageRepo, listVersion, deleteImageRepo, deleteRun } from '../.
 import { InjectParams, EnvId, ArgsOptions } from '../../decorators'
 import { loadingFactory, pagingSelectPromp } from '../../utils'
 
-const StatusMap = {
-    succ: '正常'
-}
-
 @ICommand()
 export class DeleteRun extends Command {
     get options() {
@@ -63,11 +59,13 @@ export class DeleteRun extends Command {
             choices: ['是', '否']
         })).flag === '是') {
             loading.start('正在删除镜像仓库')
-            const res_repo = await deleteImageRepo({ imageRepo })
-            if (res_repo === '')
+            const res = await deleteImageRepo({ imageRepo })
+            if (res === '') {
                 loading.succeed('仓库删除完成')
-            else
+            }
+            else {
                 throw new CloudBaseError('仓库删除失败')
+            }
         }
     }
 }
