@@ -1,9 +1,0 @@
------------构建test-003-----------
-2021-05-06 16:18:56 create_version_check_vpc : succ, 
-2021-05-06 16:18:56 create_version_describe_cluster : succ, 
-2021-05-06 16:18:58 create_build_image : succ, 
-2021-05-06 16:18:58 check_build_image : succ, build image not succ, [2021-05-06 16:19:06] + docker build -f Dockerfile -t ccr.ccs.tencentyun.com/tcb-******-ljoc/hello-tcb-9glo12vd5bd3bd0d_test:test-003-1620289135 .
-[2021-05-06 16:19:06] unable to prepare context: unable to evaluate symlinks in Dockerfile path: lstat /root/workspace/Dockerfile: no such file or directory
-script returned exit code 1
-
------------服务test部署test-003-----------
