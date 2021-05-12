@@ -50,8 +50,8 @@ export class DeleteRun extends Command {
         const imageRepo = await describeImageRepo({ envId, serverName: serviceName })
 
         loading.start('正在删除服务')
-        const res_run = await deleteRun({ envId, serverName: serviceName })
-        if (res_run === 'succ')
+        const res = await deleteRun({ envId, serverName: serviceName })
+        if (res === 'succ')
             loading.succeed('服务删除完成')
         else
             throw new CloudBaseError('服务删除失败')
