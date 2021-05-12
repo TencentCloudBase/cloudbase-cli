@@ -62,7 +62,7 @@ export class UploadImage extends Command {
             })
 
             loading.start('登陆中')
-            let { stdout, stderr } = await util.promisify(exec)(`${process.platform.search('win') === -1 ? 'sudo ' : ''}docker login --username=${uin} ccr.ccs.tencentyun.com -p ${pw}`);
+            let { stdout, stderr } = await util.promisify(exec)(`docker login --username=${uin} ccr.ccs.tencentyun.com -p ${pw}`);
             if (stdout.search('Login Succeeded') === -1) throw new CloudBaseError(stderr)
             loading.succeed('登录成功')
         }
@@ -70,14 +70,14 @@ export class UploadImage extends Command {
         const imageRepo = await describeImageRepo({ envId, serverName: serviceName })
 
         let stderr
-        if (stderr = (await util.promisify(exec)(`${process.platform.search('win') === -1 ? 'sudo ' : ''}docker tag ${imageId} ccr.ccs.tencentyun.com/${imageRepo}:${imageTag}`)).stderr)
+        if (stderr = (await util.promisify(exec)(`docker tag ${imageId} ccr.ccs.tencentyun.com/${imageRepo}:${imageTag}`)).stderr)
             throw new CloudBaseError(stderr)
 
         // loading.start('正在上传中')
         let sh = new Promise<{ code: number, info: string }>(
             (resolve, reject) =>
                 exec(
-                    `${process.platform.search('win') === -1 ? 'sudo ' : ''}docker push ccr.ccs.tencentyun.com/${imageRepo}:${imageTag}`,
+                    `docker push ccr.ccs.tencentyun.com/${imageRepo}:${imageTag}`,
                     (stderr, stdout) => stderr ? reject({ code: -1, info: stderr }) : resolve({ code: 0, info: stdout })
                 ).stdout.pipe(process.stdout))
 

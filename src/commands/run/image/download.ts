@@ -62,7 +62,7 @@ export class DownLoadImage extends Command {
             })
     
             loading.start('登陆中')
-            let { stdout, stderr } = await util.promisify(exec)(`${process.platform.search('win') === -1 ? 'sudo ' : ''}docker login --username=${uin} ccr.ccs.tencentyun.com -p ${pw}`);
+            let { stdout, stderr } = await util.promisify(exec)(`docker login --username=${uin} ccr.ccs.tencentyun.com -p ${pw}`);
             if (stdout.search('Login Succeeded') === -1) throw new CloudBaseError(stderr)
             loading.succeed('登录成功')
         }
@@ -71,7 +71,7 @@ export class DownLoadImage extends Command {
         let sh = new Promise<{ code: number, info: string }>(
             (resolve, reject) =>
                 exec(
-                    `${process.platform.search('win') === -1 ? 'sudo ' : ''}docker pull ${imageUrl}`,
+                    `docker pull ${imageUrl}`,
                     (err, stdout) => err ? reject({ code: -1, info: err }) : resolve({ code: 0, info: stdout })
                 ).stdout.pipe(process.stdout));
 
