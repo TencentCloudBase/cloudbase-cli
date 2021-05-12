@@ -23,11 +23,11 @@ export function assertHas(obj: any, prop: string, errMsg): void {
 
 
 export const validateIp = (ip: string): boolean => {
-    if (Object.prototype.toString.call(ip) !== '[object String]') return false;
+    if (Object.prototype.toString.call(ip) !== '[object String]') return false
     const fields = ip.split('.')
     if (
-        fields.length != 4 ||
+        fields.length !== 4 ||
         fields.find(item => isNaN(Number(item)) || Number(item) < 0 || Number(item) > 255)
-    ) return false;
+    ) return false
     return true
 }

@@ -39,7 +39,7 @@ export class CreateRun extends Command {
         let logType = 'cls'
         let esInfo = { Ip: '', Port: 65535, Index: '', Account: '', Password: '' }
         let publicAccess = 1
-        let imageRepo: string;
+        let imageRepo: string
 
         if (name.length === 0) throw new CloudBaseError('请输入服务名')
 
@@ -71,7 +71,7 @@ export class CreateRun extends Command {
                 message: '请选择私有网络',
                 choices: vpcs.map(item => `${item.VpcId}|${item.VpcName}|${item.CidrBlock}`)
             }))
-            vpcInfo.VpcId = vpc.split('|')[0];
+            vpcInfo.VpcId = vpc.split('|')[0]
 
             // 选择子网
             const subnets = await getSubnets(vpcInfo.VpcId)
@@ -94,7 +94,7 @@ export class CreateRun extends Command {
             choices: ['使用系统默认', '绑定腾讯云已有镜像仓库']
         })).imageRepoType === '绑定腾讯云已有镜像仓库') {
 
-            const imageRepos = await getImageRepo();
+            const imageRepos = await getImageRepo()
             if (imageRepos.length === 0) throw new CloudBaseError('没有可以绑定的镜像仓库')
             imageRepo = (await prompt<any>({
                 type: 'select',
@@ -177,7 +177,7 @@ export class CreateRun extends Command {
             esInfo,
             publicAccess,
             isPublic: true
-        });
+        })
 
         if (res === 'succ') loading.succeed(`云托管服务 ${name} 创建成功！`)
         else throw new CloudBaseError('创建失败，请查看是否已经有同名服务')

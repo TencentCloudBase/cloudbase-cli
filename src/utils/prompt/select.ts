@@ -1,5 +1,4 @@
 import { prompt } from 'enquirer'
-import { string } from 'yargs'
 import { CloudBaseError } from '../../error'
 
 /**
@@ -24,7 +23,7 @@ export const pagingSelectPromp =
         let res: string[] | string = []
 
         let offset = 0
-        let nextRoundList: string[] = undefined
+        let nextRoundList: string[]
 
 
         while (true) {

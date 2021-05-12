@@ -31,16 +31,16 @@ export const uploadZip = async (path: string, url: string, headers: { [key: stri
         path: parsedUrl.pathname + parsedUrl.search,
         headers: {
             Accept: '*/*',
-            ['Accept-Encoding']: 'gzip, deflate, br',
-            ['Accept-Language']: 'zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7,en-US;q=0.6',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7,en-US;q=0.6',
             [headers['Key']]: headers['Value'],
-            ['Content-Type']: 'application/x-zip-compressed'
+            'Content-Type': 'application/x-zip-compressed'
         }
     })
 
     body.pipe(req)
 
-    return new Promise(resolve => req.on('finish', () => resolve('end')))
+    return new Promise(resolve => { req.on('finish', () => resolve('end')) })
 }
 
 // 压缩文件夹下所有内容，而不是文件夹本身
@@ -54,6 +54,6 @@ export const packDir = async (path: string, resPath: string) => {
 
     zipStream.pipe(ws)
 
-    return new Promise(resolve => ws.on('finish', _ => resolve('完成压缩')))
+    return new Promise(resolve => { ws.on('finish', _ => resolve('完成压缩')) })
 }
 

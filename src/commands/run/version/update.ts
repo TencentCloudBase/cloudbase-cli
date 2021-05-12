@@ -19,9 +19,9 @@ import { InjectParams, EnvId, ArgsOptions } from '../../../decorators'
 import { versionCommonOptions } from './common'
 
 const uploadTypeMap = {
-    ['本地代码']: 'package',
-    ['代码库拉取']: 'repository',
-    ['镜像拉取']: 'image'
+    '本地代码': 'package',
+    '代码库拉取': 'repository',
+    '镜像拉取': 'image'
 }
 
 const memMap = {
@@ -46,6 +46,7 @@ const describeVersion = (base: any) => {
     console.log(`环境变量 ${base.EnvParams}`)
 }
 
+/* eslint complexity: ["error", 40] */
 @ICommand()
 export class UpdateVersion extends Command {
     get options() {
@@ -91,10 +92,10 @@ export class UpdateVersion extends Command {
         let maxNum: number
         let policyType: string
         let policyThreshold: number
-        let customLogs: string = 'stdout'
-        let dockerfilePath: string = 'Dockerfile'
-        let initialDelaySeconds: number = 2
-        let envParams: string = '{}'
+        let customLogs = 'stdout'
+        let dockerfilePath = 'Dockerfile'
+        let initialDelaySeconds = 2
+        let envParams = '{}'
 
         const uid = random(4)
 
@@ -114,7 +115,7 @@ export class UpdateVersion extends Command {
             type: 'select',
             name: 'uploadType',
             choices: ['本地代码', '代码库拉取', '镜像拉取'],
-            message: `请选择上传方式`,
+            message: '请选择上传方式',
         })
 
         if (uploadType === '本地代码') {
@@ -181,7 +182,6 @@ export class UpdateVersion extends Command {
                 })
 
                 if (branchName !== '下一页') {
-                    branch = branch
                     break
                 }
 
@@ -319,123 +319,122 @@ export class UpdateVersion extends Command {
 
         loading.start('加载中...')
 
-        try {
-            let res = '', runId = ''
-            if (uploadType === '本地代码') {
-                loading.start('正在上传中')
-                let { PackageName, PackageVersion, UploadHeaders, UploadUrl } = await createBuild({ envId, serviceName })
-                await uploadZip(path, UploadUrl, UploadHeaders[0])
-                loading.succeed('上传成功')
-                if (path === `./code${uid}.zip`) {
-                    loading.start('删除本地压缩包')
-                    unlinkSync(path)
-                    loading.succeed('成功删除本地压缩包')
-                }
 
-                let response = await updateVersion({
-                    envId,
-                    serverName: serviceName,
-                    versionName,
-                    containerPort,
-                    uploadType: uploadTypeMap[uploadType],
-                    packageName: PackageName,
-                    packageVersion: PackageVersion,
-                    flowRatio,
-                    versionRemark,
-
-                    enableUnion: true,
-                    cpu,
-                    mem,
-                    minNum,
-                    maxNum,
-                    policyType,
-                    policyThreshold,
-
-                    customLogs,
-                    dockerfilePath,
-                    envParams,
-                    initialDelaySeconds,
-                })
-                res = response.Result
-                runId = response.RunId
-            } else if (uploadType === '镜像拉取') {
-                let response = await updateVersion({
-                    envId,
-                    serverName: serviceName,
-                    versionName,
-                    containerPort,
-                    uploadType: uploadTypeMap[uploadType],
-                    imageInfo,
-                    flowRatio,
-                    versionRemark,
-
-                    enableUnion: true,
-                    cpu,
-                    mem,
-                    minNum,
-                    maxNum,
-                    policyType,
-                    policyThreshold,
-
-                    customLogs,
-                    envParams,
-                    initialDelaySeconds,
-                })
-                res = response.Result
-                runId = response.RunId
-            } else {
-                let response = await updateVersion({
-                    envId,
-                    serverName: serviceName,
-                    versionName,
-                    containerPort,
-                    uploadType: uploadTypeMap[uploadType],
-                    repositoryType,
-                    branch,
-                    codeDetail,
-                    flowRatio,
-                    versionRemark,
-
-                    enableUnion: true,
-                    cpu,
-                    mem,
-                    minNum,
-                    maxNum,
-                    policyType,
-                    policyThreshold,
-
-                    customLogs,
-                    dockerfilePath,
-                    envParams,
-                    initialDelaySeconds,
-                })
-                res = response.Result
-                runId = response.RunId
+        let res = ''
+        let runId = ''
+        if (uploadType === '本地代码') {
+            loading.start('正在上传中')
+            let { PackageName, PackageVersion, UploadHeaders, UploadUrl } = await createBuild({ envId, serviceName })
+            await uploadZip(path, UploadUrl, UploadHeaders[0])
+            loading.succeed('上传成功')
+            if (path === `./code${uid}.zip`) {
+                loading.start('删除本地压缩包')
+                unlinkSync(path)
+                loading.succeed('成功删除本地压缩包')
             }
-            if (res !== 'succ')
-                throw new CloudBaseError('提交构建任务失败')
 
-            loading.start('正在部署中')
+            let response = await updateVersion({
+                envId,
+                serverName: serviceName,
+                versionName,
+                containerPort,
+                uploadType: uploadTypeMap[uploadType],
+                packageName: PackageName,
+                packageVersion: PackageVersion,
+                flowRatio,
+                versionRemark,
 
-            while (true) {
-                let { Percent, Status } = await basicOperate({ envId, runId })
+                enableUnion: true,
+                cpu,
+                mem,
+                minNum,
+                maxNum,
+                policyType,
+                policyThreshold,
 
-                if (Status === 'build_fail') {
-                    let logs = await logCreate({ envId, runId })
-                    writeFileSync(`./log${runId}`, logs.reduce((res, item) => res + item + '\n', ''))
-                    throw new CloudBaseError(`构建失败，日志写入./log${runId}中`)
-                } else if (Status !== 'updating') {
-                    break
-                }
+                customLogs,
+                dockerfilePath,
+                envParams,
+                initialDelaySeconds,
+            })
+            res = response.Result
+            runId = response.RunId
+        } else if (uploadType === '镜像拉取') {
+            let response = await updateVersion({
+                envId,
+                serverName: serviceName,
+                versionName,
+                containerPort,
+                uploadType: uploadTypeMap[uploadType],
+                imageInfo,
+                flowRatio,
+                versionRemark,
 
+                enableUnion: true,
+                cpu,
+                mem,
+                minNum,
+                maxNum,
+                policyType,
+                policyThreshold,
 
-                loading.start(`目前构建进度${Percent}%`)
+                customLogs,
+                envParams,
+                initialDelaySeconds,
+            })
+            res = response.Result
+            runId = response.RunId
+        } else {
+            let response = await updateVersion({
+                envId,
+                serverName: serviceName,
+                versionName,
+                containerPort,
+                uploadType: uploadTypeMap[uploadType],
+                repositoryType,
+                branch,
+                codeDetail,
+                flowRatio,
+                versionRemark,
 
-                await new Promise(resolve => setTimeout(_ => resolve('again'), 2000))
-            }
-        } catch (e) {
-            throw e
+                enableUnion: true,
+                cpu,
+                mem,
+                minNum,
+                maxNum,
+                policyType,
+                policyThreshold,
+
+                customLogs,
+                dockerfilePath,
+                envParams,
+                initialDelaySeconds,
+            })
+            res = response.Result
+            runId = response.RunId
         }
+        if (res !== 'succ')
+            throw new CloudBaseError('提交构建任务失败')
+
+        loading.start('正在部署中')
+
+        while (true) {
+            let { Percent, Status } = await basicOperate({ envId, runId })
+
+            if (Status === 'build_fail') {
+                let logs = await logCreate({ envId, runId })
+                writeFileSync(`./log${runId}`, logs.reduce((res, item) => res + item + '\n', ''))
+                throw new CloudBaseError(`构建失败，日志写入./log${runId}中`)
+            } else if (Status !== 'updating') {
+                break
+            }
+
+
+            loading.start(`目前构建进度${Percent}%`)
+
+            await new Promise(resolve => { setTimeout(_ => resolve('again'), 2000) })
+        }
+
 
         loading.succeed('构建成功')
     }

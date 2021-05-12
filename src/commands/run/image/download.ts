@@ -65,23 +65,24 @@ export class DownLoadImage extends Command {
                 message: '请输入镜像仓库密码',
                 name: 'pw'
             })
-    
+
             loading.start('登陆中')
-            let { stdout, stderr } = await util.promisify(exec)(`docker login --username=${uin} ccr.ccs.tencentyun.com -p ${pw}`);
+            let { stdout, stderr } = await util.promisify(exec)(`docker login --username=${uin} ccr.ccs.tencentyun.com -p ${pw}`)
             if (stdout.search('Login Succeeded') === -1) throw new CloudBaseError(stderr)
             loading.succeed('登录成功')
         }
 
         // loading.start('正在拉取中')
         let sh = new Promise<{ code: number, info: string }>(
-            (resolve, reject) =>
+            (resolve, reject) => {
                 exec(
                     `docker pull ${imageUrl}`,
-                    (err, stdout) => err ? reject({ code: -1, info: err }) : resolve({ code: 0, info: stdout })
-                ).stdout.pipe(process.stdout));
+                    (err, stdout) => err ? reject(err) : resolve({ code: 0, info: stdout })
+                ).stdout.pipe(process.stdout)
+            })
 
-        let res = await sh
-        if (res.code === -1) throw new CloudBaseError(res.info)
+        await sh
+
         loading.succeed('拉取成功')
     }
 }

@@ -28,10 +28,9 @@ export class CloudApiService {
 
     constructor(service: string, baseParams?: Record<string, any>, version = '') {
         // 初始化 API 实例
-        if (service === 'tcr') version = '2019-09-24'
         this.apiService = new _CloudApiService({
             service,
-            version,
+            version: service === 'tcr' ? version : '2019-09-24',
             baseParams,
             proxy: getProxy(),
             timeout: REQUEST_TIMEOUT,

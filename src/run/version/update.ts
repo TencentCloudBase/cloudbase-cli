@@ -7,7 +7,7 @@ import {
 const tcbService = CloudApiService.getInstance('tcb')
 
 export const updateVersion = async (options: IUpdateVersion) => {
-    const { Result, RunId } = await tcbService.request('RollUpdateCloudBaseRunServerVersion', Object.assign(
+    const { Result, RunId } = await tcbService.request('RollUpdateCloudBaseRunServerVersion',
         {
             EnvId: options.envId,
             ServerName: options.serverName,
@@ -29,19 +29,21 @@ export const updateVersion = async (options: IUpdateVersion) => {
             DockerfilePath: options.dockerfilePath,
             EnvParams: options.envParams,
             InitialDelaySeconds: options.initialDelaySeconds,
+
+            ...(options.uploadType === 'package' ? {
+                PackageName: options.packageName,
+                PackageVersion: options.packageVersion,
+                DockerfilePath: options.dockerfilePath
+            } : options.uploadType === 'image' ? {
+                ImageInfo: options.imageInfo
+            } : {
+                RepositoryType: options.repositoryType,
+                Branch: options.branch,
+                CodeDetail: options.codeDetail,
+                DockerfilePath: options.dockerfilePath
+            })
         },
-        options.uploadType === 'package' ? {
-            PackageName: options.packageName,
-            PackageVersion: options.packageVersion,
-            DockerfilePath: options.dockerfilePath
-        } : options.uploadType === 'image' ? {
-            ImageInfo: options.imageInfo
-        } : {
-            RepositoryType: options.repositoryType,
-            Branch: options.branch,
-            CodeDetail: options.codeDetail,
-            DockerfilePath: options.dockerfilePath
-        }))
+    )
 
     return { Result, RunId }
 }

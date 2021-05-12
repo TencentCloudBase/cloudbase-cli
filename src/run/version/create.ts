@@ -7,7 +7,7 @@ import {
 const tcbService = CloudApiService.getInstance('tcb')
 
 export const createVersion = async (options: ICreateVersion) => {
-    const { Result, RunId } = await tcbService.request('CreateCloudBaseRunServerVersion', Object.assign(
+    const { Result, RunId } = await tcbService.request('CreateCloudBaseRunServerVersion',
         {
             EnvId: options.envId,
             ServerName: options.serverName,
@@ -28,19 +28,21 @@ export const createVersion = async (options: ICreateVersion) => {
             DockerfilePath: options.dockerfilePath,
             EnvParams: options.envParams,
             InitialDelaySeconds: options.initialDelaySeconds,
+
+            ...(options.uploadType === 'package' ? {
+                PackageName: options.packageName,
+                PackageVersion: options.packageVersion,
+                DockerfilePath: options.dockerfilePath
+            } : options.uploadType === 'image' ? {
+                ImageInfo: options.imageInfo
+            } : {
+                RepositoryType: options.repositoryType,
+                Branch: options.branch,
+                CodeDetail: options.codeDetail,
+                DockerfilePath: options.dockerfilePath
+            })
         },
-        options.uploadType === 'package' ? {
-            PackageName: options.packageName,
-            PackageVersion: options.packageVersion,
-            DockerfilePath: options.dockerfilePath
-        } : options.uploadType === 'image' ? {
-            ImageInfo: options.imageInfo
-        } : {
-            RepositoryType: options.repositoryType,
-            Branch: options.branch,
-            CodeDetail: options.codeDetail,
-            DockerfilePath: options.dockerfilePath
-        }))
+    )
 
     return { Result, RunId }
 }

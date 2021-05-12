@@ -77,22 +77,20 @@ export class ModifyVersion extends Command {
 
         let sum = versionFlowItems.reduce((sum, item) => sum + item.FlowRatio, 0)
 
-        if (sum !== 100 && sum != 0)
+        if (sum !== 100 && sum !== 0)
             throw new CloudBaseError('流量配置的总和需要为 0 或 100')
 
         loading.start('数据加载中...')
 
-        try {
-            const res = await modifyVersion({
-                envId,
-                serverName: serviceName,
-                trafficType: 'FLOW',
-                versionFlowItems
-            })
-            if (res !== 'succ') throw new CloudBaseError('分配失败')
-        } catch(e) {
-            throw e
-        }
+
+        const res = await modifyVersion({
+            envId,
+            serverName: serviceName,
+            trafficType: 'FLOW',
+            versionFlowItems
+        })
+        if (res !== 'succ') throw new CloudBaseError('分配失败')
+
 
 
         loading.succeed('分配成功')

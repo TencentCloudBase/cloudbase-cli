@@ -67,31 +67,25 @@ export class UploadImage extends Command {
             })
 
             loading.start('登陆中')
-            let { stdout, stderr } = await util.promisify(exec)(`docker login --username=${uin} ccr.ccs.tencentyun.com -p ${pw}`);
+            let { stdout, stderr } = await util.promisify(exec)(`docker login --username=${uin} ccr.ccs.tencentyun.com -p ${pw}`)
             if (stdout.search('Login Succeeded') === -1) throw new CloudBaseError(stderr)
             loading.succeed('登录成功')
         }
 
         const imageRepo = await describeImageRepo({ envId, serverName: serviceName })
 
-        let stderr
-        if (stderr = (await util.promisify(exec)(`docker tag ${imageId} ccr.ccs.tencentyun.com/${imageRepo}:${imageTag}`)).stderr)
-            throw new CloudBaseError(stderr)
+        await util.promisify(exec)(`docker tag ${imageId} ccr.ccs.tencentyun.com/${imageRepo}:${imageTag}`)
 
         // loading.start('正在上传中')
         let sh = new Promise<{ code: number, info: string }>(
-            (resolve, reject) =>
+            (resolve, reject) => {
                 exec(
                     `docker push ccr.ccs.tencentyun.com/${imageRepo}:${imageTag}`,
-                    (stderr, stdout) => stderr ? reject({ code: -1, info: stderr }) : resolve({ code: 0, info: stdout })
-                ).stdout.pipe(process.stdout))
+                    (stderr, stdout) => stderr ? reject(stderr) : resolve({ code: 0, info: stdout })
+                ).stdout.pipe(process.stdout)
+            })
 
-        try {
-            let res = await sh
-            if (res.code === -1) throw new CloudBaseError(res.info)
-        } catch (e) {
-            throw e
-        }
+        await sh
 
         loading.succeed('上传成功')
     }

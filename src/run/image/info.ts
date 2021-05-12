@@ -8,11 +8,12 @@ export const getAuthFlag = async () => {
 
     try {
         await (new Promise(
-            (resolve, reject) =>
+            (resolve, reject) => {
                 access(
                     join(USER_HOME, '.docker/config.json'),
                     constants.F_OK,
-                    err => err ? reject(false) : resolve(true))))
+                    err => err ? reject(err) : resolve(true))
+            }))
     } catch (e) {
         return false
     }

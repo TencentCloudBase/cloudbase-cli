@@ -1,10 +1,10 @@
 import _ from 'lodash'
 
-declare module 'lodash' {
-    interface LoDashStatic {
-        deep(v: any, m: any): any;
-    }
-}
+// declare module 'lodash' {
+//     interface LoDashStatic {
+//         deep(v: any, m: any): any;
+//     }
+// }
 
 _.mixin({
     deep: function(obj, mapper) {

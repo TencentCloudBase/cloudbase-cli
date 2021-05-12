@@ -11,5 +11,5 @@ export const deleteRun = async (options: IDeleteRun) => {
         ServerName: options.serverName
     })
 
-    return Result;
+    return Result
 }
