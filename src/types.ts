@@ -275,7 +275,13 @@ export interface IModifyVersion {
     trafficType: string,
     versionFlowItems: {
         VersionName: string,
-        FlowRatio: number
+        FlowRatio: number,
+        IsDefaultPriority?: boolean,
+        Priority?: number,
+        UrlParam?: {
+            Key: string,
+            Value: string
+        }
     }[]
 }
 

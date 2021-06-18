@@ -231,6 +231,12 @@ export interface IModifyVersion {
     versionFlowItems: {
         VersionName: string;
         FlowRatio: number;
+        IsDefaultPriority?: boolean;
+        Priority?: number;
+        UrlParam?: {
+            Key: string;
+            Value: string;
+        };
     }[];
 }
 export interface IBuildImage {
