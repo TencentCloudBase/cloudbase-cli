@@ -76,3 +76,9 @@ node_modules
 test/api-key.js
 
 pkg/
+
+.DS_Store
+
+# Build files
+/lib
+/types
