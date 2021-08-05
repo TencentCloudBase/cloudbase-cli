@@ -22,6 +22,10 @@ export class DestroyStandalonegateway extends Command {
                 {
                     flags: '-gN, --gatewayName <gatewayName>',
                     desc: '网关 name'
+                },
+                {
+                    flags: '--isForce',
+                    desc: '强制确认删除资源'
                 }
             ],
             desc: '销毁小租户网关'
@@ -31,7 +35,8 @@ export class DestroyStandalonegateway extends Command {
     @InjectParams()
     async execute(@EnvId() envId, @ArgsOptions() options) {
 
-        let {appId = '', gatewayName = '' } = options
+        let { isForce = false, appId = '', gatewayName = '' } = options
+        isForce = Boolean(isForce)
         appId = String(appId)
         gatewayName = String(gatewayName)
 
@@ -41,6 +46,10 @@ export class DestroyStandalonegateway extends Command {
 
         if (gatewayName === '') {
             throw new CloudBaseError('请输入网关名称')
+        }
+
+        if (!isForce) {
+            throw new CloudBaseError('请使用 --isForce 选项确认销毁资源！')
         }
 
         const loading = loadingFactory()
