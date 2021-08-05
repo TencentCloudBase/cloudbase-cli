@@ -36,6 +36,7 @@
         "@cloudbase/toolbox": "^0.7.2",
         "@sentry/node": "^5.10.2",
         "address": "^1.1.2",
+        "axios": "^0.21.1",
         "chalk": "^2.4.2",
         "cli-table3": "^0.5.1",
         "commander": "^6.1.0",

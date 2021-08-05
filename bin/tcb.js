@@ -72,12 +72,14 @@ program.option('-r, --region <region>', '指定环境地域')
 
 // HACK: 隐藏自动生成的 help 信息
 program.helpOption(false)
-// -v 时输出的版本信息
-program.version(
-    `\nCLI: ${pkg.version}\nFramework: ${frameworkPkg.version}`,
-    '-v, --version',
-    '输出当前 CloudBase CLI 版本'
-)
+// -v 时输出的版本信息，设置时避免影响其他命令使用 -v
+if (yargs.argv._.length === 0) {
+    program.version(
+        `\nCLI: ${pkg.version}\nFramework: ${frameworkPkg.version}`,
+        '-v, --version',
+        '输出当前 CloudBase CLI 版本'
+    )
+}
 
 // 处理无效命令
 program.action((command) => {

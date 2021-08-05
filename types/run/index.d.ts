@@ -4,3 +4,4 @@ export * from './version';
 export * from './image';
 export * from './delete';
 export * from './repo';
+export * from './standalonegateway';

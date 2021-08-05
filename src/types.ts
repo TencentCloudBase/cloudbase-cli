@@ -399,3 +399,45 @@ export interface IDeleteRun {
     envId: string,
     serverName: string
 }
+
+export interface IListPackageStandaloneGateway {
+    envId: string,
+    appId: number,
+    packageVersion: string
+}
+
+export interface ICreateStandaloneGateway {
+    envId: string,
+    appId: number,
+    gatewayAlias: string,
+    vpcId: string,
+    subnetIds: string[],
+    packageVersion: string
+}
+
+export interface IListStandaloneGateway {
+    envId: string,
+    appId: number,
+    gatewayName: string,
+    gatewayAlias: string
+}
+
+export interface ITurnOnStandaloneGateway {
+    envId: string,
+    appId: number,
+    gatewayName: string,
+    serviceList: string[]
+}
+
+export interface ITurnOffStandaloneGateway {
+    envId: string,
+    appId: number,
+    gatewayName: string,
+    serviceList: string[]
+}
+
+export interface IDestroyStandaloneGateway {
+    envId: string,
+    appId: number,
+    gatewayName: string
+}
