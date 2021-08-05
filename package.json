@@ -21,11 +21,6 @@
         "tcb": "bin/tcb.js",
         "cloudbase": "bin/cloudbase.js"
     },
-    "husky": {
-        "hooks": {
-            "pre-commit": "npm run build && git add ."
-        }
-    },
     "author": "cwuyiqing@gmail.com",
     "license": "ISC",
     "dependencies": {
