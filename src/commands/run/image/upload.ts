@@ -46,37 +46,14 @@ export class UploadImage extends Command {
 
         const loading = loadingFactory()
 
-        // loading.start('数据加载中...')
-
-        let uin = await getUin()
-
-        if (uin === '无') {
-            uin = (await prompt<any>({
-                type: 'input',
-                message: '请输入账号ID（或采用web登录）',
-                name: 'uin'
-            })).uin
-        }
-
         if (!(await getAuthFlag())) {
-            console.log('无法找到~/.docker/config.json或未登录，需要执行docker login')
-            const { pw } = await prompt<any>({
-                type: 'password',
-                message: '请输入镜像仓库密码',
-                name: 'pw'
-            })
-
-            loading.start('登陆中')
-            let { stdout, stderr } = await util.promisify(exec)(`docker login --username=${uin} ccr.ccs.tencentyun.com -p ${pw}`)
-            if (stdout.search('Login Succeeded') === -1) throw new CloudBaseError(stderr)
-            loading.succeed('登录成功')
+            throw new CloudBaseError('无法找到~/.docker/config.json或未登录，需要执行docker login')
         }
 
         const imageRepo = await describeImageRepo({ envId, serverName: serviceName })
 
         await util.promisify(exec)(`docker tag ${imageId} ccr.ccs.tencentyun.com/${imageRepo}:${imageTag}`)
 
-        // loading.start('正在上传中')
         let sh = new Promise<{ code: number, info: string }>(
             (resolve, reject) => {
                 exec(
