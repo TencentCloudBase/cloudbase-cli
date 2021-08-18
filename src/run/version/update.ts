@@ -25,8 +25,8 @@ export const updateVersion = async (options: IUpdateVersion) => {
             PolicyType: options.policyType,
             PolicyThreshold: String(options.policyThreshold),
 
+            ...(options.uploadType !== 'image' ? { DockerfilePath: options.dockerfilePath } : {}),
             CustomLogs: options.customLogs,
-            DockerfilePath: options.dockerfilePath,
             EnvParams: options.envParams,
             InitialDelaySeconds: options.initialDelaySeconds,
 

@@ -19,9 +19,9 @@ import { InjectParams, EnvId, ArgsOptions } from '../../../decorators'
 import { versionCommonOptions } from './common'
 
 const uploadTypeMap = {
-    '本地代码': 'package',
-    '代码库拉取': 'repository',
-    '镜像拉取': 'image'
+    本地代码: 'package',
+    代码库拉取: 'repository',
+    镜像拉取: 'image'
 }
 
 const memMap = {
@@ -37,7 +37,15 @@ const memMap = {
 const describeVersion = (base: any) => {
     console.log('目前的配置如下')
     console.log(`镜像名 ${base.ImageUrl.split(':')[1]}`)
-    console.log(`上传方式 ${base.UploadType === 'image' ? '镜像拉取' : base.UploadType === 'package' ? '本地代码上传' : '代码仓库拉取'}`)
+    console.log(
+        `上传方式 ${
+            base.UploadType === 'image'
+                ? '镜像拉取'
+                : base.UploadType === 'package'
+                ? '本地代码上传'
+                : '代码仓库拉取'
+        }`
+    )
     console.log(`监听端口 ${base.VersionPort}`)
     console.log(`扩缩容条件 ${base.PolicyType}使用率 > ${base.PolicyThreshold}`)
     console.log(`规格 cpu ${base.Cpu}核 mem ${base.Mem}G`)
@@ -64,6 +72,62 @@ export class UpdateVersion extends Command {
                 {
                     flags: '-v, --versionName <versionName>',
                     desc: '版本名称 Name'
+                },
+                {
+                    flags: '-p, --path <path>',
+                    desc: '本地代码路径，选择本地代码上传时使用'
+                },
+                {
+                    flags: '--repo <repo>',
+                    desc: '仓库信息，形如 channel|fullName|branch，channel为github、gitlab或gitee，选择代码库拉取时使用'
+                },
+                {
+                    flags: '-i, --image <image>',
+                    desc: '镜像url，选择镜像拉取时使用'
+                },
+                {
+                    flags: '--port <port>',
+                    desc: '监听端口，默认为80'
+                },
+                {
+                    flags: '-f, --flow <flow>',
+                    desc: '流量策略（%），0或100，默认为0'
+                },
+                {
+                    flags: '-m, --remark <remark>',
+                    desc: '备注信息，默认为空'
+                },
+                {
+                    flags: '-c, --cpu <cpu>',
+                    desc: 'cpu规格（核数），默认为0.5'
+                },
+                {
+                    flags: '--mem <mem>',
+                    desc: '内存规格（G），默认为1'
+                },
+                {
+                    flags: '--copy <copy>',
+                    desc: '副本个数，格式为最小个数~最大个数，默认为0~50'
+                },
+                {
+                    flags: '--policy <policy>',
+                    desc: '扩缩容条件，格式为条件类型|条件比例（%），cpu条件为cpu，内存为条件mem，默认为cpu|60'
+                },
+                {
+                    flags: '--dockerFile <dockerFile>',
+                    desc: 'dockerfile名称，非镜像拉取时使用，默认为Dockerfile'
+                },
+                {
+                    flags: '-l, --log <log>',
+                    desc: '日志采集路径，默认为stdout'
+                },
+                {
+                    flags: '-d, --delay <delay>',
+                    desc: '初始延迟时间（秒），默认为2'
+                },
+                {
+                    flags: '--env <env>',
+                    desc: '环境变量，格式为xx=a&yy=b，默认为空'
                 }
             ],
             desc: '创建云开发环境下云托管服务的版本'
@@ -72,16 +136,32 @@ export class UpdateVersion extends Command {
 
     @InjectParams()
     async execute(@EnvId() envId, @ArgsOptions() options) {
+        let {
+            serviceName = '',
+            versionName = '',
+            path: _path = '',
+            repo: _repo = '',
+            image: _image = '',
+            port: _port = '80',
+            flow: _flow = '0',
+            remark: _remark = '',
+            cpu: _cpu = '0.5',
+            mem: _mem = '1',
+            copy: _copy = '0~50',
+            policy: _policy = 'cpu|60',
+            dockerfile: _dockerfile = 'Dockerfile',
+            log: _log = 'stdout',
+            delay: _delay = '2',
+            env: _env = ''
+        } = options
 
-        let { serviceName = '', versionName = '' } = options
-
-        if (serviceName.length === 0 || versionName.length === 0) {
+        if (!serviceName || !versionName) {
             throw new CloudBaseError('必须输入 serviceName 和 versionName')
         }
         let path: string
         let repositoryType: string
         let branch: string
-        let codeDetail: { Name: { Name: string, FullName: string } }
+        let codeDetail: { Name: { Name: string; FullName: string } }
         let imageInfo: { ImageUrl: string }
         let containerPort: number
         let flowRatio: number
@@ -101,29 +181,9 @@ export class UpdateVersion extends Command {
 
         const loading = loadingFactory()
 
-        let base = await describeRunVersion({
-            envId,
-            serverName: serviceName,
-            versionName
-        })
-
-        describeVersion(base)
-
-        console.log('请填入新的配置')
-
-        let { uploadType } = await prompt<any>({
-            type: 'select',
-            name: 'uploadType',
-            choices: ['本地代码', '代码库拉取', '镜像拉取'],
-            message: '请选择上传方式',
-        })
-
-        if (uploadType === '本地代码') {
-            path = (await prompt<any>({
-                type: 'input',
-                name: 'path',
-                message: '请输入文件的路径'
-            })).path
+        // 上传方式
+        if (_path) {
+            path = _path
 
             if (statSync(path).isDirectory()) {
                 loading.start('正在压缩中')
@@ -131,200 +191,88 @@ export class UpdateVersion extends Command {
                 loading.succeed('压缩完成')
                 path = `./code${uid}.zip`
             }
-        } else if (uploadType === '代码库拉取') {
-            let { repoType } = await prompt<any>({
-                type: 'select',
-                name: 'repoType',
-                choices: ['GitHub', 'Gitee', 'GitLab'],
-                message: '请选择代码库',
-            })
+        } else if (_repo) {
+            const repo = _repo.split('|')
 
-            repositoryType = repoType.toLowerCase()
+            repositoryType = repo[0]
 
-            let pageNumber = 1
-            while (true) {
-                const { IsFinished, RepoList, Error } = await listRepo({ channel: repoType.toLowerCase(), pageNumber, pageSize: 50 })
+            codeDetail.Name.FullName = repo[1]
+            codeDetail.Name.Name = repo[1].split('/')[1]
 
-                if (Error) throw new CloudBaseError('请检查是否授权')
-                if (!RepoList || RepoList.length === 0) throw new CloudBaseError('没有可供选择的仓库')
-
-                const { repoName } = await prompt<any>({
-                    type: 'select',
-                    name: 'repoName',
-                    message: '选择仓库',
-                    choices: IsFinished ? RepoList.map(item => item.FullName) : [...RepoList.map(item => item.FullName), '下一页']
-                })
-
-                if (repoName !== '下一页') {
-                    codeDetail = { Name: { Name: repoName.split('/')[1], FullName: repoName } }
-                    break
-                }
-
-                pageNumber++
-            }
-
-            pageNumber = 1
-            while (true) {
-                const { IsFinished, BranchList } = await listBranch({
-                    channel: repoType.toLowerCase(),
-                    pageNumber,
-                    pageSize: 50,
-                    repoName: codeDetail['Name']
-                })
-
-                if (!BranchList || BranchList.length === 0) throw new CloudBaseError('没有可供选择的分支')
-
-                const { branchName } = await prompt<any>({
-                    type: 'select',
-                    name: 'branchName',
-                    message: '选择分支',
-                    choices: IsFinished ? BranchList.map(item => item.Name) : [...BranchList.map(item => item.Name), '下一页']
-                })
-
-                if (branchName !== '下一页') {
-                    break
-                }
-
-                pageNumber++
+            branch = repo[2]
+        } else if (_image) {
+            imageInfo = {
+                ImageUrl: _image
             }
         } else {
-            let ImageUrl = await pagingSelectPromp(
-                'select',
-                listImage,
-                { envId, serviceName, limit: 0, offset: 0 },
-                '请选择镜像', item => true,
-                item => item.ImageUrl)
-
-            imageInfo = {
-                ImageUrl: ImageUrl as string,
-            }
+            throw new CloudBaseError('请至少选择一个上传方式')
         }
 
-        containerPort = Number((await prompt<any>({
-            type: 'input',
-            name: 'port',
-            message: '请输入监听端口号'
-        })).port)
-
-        cpu = Number((await prompt<any>({
-            type: 'select',
-            name: 'cpu',
-            message: '请输入cpu规格（核数）',
-            choices: ['0.25', '0.5', '1', '2', '4', '8', '16']
-        })).cpu)
-
-        const memList =
-            new Array(memMap[cpu][1] * cpu - Math.floor(memMap[cpu][0] * cpu) + 1)
-                .fill(memMap[cpu][1] * cpu)
-                .map((item, index, array) => String(item - (array.length - 1 - index)))
-
-        memList[0] = String(Number(memList[0]) <= 0 ? 0.5 : memList[0])
-
-        mem = Number((await prompt<any>({
-            type: 'select',
-            name: 'mem',
-            message: '请输入内存规格（G）',
-            choices: memList
-        })).mem)
-
-        minNum = Number((await prompt<any>({
-            type: 'input',
-            name: 'num',
-            message: '请输入最小副本个数',
-        })).num)
-
-        if (Number.isNaN(minNum) || minNum - Math.floor(minNum) !== 0)
-            throw new CloudBaseError('请输入大于等于0的整数')
-
-        maxNum = Number((await prompt<any>({
-            type: 'input',
-            name: 'num',
-            message: '请输入最大副本个数',
-        })).num)
-
-        if (Number.isNaN(maxNum) || maxNum - Math.floor(maxNum) !== 0)
-            throw new CloudBaseError('请输入大于等于0的整数')
-
-        policyType = (await prompt<any>({
-            type: 'select',
-            name: 'type',
-            message: '扩容条件是',
-            choices: ['cpu使用率', '内存使用率']
-        })).type === 'cpu使用率' ? 'cpu' : 'mem'
-
-        policyThreshold = Number((await prompt<any>({
-            type: 'input',
-            name: 'threshold',
-            message: '边界条件值是（%）',
-        })).threshold)
-
-        if (Number.isNaN(policyThreshold) || policyThreshold <= 0 || policyThreshold > 100)
-            throw new CloudBaseError('请输入合理的数字')
-
-        if ((await prompt<any>({
-            type: 'select',
-            name: 'type',
-            message: '请问是否进行高级设置',
-            choices: ['是', '否']
-        })).type === '是') {
-            if (uploadType !== '镜像拉取') {
-                customLogs = (await prompt<any>({
-                    type: 'input',
-                    name: 'logs',
-                    message: '请输入日志采集路径',
-                })).logs
-            }
-
-            dockerfilePath = (await prompt<any>({
-                type: 'input',
-                name: 'dockerfile',
-                message: '请输入dockerfile名称',
-            })).dockerfile
-
-            initialDelaySeconds = Number((await prompt<any>({
-                type: 'input',
-                name: 'seconds',
-                message: '请输入initialDelaySeconds',
-            })).seconds)
-
-            if (Number.isNaN(initialDelaySeconds))
-                throw new CloudBaseError('请输入正常数字')
-
-            let _envParams = {}
-            while (true) {
-                if ((await prompt<any>({
-                    type: 'select',
-                    name: 'flag',
-                    message: '请问是否要继续填入环境变量',
-                    choices: ['是', '否']
-                })).flag === '否') break
-
-                let { key } = await prompt<any>({
-                    type: 'input',
-                    name: 'key',
-                    message: '请填入环境变量name',
-                })
-
-                let { value } = await prompt<any>({
-                    type: 'input',
-                    name: 'value',
-                    message: '请填入环境变量value',
-                })
-
-                _envParams[key] = value
-            }
-
-            envParams = JSON.stringify(_envParams)
+        // 端口号
+        containerPort = Number(_port)
+        if (isNaN(containerPort)) {
+            throw new CloudBaseError('请输入合法的端口号')
         }
+
+        // 流量策略
+        flowRatio = Number(_flow)
+        if (![100, 0].includes(flowRatio)) {
+            throw new CloudBaseError('请输入合法的流量策略')
+        }
+
+        // 备注
+        versionRemark = _remark
+
+        // 规格
+        cpu = Number(_cpu)
+        mem = Number(_mem)
+        if (isNaN(cpu) || isNaN(mem)) {
+            throw new CloudBaseError('请输入合法的cpu和内存规格')
+        }
+
+        // 副本个数
+        minNum = Number(_copy.split('~')[0])
+        maxNum = Number(_copy.split('~')[1])
+        if (isNaN(maxNum) || isNaN(minNum)) {
+            throw new CloudBaseError('请输入合法的副本个数')
+        }
+
+        // 扩缩容条件
+        policyType = _policy.split('|')[0]
+        policyThreshold = Number(_policy.split('|')[1])
+        if (!['cpu', 'mem'].includes(policyType) || isNaN(policyThreshold)) {
+            throw new CloudBaseError('请输入合法的扩缩容条件')
+        }
+
+        // dockerfile 名称，在非镜像拉取时使用
+        dockerfilePath = _dockerfile
+
+        // 日志采集路径
+        customLogs = _log
+
+        // 初始延迟时间
+        initialDelaySeconds = Number(_delay)
+        if (isNaN(initialDelaySeconds)) {
+            throw new CloudBaseError('请输入合法的延迟时间')
+        }
+
+        // 环境变量
+        let _envParams = {}
+        _env.split('&').forEach((item) => {
+            _envParams[item.split('=')[0]] = item.split('=')[1]
+        })
+        envParams = JSON.stringify(_envParams)
 
         loading.start('加载中...')
 
-
         let res = ''
         let runId = ''
-        if (uploadType === '本地代码') {
+        if (_path) {
             loading.start('正在上传中')
-            let { PackageName, PackageVersion, UploadHeaders, UploadUrl } = await createBuild({ envId, serviceName })
+            let { PackageName, PackageVersion, UploadHeaders, UploadUrl } = await createBuild({
+                envId,
+                serviceName
+            })
             await uploadZip(path, UploadUrl, UploadHeaders[0])
             loading.succeed('上传成功')
             if (path === `./code${uid}.zip`) {
@@ -338,7 +286,7 @@ export class UpdateVersion extends Command {
                 serverName: serviceName,
                 versionName,
                 containerPort,
-                uploadType: uploadTypeMap[uploadType],
+                uploadType: 'package',
                 packageName: PackageName,
                 packageVersion: PackageVersion,
                 flowRatio,
@@ -355,17 +303,17 @@ export class UpdateVersion extends Command {
                 customLogs,
                 dockerfilePath,
                 envParams,
-                initialDelaySeconds,
+                initialDelaySeconds
             })
             res = response.Result
             runId = response.RunId
-        } else if (uploadType === '镜像拉取') {
+        } else if (_image) {
             let response = await updateVersion({
                 envId,
                 serverName: serviceName,
                 versionName,
                 containerPort,
-                uploadType: uploadTypeMap[uploadType],
+                uploadType: 'image',
                 imageInfo,
                 flowRatio,
                 versionRemark,
@@ -380,7 +328,7 @@ export class UpdateVersion extends Command {
 
                 customLogs,
                 envParams,
-                initialDelaySeconds,
+                initialDelaySeconds
             })
             res = response.Result
             runId = response.RunId
@@ -390,7 +338,7 @@ export class UpdateVersion extends Command {
                 serverName: serviceName,
                 versionName,
                 containerPort,
-                uploadType: uploadTypeMap[uploadType],
+                uploadType: 'repository',
                 repositoryType,
                 branch,
                 codeDetail,
@@ -408,13 +356,12 @@ export class UpdateVersion extends Command {
                 customLogs,
                 dockerfilePath,
                 envParams,
-                initialDelaySeconds,
+                initialDelaySeconds
             })
             res = response.Result
             runId = response.RunId
         }
-        if (res !== 'succ')
-            throw new CloudBaseError('提交构建任务失败')
+        if (res !== 'succ') throw new CloudBaseError('提交构建任务失败')
 
         loading.start('正在部署中')
 
@@ -423,18 +370,21 @@ export class UpdateVersion extends Command {
 
             if (Status === 'build_fail') {
                 let logs = await logCreate({ envId, runId })
-                writeFileSync(`./log${runId}`, logs.reduce((res, item) => res + item + '\n', ''))
+                writeFileSync(
+                    `./log${runId}`,
+                    logs.reduce((res, item) => res + item + '\n', '')
+                )
                 throw new CloudBaseError(`构建失败，日志写入./log${runId}中`)
             } else if (Status !== 'updating') {
                 break
             }
 
-
             loading.start(`目前构建进度${Percent}%`)
 
-            await new Promise(resolve => { setTimeout(_ => resolve('again'), 2000) })
+            await new Promise((resolve) => {
+                setTimeout((_) => resolve('again'), 2000)
+            })
         }
-
 
         loading.succeed('构建成功')
     }

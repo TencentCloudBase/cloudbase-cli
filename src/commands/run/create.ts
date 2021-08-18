@@ -8,8 +8,8 @@ import { InjectParams, EnvId, ArgsOptions } from '../../decorators'
 import { validateIp } from '../../utils/validator'
 
 const ZoneMap = {
-    'shanghai': '上海',
-    'guangzhou': '广州'
+    shanghai: '上海',
+    guangzhou: '广州'
 }
 
 @ICommand()
@@ -25,7 +25,27 @@ export class CreateRun extends Command {
                 },
                 {
                     flags: '-n, --name <name>',
-                    desc: '服务名称'
+                    desc: '服务名称，必填'
+                },
+                {
+                    flags: '-c, --vpc <vpc>',
+                    desc: '云托管网络设置，默认系统创建，选择已有私有网络则填入格式为私有网络Id|子网Id1,...,子网Idn'
+                },
+                {
+                    flags: '-p, --repo <repo>',
+                    desc: '镜像仓库名，默认系统创建'
+                },
+                // {
+                //     flags: '-l, --log <log>',
+                //     desc: '日志管理设置，默认为系统默认cls，自定义ES则填入格式为Ip=xx&Port=xx&Index=xx&Account=xx&Password=xx'
+                // },
+                {
+                    flags: '-m, --remark <remark>',
+                    desc: '备注，默认为空'
+                },
+                {
+                    flags: '-a, --publicAccess <publicAccess>',
+                    desc: '是否允许公网访问(Y/N)，默认为允许'
                 }
             ],
             desc: '创建云托管服务'
@@ -33,140 +53,80 @@ export class CreateRun extends Command {
     }
 
     @InjectParams()
+    /* eslint complexity: ["error", 40] */
     async execute(@EnvId() envId, @ArgsOptions() options) {
-        let { name = '' } = options
+        let {
+            name: _name = '',
+            vpc: _vpc = '',
+            repo: _repo = '',
+            log: _log = '',
+            remark: _remark = '',
+            publicAccess: _publicAccess = ''
+        } = options
+        let name: string
         let remark: string
-        let vpcInfo = { VpcId: '', SubnetIds: [], CreateType: 1 }
-        let logType = 'cls'
-        let esInfo = { Ip: '', Port: 65535, Index: '', Account: '', Password: '' }
-        let publicAccess = 1
+        let vpcInfo: { VpcId: string; SubnetIds: string[]; CreateType: number }
         let imageRepo: string
-
-        if (name.length === 0) throw new CloudBaseError('请输入服务名')
+        let logType: string
+        let esInfo: { Ip: string; Port: number; Index: string; Account: string; Password: string }
+        let publicAccess: number
 
         const loading = loadingFactory()
 
-        if (!remark) {
-            remark = (await prompt<any>({
-                type: 'input',
-                name: 'remark',
-                message: '请输入服务的备注',
-            })).remark
+        // 服务名称
+        if (!_name) {
+            throw new CloudBaseError('请填入服务名')
+        } else {
+            name = _name
         }
 
-        // 如果选择私有网络，那么需要填写配置
-        if ((await prompt<any>({
-            type: 'select',
-            name: 'createType',
-            message: '请选择云托管网络',
-            choices: ['系统创建', '选择已有私有网络']
-        })).createType === '选择已有私有网络') {
+        // 备注
+        remark = _remark
 
-            vpcInfo.CreateType = 2
-
-            // 选择私有网络
-            const vpcs = await getVpcs()
-            const { vpc } = (await prompt<any>({
-                type: 'select',
-                name: 'vpc',
-                message: '请选择私有网络',
-                choices: vpcs.map(item => `${item.VpcId}|${item.VpcName}|${item.CidrBlock}`)
-            }))
-            vpcInfo.VpcId = vpc.split('|')[0]
-
-            // 选择子网
-            const subnets = await getSubnets(vpcInfo.VpcId)
-            const { subnet } = (await prompt<any>({
-                type: 'multiselect',
-                name: 'subnet',
-                message: '请选择子网（空格选择）',
-                choices: subnets.map(item => `${item.SubnetId}|${item.SubnetName}|${item.CidrBlock}|${ZoneMap[item.Zone.split('-')[1]]}|${item.TotalIpAddressCount}剩余IP`)
-            }))
-            if (subnet.length === 0) throw new CloudBaseError('请至少选择一个子网')
-            vpcInfo.SubnetIds = subnet.map(item => item.split('|')[0])
-
+        // 云托管网络配置
+        if (!_vpc) {
+            vpcInfo = {
+                VpcId: '',
+                SubnetIds: [],
+                CreateType: 1
+            }
+        } else {
+            vpcInfo = {
+                VpcId: _vpc.split('|')[0],
+                SubnetIds: _vpc.split('|')[1].split(','),
+                CreateType: 2
+            }
         }
 
-        // 如果选择已有镜像仓库，那么选择镜像仓库
-        if ((await prompt<any>({
-            type: 'select',
-            name: 'imageRepoType',
-            message: '请选择镜像仓库类型',
-            choices: ['使用系统默认', '绑定腾讯云已有镜像仓库']
-        })).imageRepoType === '绑定腾讯云已有镜像仓库') {
-
-            const imageRepos = await getImageRepo()
-            if (imageRepos.length === 0) throw new CloudBaseError('没有可以绑定的镜像仓库')
-            imageRepo = (await prompt<any>({
-                type: 'select',
-                name: 'imageInfo',
-                message: '请选择镜像仓库',
-                choices: imageRepos.map(item => `${item.RepoName}|${item.RepoType}|${item.Description}`)
-            })).imageInfo.split('|')[0]
-
+        // 镜像仓库设置
+        if (!_repo) {
+            imageRepo = undefined
+        } else {
+            imageRepo = _repo
         }
 
-        // 如果选择 ES 作为日志管理，则填写 ES 配置
-        if ((await prompt<any>({
-            type: 'select',
-            name: 'logType',
-            message: '选择日志管理方式',
-            choices: ['系统默认', '自定义ElasticSearch']
-        })).logType === '自定义ElasticSearch') {
-
+        // 日志配置
+        if (!_log) {
+            logType = 'cls'
+        } else {
             logType = 'es'
 
-            let { esIp } = (await prompt<any>({
-                type: 'input',
-                name: 'esIp',
-                message: '请输入ES-IP',
-            }))
-            if (!validateIp(esIp))
-                throw new CloudBaseError('请输入合法有效的IP')
-            esInfo.Ip = esIp
-
-            let { port } = (await prompt<any>({
-                type: 'input',
-                name: 'port',
-                message: '请输入ES-端口',
-            }))
-            if (isNaN(Number(port)) || Number(port) < 0 || Number(port) > 65535)
-                throw new CloudBaseError('请输入合法有效的端口号')
-            esInfo.Port = Number(port)
-
-            let { index } = (await prompt<any>({
-                type: 'input',
-                name: 'index',
-                message: '请输入ES-索引',
-            }))
-            if (index.length === 0)
-                throw new CloudBaseError('请输入合法有效的索引')
-            esInfo.Index = index
-
-            let { account } = (await prompt<any>({
-                type: 'input',
-                name: 'account',
-                message: '请输入ES-账号',
-            }))
-            if (account.length === 0)
-                throw new CloudBaseError('请输入合法有效的账号')
-            esInfo.Account = account
-
-            let { pw } = (await prompt<any>({
-                type: 'input',
-                name: 'pw',
-                message: '请输入ES-密码',
-            }))
-            if (pw.length === 0) throw new CloudBaseError('请输入合法有效的密码')
-            esInfo.Password = pw
+            esInfo = _log.split('&').reduce((pre, item) => {
+                pre[item.split('=')[0]] = item.split('=')[0] === 'Port' ? Number(item.split('=')[1]) : item.split('=')[1]
+                return pre
+            }, {})
         }
 
-        if ((await prompt<any>({
-            type: 'select',
-            name: 'publicAccess',
-            message: '请选择是否开启公网访问服务',
-            choices: ['是', '否']
-        })).publicAccess === '否') publicAccess = 2
+        // 公网访问服务
+        if (!_publicAccess) {
+            publicAccess = 1
+        } else if (/[^nNyY]/.test(_publicAccess) || _publicAccess.length !== 1) {
+            throw new CloudBaseError('请输入符合规范的公网访问服务设置')
+        } else if (_publicAccess === 'N' || _publicAccess === 'n') {
+            publicAccess = 2
+        } else {
+            publicAccess = 1
+        }
 
         const res = await createRun({
             envId,
@@ -182,6 +142,5 @@ export class CreateRun extends Command {
 
         if (res === 'succ') loading.succeed(`云托管服务 ${name} 创建成功！`)
         else throw new CloudBaseError('创建失败，请查看是否已经有同名服务')
-
     }
 }

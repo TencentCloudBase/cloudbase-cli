@@ -28,7 +28,7 @@ export const uploadZip = async (path: string, url: string, headers: { [key: stri
             Accept: '*/*',
             'Accept-Encoding': 'gzip, deflate, br',
             'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7,en-US;q=0.6',
-            [headers['Key']]: headers['Value'],
+            // [headers['Key']]: headers['Value'],
             'Content-Type': 'application/x-zip-compressed'
         },
         body
