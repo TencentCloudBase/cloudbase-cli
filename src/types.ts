@@ -410,6 +410,7 @@ export interface ICreateStandaloneGateway {
     envId: string,
     appId: number,
     gatewayAlias: string,
+    gatewayDesc: string,
     vpcId: string,
     subnetIds: string[],
     packageVersion: string

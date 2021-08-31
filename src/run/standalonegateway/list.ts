@@ -1,11 +1,12 @@
 import { IListStandaloneGateway } from '../../types'
 import { CloudBaseError } from '../../error'
-import yunapi from './yunapi'
+import { CloudApiService } from '../../utils'
+
+const tcbService = CloudApiService.getInstance('tcb')
 
 export const listStandalonegateway = async (options: IListStandaloneGateway) => {
-    const { Response: res } = await yunapi('DescribeStandaloneGateway', {
+    const res = await tcbService.request('DescribeStandaloneGateway', {
         EnvId: options.envId,
-        AppId: options.appId,
         GatewayName: options.gatewayName,
         GatewayAlias: options.gatewayAlias
     })
