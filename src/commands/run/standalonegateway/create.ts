@@ -16,12 +16,12 @@ export class CreateStandalonegateway extends Command {
                     desc: '环境 Id'
                 },
                 {
-                    flags: '-a, --appId <appId>',
-                    desc: '应用 Id'
-                },
-                {
                     flags: '-gA, --gatewayAlias <gatewayAlias>',
                     desc: '网关 alias'
+                },
+                {
+                    flags: '-gD, --gatewayDesc <gatewayDesc>',
+                    desc: '网关描述'
                 },
                 {
                     flags: '-v --vpcId <vpcId>',
@@ -43,15 +43,11 @@ export class CreateStandalonegateway extends Command {
     @InjectParams()
     async execute(@EnvId() envId, @ArgsOptions() options) {
 
-        let { appId = '', gatewayAlias = '', vpcId = '', subnetIds = [], packageVersion = '' } = options
-        appId = String(appId)
+        let { gatewayAlias = '', gatewayDesc = '', vpcId = '', subnetIds = [], packageVersion = '' } = options
         gatewayAlias = String(gatewayAlias)
+        gatewayDesc = String(gatewayDesc)
         vpcId = String(vpcId)
         packageVersion = String(packageVersion)
-
-        if (appId === '') {
-            throw new CloudBaseError('请输入应用 Id')
-        }
 
         if (vpcId === '') {
             throw new CloudBaseError('请输入 VPC')
@@ -59,6 +55,10 @@ export class CreateStandalonegateway extends Command {
 
         if (subnetIds.length === 0) {
             throw new CloudBaseError('请输入子网列表')
+        }
+
+        if (gatewayDesc === '') {
+            throw new CloudBaseError('请输入网关描述')
         }
 
         if (packageVersion === '') {
@@ -71,8 +71,8 @@ export class CreateStandalonegateway extends Command {
 
         const data = await createStandaloneGateway({
             envId,
-            appId: Number(appId),
             gatewayAlias,
+            gatewayDesc,
             vpcId,
             subnetIds,
             packageVersion

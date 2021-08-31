@@ -16,10 +16,6 @@ export class DestroyStandalonegateway extends Command {
                     desc: '环境 Id'
                 },
                 {
-                    flags: '-a, --appId <appId>',
-                    desc: '应用 Id'
-                },
-                {
                     flags: '-gN, --gatewayName <gatewayName>',
                     desc: '网关 name'
                 },
@@ -35,14 +31,9 @@ export class DestroyStandalonegateway extends Command {
     @InjectParams()
     async execute(@EnvId() envId, @ArgsOptions() options) {
 
-        let { isForce = false, appId = '', gatewayName = '' } = options
+        let { isForce = false, gatewayName = '' } = options
         isForce = Boolean(isForce)
-        appId = String(appId)
         gatewayName = String(gatewayName)
-
-        if (appId === '') {
-            throw new CloudBaseError('请输入应用 Id')
-        }
 
         if (gatewayName === '') {
             throw new CloudBaseError('请输入网关名称')
@@ -56,9 +47,8 @@ export class DestroyStandalonegateway extends Command {
 
         loading.start('数据加载中...')
         
-        const data = await destroyStandalonegateway({
+        await destroyStandalonegateway({
             envId,
-            appId: Number(appId),
             gatewayName
         })
 
