@@ -69,6 +69,6 @@ const beautifySubnetList = (list: Array<string>) => list.join('\n')
 const beautifyServiceList = (list: Array<Record<string, string>>) =>
     list
         .map(
-            (item) => '服务 ' + item['ServiceName'] + (item['Status'] === 'on' ? ' 已启动' : ' 未启动')
+            (item) => '服务 ' + item['ServiceName'] + (item['Status'] === 'on' ? ' 开启' : ' 未开启')
         )
         .join('\n')
