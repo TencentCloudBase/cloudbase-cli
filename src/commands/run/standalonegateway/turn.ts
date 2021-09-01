@@ -16,10 +16,6 @@ export class TurnStandalonegateway extends Command {
                     desc: '环境 Id'
                 },
                 {
-                    flags: '-a, --appId <appId>',
-                    desc: '应用 Id'
-                },
-                {
                     flags: '-gN, --gatewayName <gatewayName>',
                     desc: '网关名'
                 },
@@ -39,13 +35,8 @@ export class TurnStandalonegateway extends Command {
             throw new CloudBaseError('请输入启停状态')
         }
 
-        let { appId = '', gatewayName = '', serviceList = [] } = options
-        appId = String(appId)
+        let { gatewayName = '', serviceList = [] } = options
         gatewayName = String(gatewayName)
-
-        if (appId === '') {
-            throw new CloudBaseError('请输入应用 Id')
-        }
 
         if (gatewayName === '') {
             throw new CloudBaseError('请输入网关名')
@@ -59,9 +50,8 @@ export class TurnStandalonegateway extends Command {
 
         loading.start('数据加载中...')
 
-        const data = await (status === 'on' ? turnOnStandalonegateway : turnOffStandalonegateway)({
+        await (status === 'on' ? turnOnStandalonegateway : turnOffStandalonegateway)({
             envId,
-            appId: Number(appId),
             gatewayName,
             serviceList
         })

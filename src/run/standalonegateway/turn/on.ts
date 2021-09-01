@@ -1,11 +1,12 @@
 import { ITurnOnStandaloneGateway } from '../../../types'
-import yunapi from '../yunapi'
 import { CloudBaseError } from '../../../error'
+import { CloudApiService } from '../../../utils'
+
+const tcbService = CloudApiService.getInstance('tcb')
 
 export const turnOnStandalonegateway = async (options: ITurnOnStandaloneGateway) => {
-    const { Response: res } = await yunapi('TurnOnStandaloneGateway', {
+    const res = await tcbService.request('TurnOnStandaloneGateway', {
         EnvId: options.envId,
-        AppId: options.appId,
         GatewayName: options.gatewayName,
         ServiceNameList: options.serviceList
     })

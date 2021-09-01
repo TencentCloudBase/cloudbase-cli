@@ -17,10 +17,6 @@ export class ListStandalonegateway extends Command {
                     desc: '环境 Id'
                 },
                 {
-                    flags: '-a, --appId <appId>',
-                    desc: '应用 Id'
-                },
-                {
                     flags: '-gN, --gatewayName <gatewayName>',
                     desc: '网关 name'
                 },
@@ -35,14 +31,9 @@ export class ListStandalonegateway extends Command {
 
     @InjectParams()
     async execute(@EnvId() envId, @ArgsOptions() options) {
-        let { appId = '', gatewayName = '', gatewayAlias = '' } = options
-        appId = String(appId)
+        let { gatewayName = '', gatewayAlias = '' } = options
         gatewayName = String(gatewayName)
         gatewayAlias = String(gatewayAlias)
-
-        if (appId.length === '') {
-            throw new CloudBaseError('请输入应用 Id')
-        }
 
         const loading = loadingFactory()
 
@@ -50,14 +41,13 @@ export class ListStandalonegateway extends Command {
 
         const data = await listStandalonegateway({
             envId,
-            appId: Number(appId),
             gatewayName,
             gatewayAlias
         })
 
         loading.stop()
 
-        const head = ['CPU', '状态', '别名',  '描述', '名称',  '内存', '版本号', '子网']
+        const head = ['名称', '状态', '别名', '套餐版本', '子网', '外网IP', '内网IP', '服务信息']
         printHorizontalTable(head, data)
     }
 }

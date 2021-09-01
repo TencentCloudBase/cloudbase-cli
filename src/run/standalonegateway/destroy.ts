@@ -1,12 +1,13 @@
 import { IDestroyStandaloneGateway } from '../../types'
-import yunapi from './yunapi'
 import { CloudBaseError } from '../../error'
+import { CloudApiService } from '../../utils'
+
+const tcbService = CloudApiService.getInstance('tcb')
 
 export const destroyStandalonegateway = async (options: IDestroyStandaloneGateway) => {
-    const { Response: res } = await yunapi('DestroyStandaloneGateway', {
+    const res = await tcbService.request('DestroyStandaloneGateway', {
         EnvId: options.envId,
-        AppId: options.appId,
-        isForce: true,
+        IsForce: true,
         GatewayName: options.gatewayName
     })
 

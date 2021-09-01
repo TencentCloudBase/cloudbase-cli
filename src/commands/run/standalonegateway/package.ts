@@ -17,10 +17,6 @@ export class PackageStandalonegateway extends Command {
                     desc: '环境 Id'
                 },
                 {
-                    flags: '-a, --appId <appId>',
-                    desc: '应用 Id'
-                },
-                {
                     flags: '-p, --packageVersion <packageVersion>',
                     desc: '套餐版本'
                 }
@@ -43,17 +39,12 @@ export class PackageStandalonegateway extends Command {
                     appId = String(appId)
                     packageVersion = String(packageVersion)
 
-                    if (appId === '') {
-                        throw new CloudBaseError('请输入应用 Id')
-                    }
-
                     const loading = loadingFactory()
 
                     loading.start('数据加载中...')
 
                     const data = await listPackageStandalonegateway({
                         envId,
-                        appId: Number(appId),
                         packageVersion
                     })
 
