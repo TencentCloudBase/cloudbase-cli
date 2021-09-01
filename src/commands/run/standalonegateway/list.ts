@@ -47,7 +47,7 @@ export class ListStandalonegateway extends Command {
 
         loading.stop()
 
-        const head = ['CPU', '状态', '别名',  '描述', '名称',  '内存', '版本号', '子网']
+        const head = ['名称', '状态', '别名', '套餐版本', '子网', '外网IP', '内网IP', '服务信息']
         printHorizontalTable(head, data)
     }
 }
