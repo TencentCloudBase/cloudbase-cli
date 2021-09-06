@@ -7,6 +7,8 @@ const url = 'https://tcli.service.tcloudbase.com/notify'
 const ONE_DAY = 86400000
 
 export async function getNotification() {
+    // 不再获取通知
+    return null
     const now = Date.now()
     // 上次记录的时间
     const lastTime = await commonStore.get('lastNotifyTime')
