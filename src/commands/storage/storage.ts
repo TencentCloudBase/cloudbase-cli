@@ -88,7 +88,6 @@ export class UploadCommand extends Command {
 
         const successFiles = []
         const failedFiles = []
-
         if (isDir) {
             await storageService.uploadDirectory({
                 localPath: resolveLocalPath,
@@ -102,7 +101,9 @@ export class UploadCommand extends Command {
                     } else {
                         successFiles.push(fileInfo.Key)
                     }
-                }
+                },
+                retry: true,
+                parallel: 20
             })
 
             log.success(`文件共计 ${totalFiles} 个`)
