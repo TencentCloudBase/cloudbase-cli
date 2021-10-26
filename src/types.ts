@@ -436,3 +436,98 @@ export interface IDestroyStandaloneGateway {
     envId: string,
     gatewayName: string
 }
+
+export interface IPublishVersionParams {
+    envId: string
+    functionName: string
+    description?: string
+}
+export interface IListFunctionVersionParams {
+    envId: string
+    functionName: string
+    offset?: number
+    limit?: number
+    order?: string
+    orderBy?: string
+}
+
+export interface IFunctionVersion {
+    Version: string
+    Description: string
+    AddTime: string
+    ModTime: string
+    Status: string //
+}
+
+export interface IFunctionVersionsRes {
+    FunctionVersion: string[]
+    Versions: IFunctionVersion[]
+    TotalCount: number
+}
+
+export interface ISetProvisionedConcurrencyConfig {
+    envId: string
+    functionName: string
+    qualifier: string
+    versionProvisionedConcurrencyNum: number
+}
+
+export interface IGetProvisionedConcurrencyConfig {
+    functionName: string
+    qualifier?: string
+    envId: string
+}
+
+export interface IGetProvisionedConcurrencyRes {
+    UnallocatedConcurrencyNum: number
+    Allocated: IVersionProvisionedConcurrencyInfo[]
+}
+
+export interface IVersionProvisionedConcurrencyInfo {
+    AllocatedProvisionedConcurrencyNum: number // 设置的预置并发数。
+    AvailableProvisionedConcurrencyNum: number // 当前已完成预置的并发数。
+    Status: string // 预置任务状态，Done表示已完成，InProgress表示进行中，Failed表示部分或全部失败。
+    StatusReason: string // 对预置任务状态Status的说明。
+    Qualifier: string // 版本号
+}
+
+export interface IUpdateFunctionAliasConfig {
+    envId: string
+    functionName: string // 函数名
+    name: string // 函数别名 如$DEFAULT
+    functionVersion: string // 函数版本
+    description?: string // 别名描述
+    routingConfig?: IRoutingConfig
+}
+
+export interface IRoutingConfig {
+    AdditionalVersionWeights?: IVersionWeight[]
+    AddtionVersionMatchs?: IVersionMatch[]
+}
+
+export interface IVersionMatch {
+    Version: string // 函数版本名称
+    Key: string // 匹配规则的key，调用时通过传key来匹配规则路由到指定版本 header方式：key填写"invoke.headers.User"，并在 invoke 调用函数时传参 RoutingKey：{"User":"value"}规则匹配调用
+    Method: string // 匹配方式。取值范围：range：范围匹配 exact：字符串精确匹配
+    Expression: string //
+}
+
+export interface IVersionWeight {
+    Version: string
+    Weight: number
+}
+
+export interface IGetFunctionAlias {
+    envId: string
+    functionName: string // 函数名称
+    name: string // 别名
+}
+
+export interface IGetFunctionAliasRes {
+    FunctionVersion: string
+    Name: string
+    RoutingConfig: IRoutingConfig
+    Description: string
+    AddTime: string
+    ModTime: string
+}
