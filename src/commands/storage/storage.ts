@@ -102,7 +102,8 @@ export class UploadCommand extends Command {
                         successFiles.push(fileInfo.Key)
                     }
                 },
-                retry: true,
+                retryCount: 5,
+                retryInterval: 500,
                 parallel: 20
             })
 
