@@ -48,6 +48,11 @@ export class UploadCommand extends Command {
                 {
                     flags: '-e, --envId <envId>',
                     desc: '环境 Id'
+                },
+                { flags: '--times <times>', desc: '设置上传重试次数，默认值为 1' },
+                {
+                    flags: '--interval <interval>',
+                    desc: '设置上传失败时，重试时间间隔(毫秒)，默认值为 500'
                 }
             ],
             desc: '上传文件/文件夹'
@@ -55,12 +60,22 @@ export class UploadCommand extends Command {
     }
 
     @InjectParams()
-    async execute(@EnvId() envId, @ArgsParams() params, @Log() log: Logger) {
+    async execute(
+        @EnvId() envId,
+        @ArgsParams() params,
+        @ArgsOptions() options,
+        @Log() log: Logger
+    ) {
         const localPath = params?.[0]
         const cloudPath = params?.[1]
+        const retryCount = options?.times
+        const retryInterval = options?.interval
         const resolveLocalPath = path.resolve(localPath)
         if (!checkFullAccess(resolveLocalPath)) {
             throw new CloudBaseError('文件未找到！')
+        }
+        if (retryCount > 10) {
+            throw new CloudBaseError('上传重试次数为 0-10 次之间')
         }
 
         const loading = loadingFactory()
@@ -102,8 +117,8 @@ export class UploadCommand extends Command {
                         successFiles.push(fileInfo.Key)
                     }
                 },
-                retryCount: 5,
-                retryInterval: 500,
+                retryCount: retryCount || 1,
+                retryInterval,
                 parallel: 20
             })
 
@@ -186,7 +201,8 @@ export class DownloadCommand extends Command {
         if (dir) {
             await storageService.downloadDirectory({
                 localPath: resolveLocalPath,
-                cloudPath
+                cloudPath,
+                parallel: 5
             })
         } else {
             await storageService.downloadFile({
