@@ -202,7 +202,7 @@ export class DownloadCommand extends Command {
             await storageService.downloadDirectory({
                 localPath: resolveLocalPath,
                 cloudPath,
-                parallel: 5
+                parallel: 20
             })
         } else {
             await storageService.downloadFile({
