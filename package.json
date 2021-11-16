@@ -27,7 +27,7 @@
         "@cloudbase/cloud-api": "^0.4.0",
         "@cloudbase/framework-core": "^1.6.1",
         "@cloudbase/lowcode-cli": "^0.12.0",
-        "@cloudbase/manager-node": "^3.9.0",
+        "@cloudbase/manager-node": "3.11.1-beta",
         "@cloudbase/toolbox": "^0.7.2",
         "@sentry/node": "^5.10.2",
         "address": "^1.1.2",

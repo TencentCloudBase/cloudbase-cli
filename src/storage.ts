@@ -5,6 +5,9 @@ interface IStorageOptions {
     envId: string
     localPath: string
     cloudPath: string
+    parallel?: number
+    retryCount?: number
+    retryInterval?: number
 }
 
 interface IStorageCloudOptions {
@@ -23,11 +26,14 @@ export async function uploadFile(options: IStorageOptions) {
 }
 
 export async function uploadDirectory(options: IStorageOptions) {
-    const { envId, localPath, cloudPath } = options
+    const { envId, localPath, cloudPath, retryInterval, parallel, retryCount } = options
     const storageService = await getStorageService(envId)
     return storageService.uploadDirectory({
         localPath,
-        cloudPath
+        cloudPath,
+        retryInterval,
+        retryCount,
+        parallel
     })
 }
 
