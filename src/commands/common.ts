@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import * as Sentry from '@sentry/node'
 import { EventEmitter } from 'events'
-import { program, Command as Commander } from 'commander'
+import { program, Command as Commander, Option } from 'commander'
 import { CloudBaseError } from '../error'
 import { ICommandContext } from '../types'
 import {
@@ -16,6 +16,7 @@ import {
 interface ICommandOption {
     flags: string
     desc: string
+    hideHelp?: boolean
 }
 
 export interface ICommandOptions {
@@ -87,6 +88,7 @@ export abstract class Command extends EventEmitter {
         } else {
             // 新命令或原有的旧命令格式
             instance = program.command(cmd) as Commander
+            // @ts-expect-error 这里是用来自定义commander fallback 帮助信息
             instance._helpDescription = '输出帮助信息'
             instance.addHelpCommand('help [command]', '查看命令帮助信息')
             cmdMap.set(cmd, instance)
@@ -110,6 +112,7 @@ export abstract class Command extends EventEmitter {
                 instance = cmdMap.get(cmdKey)
             } else {
                 instance = instance.command(cmdName) as Commander
+                // @ts-expect-error 这里是用来自定义commander fallback 帮助信息
                 instance._helpDescription = '查看命令帮助信息'
                 desc && instance.description(desc)
                 cmdMap.set(cmdKey, instance)
@@ -137,11 +140,16 @@ export abstract class Command extends EventEmitter {
 
     private createProgram(instance: Commander, deprecate: boolean, newCmd?: string) {
         const { cmd, desc, options, requiredEnvId = true, withoutAuth = false } = this.options
-
-        instance.storeOptionsAsProperties(false).passCommandToAction(false)
-
+        instance.storeOptionsAsProperties(false)
         options.forEach((option) => {
-            instance.option(option.flags, option.desc)
+            
+            const { hideHelp } = option
+            if(hideHelp) {
+                instance.addOption(new Option(option.flags, option.desc).hideHelp())
+            } else {
+                instance.option(option.flags, option.desc)
+            }
+            
         })
 
         instance.description(desc)
@@ -178,7 +186,7 @@ export abstract class Command extends EventEmitter {
             }
 
             // 处理前
-            this.emit('preHandle', ctx, args)
+            this.emit('preHandle', ctx, args.slice(0, -1))
             await this.preHandle()
 
             // 废弃警告

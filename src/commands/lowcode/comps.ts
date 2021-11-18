@@ -14,11 +14,13 @@ import {
     graceDebugComps,
     gracePublishComps,
     IPublishCompsInfo,
+    publishVersion
 } from '@cloudbase/lowcode-cli'
 import { exec } from 'child_process'
 import { prompt } from 'enquirer'
 import fse from 'fs-extra'
 import { promisify } from 'util'
+import * as semver from 'semver'
 
 const cloudService = CloudApiService.getInstance('lowcode')
 const DEFAULE_TEMPLATE_PATH = 'https://comp-public-1303824488.cos.ap-shanghai.myqcloud.com/lcc/template.zip'
@@ -176,6 +178,11 @@ export class LowCodePublishComps extends Command {
                 {
                     flags: '--verbose',
                     desc: '是否打印详细日志'
+                },
+                {
+                    flags: '--admin',
+                    desc: '是否使用admin接口',
+                    hideHelp: true
                 }
             ],
             desc: '发布组件库',
@@ -184,14 +191,16 @@ export class LowCodePublishComps extends Command {
     }
 
     @InjectParams()
-    async execute(@CmdContext() ctx, @Log() log?: Logger) {
+    async execute(@CmdContext() ctx, @Log() log: Logger, @ArgsOptions() options: any) {
         // 有RC配置, 使用新接口
+
         const config = ctx.config.lowcodeCustomComponents
         if (config) {
             await gracePublishComps({
                 ...config,
                 context: config.context || process.cwd(),
-                logger: log
+                logger: log,
+                isAdmin: Boolean(options.admin)
             })
             log.success('组件库 - 已同步到云端，请到低码控制台发布该组件库！')
             return
@@ -221,6 +230,86 @@ export class LowCodePublishComps extends Command {
         })
 
         log.info('\n👉 组件库已经同步到云端，请到低码控制台发布该组件库！')
+    }
+}
+
+@ICommand()
+export class LowCodePublishVersionComps extends Command {
+    get options() {
+        return {
+            cmd: 'lowcode',
+            childCmd: 'publishVersion',
+            options: [
+                {
+                    flags: '--verbose',
+                    desc: '是否打印详细日志'
+                },
+                {
+                    flags: '--comment <comment>',
+                    desc: '版本备注',
+                },
+                {
+                    flags: '--tag <version>',
+                    desc: '版本号'
+                },
+                {
+                    flags: '--admin',
+                    desc: '是否使用admin接口',
+                    hideHelp: true
+                }
+            ],
+            desc: '发布组件库版本',
+            requiredEnvId: false
+        }
+    }
+
+    @InjectParams()
+    async execute(@CmdContext() ctx, @ArgsOptions() options, @Log() log?: Logger) {
+        // 有RC配置, 使用新接口
+        const {tag, comment, admin} = options
+        if(!comment) {
+            log.error('请使用 --comment 填写版本注释')
+            return
+        }
+        if(!tag) {
+            log.error('请使用 --tag 填写符合semver的版本号')
+            return
+        }
+        if(!semver.valid(tag)) {
+            log.error('组件库版本不符合semver标准')
+            return
+        }
+        const config = ctx.config.lowcodeCustomComponents
+
+        if(!config) {
+            log.error('组件库 - 请添加组件库配置到cloudbaserc.json 以使用该命令')
+        }
+        
+        const res = await publishVersion({
+            ...config,
+            context: config.context || process.cwd(),
+            logger: log,
+            isAdmin: options.admin
+        }, comment, tag)
+        if(res.data.code === 200) {
+            log.success('组件库 - 已发布新版本！')
+            return
+        }
+        if (res.data.code === 100) {
+            log.error('组件库 - 无待发布版本')
+            return
+        }
+        if (res.data.code === 201) {
+            log.error('组件库 - comment 重复， 请使用有意义的comment')
+            return
+        } else {
+            if(res.data.msg) {
+                log.error(`组件库 - ${res.data.msg} RequestId: ${res.requestId}`)
+            } else {
+                log.error('组件库 - 未知错误')
+            }
+            return
+        }
     }
 }
 
