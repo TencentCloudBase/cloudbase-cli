@@ -1,4 +1,4 @@
-#!/usr/bin/env node --inspect
+#!/usr/bin/env node
 const os = require('os')
 const yargs = require('yargs')
 const chalk = require('chalk')
