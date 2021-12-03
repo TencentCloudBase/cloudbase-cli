@@ -68,6 +68,12 @@ export const ALL_COMMANDS = [
     'fn trigger create',
     'fn trigger delete',
     'fn invoke',
+    'fn publish-version',
+    'fn list-function-versions',
+    'fn put-provisioned-concurrency',
+    'fn get-provisioned-concurrency',
+    'fn delete-provisioned-concurrency',
+    'fn config-route',
     'functions run',
     'storage upload',
     'storage download',
@@ -94,3 +100,21 @@ export const ALL_COMMANDS = [
     'run standalonegateway turn on',
     'run standalonegateway turn off',
 ]
+
+export const StatusMap = {
+    Active: '部署完成',
+    Creating: '创建中',
+    CreateFailed: '创建失败',
+    Updating: '更新中',
+    UpdateFailed: '更新失败',
+    Publishing: '函数版本发布中',
+    PublishFailed: '函数版本发布失败',
+    Deleting: '函数删除中',
+    DeleteFailed: '函数删除失败'
+}
+
+export const ConcurrencyTaskStatus = {
+    Done: '已完成',
+    InProgress: '进行中',
+    Failed: '失败'
+}

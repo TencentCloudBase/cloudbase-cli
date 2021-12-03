@@ -1,17 +1,18 @@
-import { Command, ICommand } from '../common'
-import { CloudBaseError } from '../../error'
-import { listFunction } from '../../function'
-import { printHorizontalTable, loadingFactory } from '../../utils'
-import { InjectParams, EnvId, ArgsOptions } from '../../decorators'
-import { StatusMap } from '../../constant'
+
+import { Command, ICommand } from '../../common'
+import { CloudBaseError } from '../../../error'
+import { loadingFactory, printHorizontalTable } from '../../../utils'
+import { listFunctionVersions } from '../../../function'
+import { InjectParams, CmdContext, ArgsParams, ArgsOptions } from '../../../decorators'
+import { StatusMap } from '../../../constant'
+
 
 @ICommand()
-export class ListFunction extends Command {
+export class ListFunctionVersion extends Command {
     get options() {
         return {
             cmd: 'fn',
-            childCmd: 'list',
-            deprecateCmd: 'functions:list',
+            childCmd: 'list-function-versions <name>',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -23,12 +24,13 @@ export class ListFunction extends Command {
                     desc: '数据偏移量，默认值为 0'
                 }
             ],
-            desc: '展示云函数列表'
+            desc: '展示函数版本列表'
         }
     }
 
     @InjectParams()
-    async execute(@EnvId() envId, @ArgsOptions() options) {
+    async execute(@CmdContext() ctx, @ArgsParams() params, @ArgsOptions() options) {
+        const name = params?.[0]
         let { limit = 20, offset = 0 } = options
         limit = Number(limit)
         offset = Number(offset)
@@ -40,24 +42,27 @@ export class ListFunction extends Command {
             throw new CloudBaseError('limit 和 offset 必须为大于 0 的整数')
         }
 
+        const {
+            envId
+        } = ctx
+
         const loading = loadingFactory()
+        loading.start(`拉取函数 [${name}] 版本列表中...`)
 
-        loading.start('数据加载中...')
-
-        const data = await listFunction({
+        const res = await listFunctionVersions({
             envId,
-            limit: Number(limit),
-            offset: Number(offset)
+            functionName: name,
+            offset,
+            limit
         })
 
         loading.stop()
 
-        const head: string[] = ['函数 Id', '函数名称', '运行时', '创建时间', '修改时间', '状态']
+        const head: string[] = ['版本', '描述', '创建时间', '修改时间', '状态']
 
-        const tableData = data.map((item) => [
-            item.FunctionId,
-            item.FunctionName,
-            item.Runtime,
+        const tableData = res.Versions.map((item) => [
+            item.Version,
+            item.Description,
             item.AddTime,
             item.ModTime,
             StatusMap[item.Status]
