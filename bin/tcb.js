@@ -84,7 +84,7 @@ if (yargs.argv._.length === 0) {
 // 处理无效命令
 program.action((command) => {
     const args = command.args
-    if (!args.length) {
+    if (!Array.isArray(args) || !args.length) {
         return
     }
     const cmd = args.join(' ')
