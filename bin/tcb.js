@@ -146,7 +146,7 @@ function errorHandler(err) {
         if (errMsg.includes('Environment') && errMsg.includes('not found')) {
             console.log(
                 chalk.yellow.bold(
-                    '\n此环境可能不属于当前账号，或为非上海地域环境，请检查环境归属，参考多地域使用方法：https://docs.cloudbase.net/cli-v1/region.html'
+                    '\n此环境可能不属于当前账号，或为非上海地域环境，如需切换地域请追加参数（例：-r gz），请检查环境归属，参考多地域使用方法：https://docs.cloudbase.net/cli-v1/region.html'
                 )
             )
         }
