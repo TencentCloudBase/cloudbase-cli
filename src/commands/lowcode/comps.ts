@@ -4,7 +4,6 @@ import { Command, ICommand } from '../common'
 import { InjectParams, Log, Logger, ArgsParams, ArgsOptions, CmdContext } from '../../decorators'
 import { CloudApiService, execWithLoading, fetchStream } from '../../utils'
 import { CloudBaseError } from '../../error'
-import { unzipStream } from '@cloudbase/toolbox'
 import chalk from 'chalk'
 import { 
     build as buildComps, 
@@ -14,12 +13,11 @@ import {
     graceDebugComps,
     gracePublishComps,
     IPublishCompsInfo,
-    publishVersion
+    publishVersion,
+    bootstrap,
 } from '@cloudbase/lowcode-cli'
-import { exec } from 'child_process'
 import { prompt } from 'enquirer'
 import fse from 'fs-extra'
-import { promisify } from 'util'
 import * as semver from 'semver'
 
 const cloudService = CloudApiService.getInstance('lowcode')
@@ -67,24 +65,9 @@ export class LowCodeCreateComps extends Command {
             }
         }
 
-        // 拼接模板路径
-        const compsPath = path.resolve(process.cwd(), compsName)
-        if (fse.pathExistsSync(compsPath)) {
-            throw new CloudBaseError(`当前目录下已存在组件库 ${compsName} ！`)
-        }
+        // TODO: 逻辑迁移到 lowcode-cli
+        await bootstrap(compsName, log);
 
-        // 下载模板
-        await _download(compsPath, compsName)
-        // 安装依赖
-        const installed = await _install(compsPath)
-        // 用户提示
-        log.success('组件库 - 创建成功\n')
-        log.info(`👉 执行命令 ${chalk.bold.cyan(`cd ${compsName}`)} 进入文件夹`)
-        if (!installed) {
-            log.info(`👉 执行命令 ${chalk.bold.cyan('npm install')} 手动安装依赖`)
-        }
-        log.info(`👉 执行命令 ${chalk.bold.cyan('tcb lowcode debug')} 调试组件库`)
-        log.info(`👉 执行命令 ${chalk.bold.cyan('tcb lowcode publish')} 发布组件库`)
     }
 }
 
@@ -313,73 +296,6 @@ export class LowCodePublishVersionComps extends Command {
     }
 }
 
-async function _download(compsPath, compsName) {
-    await execWithLoading(
-        async () => {
-            await fetchStream(DEFAULE_TEMPLATE_PATH).then(async (res) => {
-                if (!res) {
-                    throw new CloudBaseError('请求异常')
-                }
-        
-                if (res.status !== 200) {
-                    throw new CloudBaseError('未找到组件库模板')
-                }
-        
-                // 解压缩文件
-                await unzipStream(res.body, compsPath)
-                
-                // 修改cloudbaserc.json
-                _renamePackage(path.resolve(compsPath, 'cloudbaserc.json'), compsName)
-            })
-        },
-        {
-            startTip: '组件库 - 下载模板中',
-            successTip: '组件库 - 下载模板成功'
-        }
-    )
-}
-
-async function _renamePackage(configPath, name) {
-    if (!fse.existsSync(configPath)) {
-        throw new CloudBaseError(`组件库缺少配置文件: ${configPath}`)
-    }
-    const rcJson = fse.readJSONSync(configPath)
-    const newPackageJson = _.merge({}, rcJson, {
-        lowcodeCustomComponents: {
-            name
-        }
-    })
-    fse.writeJSONSync(configPath, newPackageJson, { spaces: 2 })
-}
-
-async function _install(compsPath): Promise<boolean> {
-    const res = await execWithLoading(
-        async () => {
-            const npmOptions = [
-                '--prefer-offline',
-                '--no-audit',
-                '--progress=false',
-                '--registry=https://mirrors.tencent.com/npm/',
-                '--legacy-peer-deps',
-            ]
-            await promisify(exec)(['npm install', ...npmOptions].join(' '), {
-                cwd: compsPath, 
-                env: process.env,
-            })
-        },
-        {
-            startTip: '组件库 - 依赖安装中',
-            successTip: '组件库 - 依赖安装成功',
-            failTip: '组件库 - 依赖安装失败, 请手动安装依赖'
-        }
-    ).then(() => {
-        return true
-    }).catch(() => {
-        return false
-    })
-
-    return res
-}
 
 async function _build(compsPath) {
     await execWithLoading(

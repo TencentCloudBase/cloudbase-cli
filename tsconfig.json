@@ -6,6 +6,7 @@
         "outDir": "lib",
         "removeComments": true,
         "types": ["node"],
+        "skipLibCheck": true,
         "esModuleInterop": true,
         "declaration": true,
         "declarationDir": "./types",
