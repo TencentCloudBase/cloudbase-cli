@@ -1,9 +1,10 @@
 import { Command, ICommand } from '../../common'
 import { CloudBaseError } from '../../../error'
 import { listVersion } from '../../../run'
-import { printHorizontalTable, loadingFactory } from '../../../utils'
+import { printHorizontalTable, loadingFactory, checkTcbrEnv, logEnvCheck } from '../../../utils'
 import { InjectParams, EnvId, ArgsOptions } from '../../../decorators'
 import { versionCommonOptions } from './common'
+import { EnumEnvCheck } from '../../../types'
 
 const StatusMap = {
     normal: '正常',
@@ -39,6 +40,11 @@ export class ListVersion extends Command {
 
     @InjectParams()
     async execute(@EnvId() envId, @ArgsOptions() options) {
+        let envCheckType = await checkTcbrEnv(options.envId, false)
+        if(envCheckType !== EnumEnvCheck.EnvFit) {
+            logEnvCheck(envId, envCheckType)
+            return
+        }
 
         let { limit = 20, offset = 0, serviceName = '' } = options
         limit = Number(limit)

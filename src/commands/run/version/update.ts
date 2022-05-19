@@ -14,9 +14,10 @@ import {
     logCreate,
     describeRunVersion
 } from '../../../run'
-import { loadingFactory, pagingSelectPromp, random } from '../../../utils'
+import { checkTcbrEnv, loadingFactory, logEnvCheck, pagingSelectPromp, random } from '../../../utils'
 import { InjectParams, EnvId, ArgsOptions } from '../../../decorators'
 import { versionCommonOptions } from './common'
+import { EnumEnvCheck } from '../../../types'
 
 const uploadTypeMap = {
     本地代码: 'package',
@@ -136,6 +137,12 @@ export class UpdateVersion extends Command {
 
     @InjectParams()
     async execute(@EnvId() envId, @ArgsOptions() options) {
+        let envCheckType = await checkTcbrEnv(options.envId, false)
+        if(envCheckType !== EnumEnvCheck.EnvFit) {
+            logEnvCheck(envId, envCheckType)
+            return
+        }
+        
         let {
             serviceName = '',
             versionName = '',

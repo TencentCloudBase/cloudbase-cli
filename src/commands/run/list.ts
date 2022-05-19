@@ -1,8 +1,10 @@
 import { Command, ICommand } from '../common'
 import { CloudBaseError } from '../../error'
-import { listRun } from '../../run'
+import { listRun, logCreate } from '../../run'
 import { printHorizontalTable, loadingFactory } from '../../utils'
 import { InjectParams, EnvId, ArgsOptions } from '../../decorators'
+import { checkTcbrEnv, logEnvCheck } from '../../utils'
+import { EnumEnvCheck } from '../../types'
 
 const StatusMap = {
     succ: '正常'
@@ -12,7 +14,7 @@ const StatusMap = {
 export class ListRun extends Command {
     get options() {
         return {
-            cmd: 'run',
+            cmd: 'run:deprecated',
             childCmd: 'list',
             options: [
                 {
@@ -33,9 +35,15 @@ export class ListRun extends Command {
     }
 
     @InjectParams()
+
     async execute(@EnvId() envId, @ArgsOptions() options) {
         
-
+        let envCheckType = await checkTcbrEnv(options.envId, false)
+        if(envCheckType !== EnumEnvCheck.EnvFit) {
+            logEnvCheck(envId, envCheckType)
+            return
+        }
+        
         let { limit = 20, offset = 0 } = options
         limit = Number(limit)
         offset = Number(offset)

@@ -3,13 +3,14 @@ import { Command, ICommand } from '../common'
 import { CloudBaseError } from '../../error'
 import { describeImageRepo, listVersion, deleteImageRepo, deleteRun } from '../../run'
 import { InjectParams, EnvId, ArgsOptions } from '../../decorators'
-import { loadingFactory, pagingSelectPromp } from '../../utils'
+import { checkTcbrEnv, loadingFactory, logEnvCheck, pagingSelectPromp } from '../../utils'
+import { EnumEnvCheck } from '../../types'
 
 @ICommand()
 export class DeleteRun extends Command {
     get options() {
         return {
-            cmd: 'run',
+            cmd: 'run:deprecated',
             childCmd: 'delete',
             options: [
                 {
@@ -27,6 +28,11 @@ export class DeleteRun extends Command {
 
     @InjectParams()
     async execute(@EnvId() envId, @ArgsOptions() options) {
+        let envCheckType = await checkTcbrEnv(options.envId, false)
+        if(envCheckType !== EnumEnvCheck.EnvFit) {
+            logEnvCheck(envId, envCheckType)
+            return
+        }
 
         let { serviceName = '' } = options
 
