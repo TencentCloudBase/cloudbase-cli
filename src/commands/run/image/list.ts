@@ -4,7 +4,7 @@ import { listImage } from '../../../run'
 import { printHorizontalTable, loadingFactory, checkTcbrEnv, logEnvCheck } from '../../../utils'
 import { InjectParams, EnvId, ArgsOptions } from '../../../decorators'
 import { imageCommonOptions } from './common'
-import { EnumEnvCheck } from '../../../types'
+import { EnumEnvCheck } from '../../../constant'
 
 @ICommand()
 export class ListImage extends Command {

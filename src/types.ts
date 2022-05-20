@@ -627,12 +627,6 @@ export interface ITcbrServiceConfigOptions {
     envParams: string,
 }
 
-export enum EnumEnvCheck {
-    EnvFit = 0,
-    EnvNewCmdOld,
-    EnvOldCmdNew,
-}
-
 export interface IServerInfo {
     ServerName: string,
     DefaultDomainName: string,

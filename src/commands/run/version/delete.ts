@@ -4,7 +4,7 @@ import { deleteVersion } from '../../../run'
 import { checkTcbrEnv, loadingFactory, logEnvCheck } from '../../../utils'
 import { InjectParams, EnvId, ArgsOptions } from '../../../decorators'
 import { versionCommonOptions } from './common'
-import { EnumEnvCheck } from '../../../types'
+import { EnumEnvCheck } from '../../../constant'
 
 @ICommand()
 export class DeleteVersion extends Command {

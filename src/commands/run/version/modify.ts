@@ -5,7 +5,7 @@ import { listVersion, modifyVersion } from '../../../run'
 import { checkTcbrEnv, loadingFactory, logEnvCheck, pagingSelectPromp } from '../../../utils'
 import { InjectParams, EnvId, ArgsOptions } from '../../../decorators'
 import { versionCommonOptions } from './common'
-import { EnumEnvCheck } from '../../../types'
+import { EnumEnvCheck } from '../../../constant'
 
 // 按百分比配置
 const modifyByFlow = async (envId: any, serviceName: string, mode: string) => {

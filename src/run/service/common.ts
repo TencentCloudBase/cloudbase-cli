@@ -22,7 +22,7 @@ export const convertNumber = (item) => {
     return Number(item)
 }
 
-export const extractPolicyDetails = (policyDetails) => {
+export const extractPolicyDetails = (policyDetails: string) => {
     return policyDetails.split('&').map(condition => {
         let [type, threshold] = [condition.split('=')[0], Number(condition.split('=')[1])]
         if (isNaN(threshold) || !['cpu', 'mem'].includes(type)) {
@@ -35,7 +35,7 @@ export const extractPolicyDetails = (policyDetails) => {
     })
 }
 
-export const convertEnvParams = (envParams) => {
+export const convertEnvParams = (envParams: string) => {
     return JSON.stringify(
         envParams.split('&').reduce((acc, cur) => {
             const [key, value] = cur.split('=')

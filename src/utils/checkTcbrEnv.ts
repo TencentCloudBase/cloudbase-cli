@@ -1,7 +1,7 @@
 import chalk from "chalk"
 import { CloudBaseError } from "../error"
 import { CloudApiService } from "./net"
-import { EnumEnvCheck } from "../types"
+import { EnumEnvCheck } from "../constant"
 const tcbService = CloudApiService.getInstance('tcb')
 
 const oldCmdSet =

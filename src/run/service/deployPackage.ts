@@ -18,7 +18,7 @@ export async function packageDeploy(options: IPackageDeploy) {
         targetDir,
         fileToIgnore
     } = options
-    let { PackageName, PackageVersion, UploadHeaders, UploadUrl } = await createBuild({
+    let { PackageName, PackageVersion, UploadUrl } = await createBuild({
         envId,
         serviceName
     })

@@ -4,7 +4,7 @@ import { listRun, logCreate } from '../../run'
 import { printHorizontalTable, loadingFactory } from '../../utils'
 import { InjectParams, EnvId, ArgsOptions } from '../../decorators'
 import { checkTcbrEnv, logEnvCheck } from '../../utils'
-import { EnumEnvCheck } from '../../types'
+import { EnumEnvCheck } from '../../constant'
 
 const StatusMap = {
     succ: '正常'

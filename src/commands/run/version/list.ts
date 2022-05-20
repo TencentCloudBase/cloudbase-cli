@@ -4,7 +4,7 @@ import { listVersion } from '../../../run'
 import { printHorizontalTable, loadingFactory, checkTcbrEnv, logEnvCheck } from '../../../utils'
 import { InjectParams, EnvId, ArgsOptions } from '../../../decorators'
 import { versionCommonOptions } from './common'
-import { EnumEnvCheck } from '../../../types'
+import { EnumEnvCheck } from '../../../constant'
 
 const StatusMap = {
     normal: '正常',

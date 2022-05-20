@@ -1,13 +1,12 @@
 import { Command, ICommand } from '../../common'
-import { InjectParams, ArgsOptions, Log, Logger } from '../../../decorators'
-import { describeCloudRunServerDetail } from '../../../run'
-import { EnumEnvCheck } from '../../../types'
-import { checkTcbrEnv, logEnvCheck } from '../../../utils'
+import { InjectParams, ArgsOptions } from '../../../decorators'
 import {
+    describeCloudRunServerDetail, 
     createTcbrService,
     updateTcbrService
 } from '../../../run'
-
+import { EnumEnvCheck } from '../../../constant'
+import { checkTcbrEnv, logEnvCheck } from '../../../utils'
 @ICommand()
 export class DeployServiceTcbr extends Command {
     get options() {
@@ -107,7 +106,7 @@ export class DeployServiceTcbr extends Command {
     }
 
     @InjectParams()
-    async execute(@ArgsOptions() options, @Log() log: Logger) {
+    async execute(@ArgsOptions() options) {
 
         let envCheckType = await checkTcbrEnv(options.envId, true)
         if (envCheckType !== EnumEnvCheck.EnvFit) {

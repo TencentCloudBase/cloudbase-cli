@@ -6,7 +6,7 @@ import { getVpcs, getSubnets } from '../../function'
 import { checkTcbrEnv, loadingFactory, logEnvCheck } from '../../utils'
 import { InjectParams, EnvId, ArgsOptions } from '../../decorators'
 import { validateIp } from '../../utils/validator'
-import { EnumEnvCheck } from '../../types'
+import { EnumEnvCheck } from '../../constant'
 
 const ZoneMap = {
     shanghai: '上海',

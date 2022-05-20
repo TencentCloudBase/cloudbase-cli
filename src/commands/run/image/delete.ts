@@ -4,7 +4,7 @@ import { deleteImage, describeImageRepo } from '../../../run'
 import { checkTcbrEnv, loadingFactory, logEnvCheck } from '../../../utils'
 import { InjectParams, EnvId, ArgsOptions } from '../../../decorators'
 import { imageCommonOptions } from './common'
-import { EnumEnvCheck } from '../../../types'
+import { EnumEnvCheck } from '../../../constant'
 
 @ICommand()
 export class DeleteImage extends Command {

@@ -1,7 +1,7 @@
 import { Command, ICommand } from '../../common'
-import { InjectParams, ArgsOptions, Log, Logger } from '../../../decorators'
+import { InjectParams, ArgsOptions } from '../../../decorators'
 import { updateTcbrService } from '../../../run'
-import { EnumEnvCheck } from '../../../types'
+import { EnumEnvCheck } from '../../../constant'
 import { checkTcbrEnv, logEnvCheck } from '../../../utils'
 @ICommand()
 export class UpdateServiceTcbr extends Command {
@@ -102,7 +102,7 @@ export class UpdateServiceTcbr extends Command {
     }
 
     @InjectParams()
-    async execute(@ArgsOptions() options, @Log() log: Logger) {
+    async execute(@ArgsOptions() options) {
 
         let envCheckType = await checkTcbrEnv(options.envId, true)
         if (envCheckType !== EnumEnvCheck.EnvFit) {

@@ -4,7 +4,7 @@ import inquirer from "inquirer"
 import { ITcbrServiceOptions } from "../../types"
 import { logger } from "@cloudbase/toolbox"
 
-export const describeCloudRunServerDetail = async (options) => {
+export const describeCloudRunServerDetail = async (options: { envId: string; serviceName: string }) => {
     return await callTcbrApi('DescribeCloudRunServerDetail', {
         EnvId: options.envId,
         ServerName: options.serviceName,

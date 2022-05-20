@@ -4,7 +4,7 @@ import { CloudBaseError } from '../../error'
 import { describeImageRepo, listVersion, deleteImageRepo, deleteRun } from '../../run'
 import { InjectParams, EnvId, ArgsOptions } from '../../decorators'
 import { checkTcbrEnv, loadingFactory, logEnvCheck, pagingSelectPromp } from '../../utils'
-import { EnumEnvCheck } from '../../types'
+import { EnumEnvCheck } from '../../constant'
 
 @ICommand()
 export class DeleteRun extends Command {

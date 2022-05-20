@@ -7,7 +7,7 @@ import { describeImageRepo, getAuthFlag } from '../../../run'
 import { loadingFactory, getUin, checkTcbrEnv, logEnvCheck } from '../../../utils'
 import { InjectParams, EnvId, ArgsOptions } from '../../../decorators'
 import { imageCommonOptions } from './common'
-import { EnumEnvCheck } from '../../../types'
+import { EnumEnvCheck } from '../../../constant'
 
 @ICommand()
 export class UploadImage extends Command {

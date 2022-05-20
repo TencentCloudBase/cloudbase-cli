@@ -118,3 +118,9 @@ export const ConcurrencyTaskStatus = {
     InProgress: '进行中',
     Failed: '失败'
 }
+
+export const enum EnumEnvCheck {
+    EnvFit = 0,
+    EnvNewCmdOld,
+    EnvOldCmdNew,
+}

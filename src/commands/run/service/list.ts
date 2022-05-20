@@ -3,7 +3,7 @@ import { InjectParams, ArgsOptions } from '../../../decorators'
 import { listService } from '../../../run'
 import { printHorizontalTable, genClickableLink, loadingFactory } from '../../../utils'
 import { checkTcbrEnv, logEnvCheck } from '../../../utils/checkTcbrEnv'
-import { EnumEnvCheck } from '../../../types'
+import { EnumEnvCheck } from '../../../constant'
 
 @ICommand()
 export class ListServiceTcbr extends Command {
@@ -73,7 +73,7 @@ export class ListServiceTcbr extends Command {
         }
 
         // 如有指定服务名，则只打印指定服务的信息
-        let tableData
+        let tableData: (string | number)[][]
         if (specificServer.length) {
             tableData = [[
                 specificServer[0].ServerName,

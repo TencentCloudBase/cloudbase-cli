@@ -1,7 +1,7 @@
 import { Command, ICommand } from '../../common'
 import { InjectParams, ArgsOptions, Log, Logger } from '../../../decorators'
 import { tcbrServiceConfigOptions, updateCloudRunServerConfig } from '../../../run'
-import { EnumEnvCheck } from '../../../types'
+import { EnumEnvCheck } from '../../../constant'
 import { checkTcbrEnv, logEnvCheck } from '../../../utils'
 
 @ICommand()

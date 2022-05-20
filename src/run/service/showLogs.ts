@@ -1,7 +1,7 @@
 import { callTcbrApi } from "../../utils";
 import chalk from "chalk";
 
-export async function getBuildStatus(envId, serviceName) {
+export async function getBuildStatus(envId: string, serviceName: string) {
     return new Promise<string>(async (resolve) => {
         const { data: deployRes } = await callTcbrApi('DescribeCloudRunDeployRecord', {
             EnvId: envId,
@@ -20,7 +20,7 @@ export async function getBuildStatus(envId, serviceName) {
 }
 
 
-async function getBuildId(envId, serviceName) {
+async function getBuildId(envId: string, serviceName: string) {
     return new Promise<string>(async (resolve) => {
         const { data: deployRes } = await callTcbrApi('DescribeCloudRunDeployRecord', {
             EnvId: envId,
@@ -34,12 +34,12 @@ async function getBuildId(envId, serviceName) {
     })
 }
 
-async function getRunId(options) {
+async function getRunId(envId: string, serviceName: string) {
     return new Promise<string>((resolve) => {
         const timer = setInterval(async () => {
             const { data: deployRes } = await callTcbrApi('DescribeCloudRunDeployRecord', {
-                EnvId: options.envId,
-                ServerName: options.serviceName,
+                EnvId: envId,
+                ServerName: serviceName,
             })
             if (deployRes.DeployRecords != null) {
                 clearInterval(timer)
@@ -51,7 +51,7 @@ async function getRunId(options) {
 
 
 // 多次获取 processLog
-async function showProcessLogs(envId, runId, serviceName) {
+async function showProcessLogs(envId: string, runId: string, serviceName: string) {
     return new Promise<void>(resolve => {
         const timer = setInterval(async () => {
             if (await getBuildStatus(envId, serviceName) === 'completed') {
@@ -71,7 +71,7 @@ async function showProcessLogs(envId, runId, serviceName) {
 }
 
 // buildLog 仅在完成后获取一次（未完成 BuildId 为0）
-async function showBuildLogs(envId, serviceName, serverVersion = '', offset = 0) {
+async function showBuildLogs(envId: string, serviceName: string, serverVersion = '', offset = 0) {
     return new Promise<void>(async resolve => {
         const buildId = await getBuildId(envId, serviceName)
 
@@ -92,7 +92,7 @@ async function showBuildLogs(envId, serviceName, serverVersion = '', offset = 0)
 
 export async function getLogs(options) {
 
-    const runId = await getRunId(options)
+    const runId = await getRunId(options.envId, options.serviceName)
 
     console.log(chalk.blue('============ 日志开始 ==============='))
     await showProcessLogs(options.envId, runId, options.serviceName)

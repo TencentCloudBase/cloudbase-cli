@@ -17,7 +17,7 @@ import {
 import { checkTcbrEnv, loadingFactory, logEnvCheck, pagingSelectPromp, random } from '../../../utils'
 import { InjectParams, EnvId, ArgsOptions } from '../../../decorators'
 import { versionCommonOptions } from './common'
-import { EnumEnvCheck } from '../../../types'
+import { EnumEnvCheck } from '../../../constant'
 
 const uploadTypeMap = {
     本地代码: 'package',
