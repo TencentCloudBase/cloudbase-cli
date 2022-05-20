@@ -52,26 +52,26 @@ export class ListServiceTcbr extends Command {
             envId: envId
         })
         loading.stop()
-
-        if (!serverList.length) {
-            console.log('当前环境下没有服务')
-            return
-        }
-
+        
         const specificServer = serverList.filter(serverItem => serverItem.ServerName === serviceName)
-
+        
         // 打印 JSON 形式结果
         if (options.json) {
             console.log(JSON.stringify({
                 code: 0,
                 errmsg: 'success',
                 data: specificServer.length ?
-                    specificServer
-                    : serverList
+                specificServer
+                : serverList
             }, null, 2))
             return
         }
-
+        
+        if (!serverList.length) {
+            console.log('当前环境下没有服务')
+            return
+        }
+        
         // 如有指定服务名，则只打印指定服务的信息
         let tableData: (string | number)[][]
         if (specificServer.length) {
