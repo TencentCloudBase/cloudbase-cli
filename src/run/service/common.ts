@@ -177,14 +177,12 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, defaultOv
     }
 
     if (DeployInfo.DeployType === 'package') {
-        loading.start('正在压缩文件…')
         // 本地上传
         const { PackageName, PackageVersion } = await packageDeploy({
             envId,
             serviceName,
-            targetDir: path,
+            filePath: path,
         })
-        loading.succeed('压缩文件完成')
         DeployInfo.PackageName = PackageName
         DeployInfo.PackageVersion = PackageVersion
     } else if (DeployInfo.DeployType === 'image') {
