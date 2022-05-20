@@ -93,10 +93,6 @@ export class DeployServiceTcbr extends Command {
                     desc: '镜像标签或ID'
                 },
                 {
-                    flags: '-h, --help',
-                    desc: '查看帮助信息'
-                },
-                {
                     flags: '--json',
                     desc: '以 JSON 形式展示结果'
                 }

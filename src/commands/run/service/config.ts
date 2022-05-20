@@ -53,10 +53,6 @@ export class ConfigServiceTcbr extends Command {
                     desc: '环境变量，格式为xx=a&yy=b，默认为空'
                 },
                 {
-                    flags: '-h, --help',
-                    desc: '查看帮助信息'
-                },
-                {
                     flags: '--json',
                     desc: '以 JSON 形式展示结果'
                 }
