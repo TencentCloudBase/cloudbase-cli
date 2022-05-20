@@ -193,7 +193,6 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, defaultOv
             envId,
             serviceName
         })
-        console.log('imageList', imageList)
         if (library_image) {
             const imageInfo = imageList.find(({ Tag }) => Tag === library_image)
             if (!imageInfo) {
