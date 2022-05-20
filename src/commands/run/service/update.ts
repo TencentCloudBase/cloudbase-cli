@@ -49,7 +49,7 @@ export class UpdateServiceTcbr extends Command {
                 },
                 {
                     flags: '--policyDetails <policyDetails>',
-                    desc: '扩缩容配置，格式为条件类型=条件比例（%），多个条件之间用&隔开，内存为条件mem，cpu条件为cpu，默认内存>60% 或 CPU>60%，即cpu=60&mem=60'
+                    desc: '扩缩容配置，格式为条件类型=条件比例（%），多个条件之间用&隔开，内存条件为mem，cpu条件为cpu，默认内存>60% 或 CPU>60%，即cpu=60&mem=60'
                 },
                 {
                     flags: '--customLogs <customLogs>',
@@ -75,10 +75,6 @@ export class UpdateServiceTcbr extends Command {
                 {
                     flags: '--dockerfile <dockerfile>',
                     desc: 'Dockerfile文件名，默认为 Dockerfile'
-                },
-                {
-                    flags: '--localBuild',
-                    desc: '是否在本地构建，默认为否'
                 },
                 {
                     flags: '--library_image <library_image>',
