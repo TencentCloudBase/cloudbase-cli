@@ -1,4 +1,5 @@
 import { callTcbrApi } from "../../utils";
+import { EnumDeployStatus } from '../../constant'
 import chalk from "chalk";
 
 export async function getBuildStatus(envId: string, serviceName: string) {
@@ -8,10 +9,10 @@ export async function getBuildStatus(envId: string, serviceName: string) {
             ServerName: serviceName,
         })
         if (deployRes?.DeployRecords != null) {
-            if (deployRes?.DeployRecords[0].Status === 'running') {
-                resolve('completed')
-            } else {
+            if (deployRes?.DeployRecords[0].Status === EnumDeployStatus.Deploying) {
                 resolve('pending')
+            } else {
+                resolve('completed')
             }
         } else {
             resolve('pending')

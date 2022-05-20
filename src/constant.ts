@@ -124,3 +124,9 @@ export const enum EnumEnvCheck {
     EnvNewCmdOld,
     EnvOldCmdNew,
 }
+
+export const enum EnumDeployStatus {
+    Deploying = 'deploying',
+    DeploySuccess = 'running',
+    DeployFailed = 'deploy_failed'
+}
