@@ -1,6 +1,5 @@
 import { IServerInfo } from '../../types'
-import { callTcbrApi } from '../../utils'
-import { CloudApiService } from '../../utils'
+import { callTcbrApi, CloudApiService } from '../../utils'
 
 const tcbService = CloudApiService.getInstance('tcb')
 

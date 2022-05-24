@@ -1,38 +1,34 @@
-import { callTcbrApi } from "../../utils";
+import { callTcbrApi } from '../../utils'
 import { EnumDeployStatus } from '../../constant'
-import chalk from "chalk";
+import chalk from 'chalk'
 
 export async function getBuildStatus(envId: string, serviceName: string) {
-    return new Promise<string>(async (resolve) => {
-        const { data: deployRes } = await callTcbrApi('DescribeCloudRunDeployRecord', {
-            EnvId: envId,
-            ServerName: serviceName,
-        })
-        if (deployRes?.DeployRecords != null) {
-            if (deployRes?.DeployRecords[0].Status === EnumDeployStatus.Deploying) {
-                resolve('pending')
-            } else {
-                resolve('completed')
-            }
-        } else {
-            resolve('pending')
-        }
+    const { data: deployRes } = await callTcbrApi('DescribeCloudRunDeployRecord', {
+        EnvId: envId,
+        ServerName: serviceName,
     })
+    if (deployRes?.DeployRecords) {
+        if (deployRes?.DeployRecords[0].Status === EnumDeployStatus.Deploying) {
+            return Promise.resolve('pending')
+        } else {
+            return Promise.resolve('completed')
+        }
+    } else {
+        return Promise.resolve('pending')
+    }
 }
 
 
-async function getBuildId(envId: string, serviceName: string) {
-    return new Promise<string>(async (resolve) => {
-        const { data: deployRes } = await callTcbrApi('DescribeCloudRunDeployRecord', {
-            EnvId: envId,
-            ServerName: serviceName,
-        })
-        if (deployRes.DeployRecords != null) {
-            if (deployRes.DeployRecords[0].Status !== 'deploying') {
-                resolve(deployRes.DeployRecords[0].BuildId)
-            }
-        }
+async function getBuildId(envId: string, serviceName: string): Promise<number> {
+    const { data: deployRes } = await callTcbrApi('DescribeCloudRunDeployRecord', {
+        EnvId: envId,
+        ServerName: serviceName,
     })
+    if (deployRes?.DeployRecords) {
+        if (deployRes.DeployRecords[0].Status !== 'deploying') {
+            return Promise.resolve(deployRes.DeployRecords[0].BuildId)
+        }
+    }
 }
 
 async function getRunId(envId: string, serviceName: string) {
@@ -42,7 +38,7 @@ async function getRunId(envId: string, serviceName: string) {
                 EnvId: envId,
                 ServerName: serviceName,
             })
-            if (deployRes.DeployRecords != null) {
+            if (deployRes?.DeployRecords) {
                 clearInterval(timer)
                 resolve(deployRes.DeployRecords[0].RunId)
             }
@@ -63,7 +59,7 @@ async function showProcessLogs(envId: string, runId: string, serviceName: string
                     EnvId: envId,
                     RunId: runId,
                 })
-                if (processLogs?.Logs != null) {
+                if (processLogs?.Logs) {
                     console.log(processLogs?.Logs.join('\n'))
                 }
             }
@@ -73,22 +69,20 @@ async function showProcessLogs(envId: string, runId: string, serviceName: string
 
 // buildLog 仅在完成后获取一次（未完成 BuildId 为0）
 async function showBuildLogs(envId: string, serviceName: string, serverVersion = '', offset = 0) {
-    return new Promise<void>(async resolve => {
-        const buildId = await getBuildId(envId, serviceName)
+    const buildId = await getBuildId(envId, serviceName)
 
-        const { data: data } = await callTcbrApi('DescribeCloudRunBuildLog', {
-            EnvId: envId,
-            BuildId: buildId,
-            ServerName: serviceName,
-            ServerVersion: serverVersion || '',
-            Offset: offset || 0,
-        })
-
-        if (data?.Log?.Text) {
-            console.log(data?.Log?.Text)
-        }
-        resolve()
+    const { data } = await callTcbrApi('DescribeCloudRunBuildLog', {
+        EnvId: envId,
+        BuildId: buildId,
+        ServerName: serviceName,
+        ServerVersion: serverVersion || '',
+        Offset: offset || 0,
     })
+
+    if (data?.Log?.Text) {
+        console.log(data?.Log?.Text)
+    }
+    return Promise.resolve()
 }
 
 export async function getLogs(options) {

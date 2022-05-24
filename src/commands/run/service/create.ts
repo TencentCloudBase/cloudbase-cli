@@ -112,9 +112,9 @@ export class CreateServiceTcbr extends Command {
             envId: options.envId,
             serviceName: options.serviceName
         })
-        if (serviceDetail !== void 0) {
+        if (serviceDetail !== undefined) {
             // 服务已存在, 更新服务
-            throw new CloudBaseError(`当前服务已存在，请使用 tcb run service:deploy 更新服务`)
+            throw new CloudBaseError('当前服务已存在，请使用 tcb run service:deploy 更新服务')
         }
 
         await createTcbrService(options)

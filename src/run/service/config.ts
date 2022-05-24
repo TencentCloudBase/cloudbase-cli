@@ -1,8 +1,8 @@
-import { describeCloudRunServerDetail } from "./create";
-import { ITcbrServiceConfigOptions, IDescribeCloudRunServerDetail } from "../../types";
-import { CloudBaseError } from "@cloudbase/toolbox";
-import { convertNumber, convertEnvParams, extractPolicyDetails } from "./common";
-import { callTcbrApi } from "../../utils";
+import { describeCloudRunServerDetail } from './create'
+import { ITcbrServiceConfigOptions, IDescribeCloudRunServerDetail } from '../../types'
+import { CloudBaseError } from '@cloudbase/toolbox'
+import { convertNumber, convertEnvParams, extractPolicyDetails } from './common'
+import { callTcbrApi } from '../../utils'
 
 export async function tcbrServiceConfigOptions(options: ITcbrServiceConfigOptions) {
     let {
@@ -56,7 +56,7 @@ export async function tcbrServiceConfigOptions(options: ITcbrServiceConfigOption
 }
 
 export async function updateCloudRunServerConfig(options) {
-    return await callTcbrApi("UpdateCloudRunServerConfig", {
+    return await callTcbrApi('UpdateCloudRunServerConfig', {
         EnvId: options.envId,
         ServerBaseConfig: options.ServerBaseConfig,
     })

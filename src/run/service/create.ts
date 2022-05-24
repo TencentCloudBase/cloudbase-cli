@@ -1,8 +1,8 @@
-import { callTcbrApi } from "../../utils"
-import { getLogs, tcbrServiceOptions } from "."
-import inquirer from "inquirer"
-import { ITcbrServiceOptions } from "../../types"
-import { logger } from "@cloudbase/toolbox"
+import { callTcbrApi } from '../../utils'
+import { getLogs, tcbrServiceOptions } from '.'
+import inquirer from 'inquirer'
+import { ITcbrServiceOptions } from '../../types'
+import { logger } from '@cloudbase/toolbox'
 
 export const describeCloudRunServerDetail = async (options: { envId: string; serviceName: string }) => {
     return await callTcbrApi('DescribeCloudRunServerDetail', {

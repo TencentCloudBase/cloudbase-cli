@@ -114,7 +114,8 @@ export class DeployServiceTcbr extends Command {
             envId: options.envId,
             serviceName: options.serviceName
         })
-        if (serviceDetail == null) {
+        
+        if (serviceDetail === undefined) {
             // 服务不存在，创建新服务
             await createTcbrService(options)
         } else {

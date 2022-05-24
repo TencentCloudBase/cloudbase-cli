@@ -1,6 +1,6 @@
-import { createBuild } from ".."
+import { createBuild } from '..'
 import { CloudBaseError, execWithLoading, loadingFactory, zipDir } from '@cloudbase/toolbox'
-import axios from "axios"
+import axios from 'axios'
 import path from 'path'
 import * as fs from 'fs'
 
@@ -24,8 +24,8 @@ export async function packageDeploy(options: IPackageDeploy) {
     })
 
     const loading = loadingFactory()
-    const zipFile = `.tcbr_${serviceName}_${Date.now()}.zip`,
-        dstPath = path.join(process.cwd(), zipFile)
+    const zipFile = `.tcbr_${serviceName}_${Date.now()}.zip`
+    const dstPath = path.join(process.cwd(), zipFile)
 
     try {
         if(fs.statSync(filePath).isDirectory()) {
@@ -46,7 +46,7 @@ export async function packageDeploy(options: IPackageDeploy) {
             async () => {
                 await axios.put(UploadUrl, fs.readFileSync(zipFile), {
                     headers: {
-                        "content-type": "application/zip"
+                        'content-type': 'application/zip'
                     }
                 })
                 return { PackageName, PackageVersion }

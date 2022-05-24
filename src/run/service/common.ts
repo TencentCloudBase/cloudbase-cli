@@ -1,7 +1,7 @@
+/* eslint-disable complexity */
 import { CloudApiService } from '../../utils'
-import { ITcbrServiceOptions } from '../../types';
-import { CloudBaseError, loadingFactory } from '@cloudbase/toolbox';
-import { IDescribeWxCloudBaseRunReleaseOrder } from '../../types'
+import { ITcbrServiceOptions, IDescribeWxCloudBaseRunReleaseOrder } from '../../types'
+import { CloudBaseError, loadingFactory } from '@cloudbase/toolbox'
 import { packageDeploy } from './index'
 import { listImage } from '..'
 
@@ -111,45 +111,45 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, defaultOv
             MaxNum: maxNum
                 ? convertNumber(maxNum)
                 : _override
-                    ? (previousServerConfig && previousServerConfig.MaxNum)
+                    ? (previousServerConfig?.MaxNum)
                     : 50,
             MinNum: minNum
                 ? convertNumber(minNum)
                 : _override
-                    ? (previousServerConfig && previousServerConfig.MinNum)
+                    ? (previousServerConfig?.MinNum)
                     : 0,
             BuildDir: targetDir
                 ? targetDir
                 : _override
-                    ? (previousServerConfig && previousServerConfig.BuildDir)
+                    ? (previousServerConfig?.BuildDir)
                     : '.',
             Cpu: cpu
                 ? convertNumber(cpu)
                 : _override
-                    ? (previousServerConfig && previousServerConfig.Cpu)
+                    ? (previousServerConfig?.Cpu)
                     : 0.5,
             Mem: mem
                 ? convertNumber(mem)
                 : _override
-                    ? (previousServerConfig && previousServerConfig.Mem)
+                    ? (previousServerConfig?.Mem)
                     : 1,
             OpenAccessTypes: ['PBULIC'],
             ServerName: serviceName,
             InitialDelaySeconds: initialDelaySeconds
                 ? convertNumber(initialDelaySeconds)
                 : _override
-                    ? (previousServerConfig && previousServerConfig.InitialDelaySeconds)
+                    ? (previousServerConfig?.InitialDelaySeconds)
                     : 3,
             CustomLogs: customLogs
                 ? customLogs
                 : _override
-                    ? (previousServerConfig && previousServerConfig.CustomLogs)
+                    ? (previousServerConfig?.CustomLogs)
                     : 'stdout',
             CreateTime: (new Date()).toLocaleString().replace(/\//g, '-'),
             PolicyDetails: policyDetails
                 ? extractPolicyDetails(policyDetails)
                 : _override
-                    ? (previousServerConfig && previousServerConfig.PolicyDetails)
+                    ? (previousServerConfig?.PolicyDetails)
                     : [
                         {
                             PolicyType: 'mem',
@@ -163,7 +163,7 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, defaultOv
             EnvParams: envParams
                 ? convertEnvParams(envParams)
                 : _override
-                    ? (previousServerConfig && previousServerConfig.EnvParams)
+                    ? (previousServerConfig?.EnvParams)
                     : '',
             Port: containerPort,
             HasDockerfile: true,
