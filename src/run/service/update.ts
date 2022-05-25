@@ -19,7 +19,7 @@ export async function updateTcbrService(options) {
         envId: options.envId,
         serviceName: options.serviceName
     })
-    if(serviceDetail == null) {
+    if(serviceDetail === undefined) {
         // 服务不存在
         throw new CloudBaseError('当前服务不存在，请使用 tcb run service:create 创建服务')
     }

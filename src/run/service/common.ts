@@ -133,7 +133,7 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, defaultOv
                 : _override
                     ? (previousServerConfig?.Mem)
                     : 1,
-            OpenAccessTypes: ['PBULIC'],
+            OpenAccessTypes: ['PUBLIC'],
             ServerName: serviceName,
             InitialDelaySeconds: initialDelaySeconds
                 ? convertNumber(initialDelaySeconds)

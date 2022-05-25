@@ -1,7 +1,7 @@
-import chalk from "chalk"
-import { CloudBaseError } from "../error"
-import { CloudApiService } from "./net"
-import { EnumEnvCheck } from "../constant"
+import chalk from 'chalk'
+import { CloudBaseError } from '../error'
+import { CloudApiService } from './net'
+import { EnumEnvCheck } from '../constant'
 const tcbService = CloudApiService.getInstance('tcb')
 
 const oldCmdSet =
@@ -36,14 +36,14 @@ const newCmdSet =
  * @returns 
  */
 export async function checkTcbrEnv(envId: string | undefined, isTcbr: boolean): Promise<EnumEnvCheck> | never {
-    if(envId === void 0) {
+    if(envId === undefined) {
         throw new CloudBaseError('请使用 -e 或 --envId 指定环境 ID')
     }
     const { EnvList: [envInfo] } = await tcbService.request('DescribeEnvs', {
         EnvId: envId
     })
 
-    if(envInfo === void 0) {
+    if(envInfo === undefined) {
         throw new CloudBaseError('无法读取到有效的环境信息，请检查环境 ID 是否正确')
     }
 
