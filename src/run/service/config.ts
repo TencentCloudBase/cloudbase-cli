@@ -3,6 +3,7 @@ import { ITcbrServiceConfigOptions, IDescribeCloudRunServerDetail } from '../../
 import { CloudBaseError } from '@cloudbase/toolbox'
 import { convertNumber, convertEnvParams, extractPolicyDetails } from './common'
 import { callTcbrApi } from '../../utils'
+import { validateCpuMem } from '../../utils/validator'
 
 export async function tcbrServiceConfigOptions(options: ITcbrServiceConfigOptions) {
     let {
@@ -26,6 +27,13 @@ export async function tcbrServiceConfigOptions(options: ITcbrServiceConfigOption
         throw new CloudBaseError('必须使用 -s 或 --serviceName 指定服务名')
     }
 
+    let cpuConverted
+    let memConverted
+    if(cpu || mem) {
+        let data = validateCpuMem(cpu, mem)
+        ;[ cpuConverted, memConverted ] = [data.cpuOutput, data.memOutput]
+    }
+
     const serviceInfo = await describeCloudRunServerDetail({
         envId,
         serviceName
@@ -37,8 +45,8 @@ export async function tcbrServiceConfigOptions(options: ITcbrServiceConfigOption
         EnvId: envId,
         ServerName: serviceName,
         OpenAccessTypes: previousServerConfig.OpenAccessTypes,
-        Cpu: cpu ? convertNumber(cpu) : previousServerConfig.Cpu,
-        Mem: mem ? convertNumber(mem) : previousServerConfig.Mem,
+        Cpu: cpuConverted || previousServerConfig.Cpu,
+        Mem: memConverted || previousServerConfig.Mem,
         MinNum: minNum ? convertNumber(minNum) : previousServerConfig.MinNum,
         MaxNum: maxNum ? convertNumber(maxNum) : previousServerConfig.MaxNum,
         PolicyDetails: policyDetails ? extractPolicyDetails(policyDetails) : previousServerConfig.PolicyDetails,

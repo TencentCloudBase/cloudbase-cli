@@ -4,6 +4,7 @@ import { ITcbrServiceOptions, IDescribeWxCloudBaseRunReleaseOrder } from '../../
 import { CloudBaseError, loadingFactory } from '@cloudbase/toolbox'
 import { packageDeploy } from './index'
 import { listImage } from '..'
+import { validateCpuMem } from '../../utils/validator'
 
 const tcbService = CloudApiService.getInstance('tcb')
 
@@ -103,6 +104,13 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, defaultOv
         DeployRemark: remark || '',
     }
 
+    let cpuConverted
+    let memConverted
+    if(cpu || mem) {
+        let data = validateCpuMem(cpu, mem)
+        ;[ cpuConverted, memConverted ] = [data.cpuOutput, data.memOutput]
+    }
+
     const newServiceOptions = {
         ServerName: serviceName,
         EnvId: envId,
@@ -123,16 +131,8 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, defaultOv
                 : _override
                     ? (previousServerConfig?.BuildDir)
                     : '.',
-            Cpu: cpu
-                ? convertNumber(cpu)
-                : _override
-                    ? (previousServerConfig?.Cpu)
-                    : 0.5,
-            Mem: mem
-                ? convertNumber(mem)
-                : _override
-                    ? (previousServerConfig?.Mem)
-                    : 1,
+            Cpu: cpuConverted || ( _override ? (previousServerConfig?.Cpu) : 0.5 ),
+            Mem: memConverted || ( _override ? (previousServerConfig?.Mem) : 1 ),
             OpenAccessTypes: ['PUBLIC'],
             ServerName: serviceName,
             InitialDelaySeconds: initialDelaySeconds

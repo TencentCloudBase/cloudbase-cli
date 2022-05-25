@@ -130,3 +130,14 @@ export const enum EnumDeployStatus {
     DeploySuccess = 'running',
     DeployFailed = 'deploy_failed'
 }
+
+// tcbr 服务配置 cpu 和 mem 的约束
+export const CPU_MEM_OPTS: { cpu: number; mems: number[] }[] = [
+    { cpu: 0.25, mems: [0.5] },
+    { cpu: 0.5, mems: [1] },
+    { cpu: 1, mems: [2] },
+    { cpu: 2, mems: [4] },
+    { cpu: 4, mems: [8] },
+    { cpu: 8, mems: [16] },
+    { cpu: 16, mems: [32] },
+]
