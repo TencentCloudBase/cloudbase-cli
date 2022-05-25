@@ -1,3 +1,4 @@
+import { CloudBaseError } from '@cloudbase/toolbox'
 import { CloudApiService } from './tcbr-cloud-api-request'
 
 const tcbrService = CloudApiService.getInstance('tcbr')
@@ -14,6 +15,10 @@ export async function callTcbrApi(action: string, data: Record<string, any>) {
             }
         }
     } catch (e) {
+        if (e.code === 'AuthFailure.UnauthorizedOperation') {
+            console.log('\n', `requestId: ${e.requestId}`)
+            throw new CloudBaseError('您没有权限调执行此操作，请检查 CAM 策略\n')
+        }
         return e
     }
 }
