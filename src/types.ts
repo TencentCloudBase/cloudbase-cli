@@ -579,7 +579,7 @@ export interface ITcbrServiceOptions {
     maxNum: number,
     policyDetails: string,
     customLogs: string,
-    initialDelaySeconds: number,
+    InitialDelaySeconds: number,
     envParams: string,
     containerPort: number,
     remark: string,
@@ -623,7 +623,7 @@ export interface ITcbrServiceConfigOptions {
     maxNum: number,
     policyDetails: string,
     customLogs: string,
-    initialDelaySeconds: number,
+    InitialDelaySeconds: number,
     envParams: string,
 }
 

@@ -66,7 +66,7 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, defaultOv
         maxNum,
         policyDetails,
         customLogs,
-        initialDelaySeconds,
+        InitialDelaySeconds,
         envParams,
         containerPort,
         remark,
@@ -135,8 +135,8 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, defaultOv
             Mem: memConverted || ( _override ? (previousServerConfig?.Mem) : 1 ),
             OpenAccessTypes: ['PUBLIC'],
             ServerName: serviceName,
-            InitialDelaySeconds: initialDelaySeconds
-                ? convertNumber(initialDelaySeconds)
+            InitialDelaySeconds: InitialDelaySeconds
+                ? convertNumber(InitialDelaySeconds)
                 : _override
                     ? (previousServerConfig?.InitialDelaySeconds)
                     : 3,
