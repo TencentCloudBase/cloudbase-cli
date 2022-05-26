@@ -1,3 +1,4 @@
+/* eslint-disable complexity */
 import { describeCloudRunServerDetail } from './create'
 import { ITcbrServiceConfigOptions, IDescribeCloudRunServerDetail } from '../../types'
 import { CloudBaseError } from '@cloudbase/toolbox'
@@ -58,6 +59,10 @@ export async function tcbrServiceConfigOptions(options: ITcbrServiceConfigOption
         envId,
         serviceName
     })
+
+    if(serviceInfo instanceof Error && serviceInfo['code'] === 'InvalidParameter') {
+        throw new CloudBaseError('服务不存在，请检查服务名是否正确或用 tcb run service:create 创建服务')
+    }
 
     const { ServerConfig: previousServerConfig } = serviceInfo.data as IDescribeCloudRunServerDetail
 
