@@ -49,7 +49,7 @@ export class DeployServiceTcbr extends Command {
                 },
                 {
                     flags: '--maxNum <maxNum>',
-                    desc: '最大副本数，默认50'
+                    desc: '最大副本数，默认50，不能大于50'
                 },
                 {
                     flags: '--policyDetails <policyDetails>',

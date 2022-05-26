@@ -46,6 +46,26 @@ export const convertEnvParams = (envParams: string) => {
     )
 }
 
+export const parseEnvParams = (envParams: string) => {
+    return envParams.split('&').reduce((acc, cur) => {
+            const [key, value] = cur.split('=')
+            acc[key] = value
+            return acc
+        }, {})
+}
+
+export const mergeEnvParams = (curEnvParams: string, preEnvParams: string) => {
+    const curEnv = parseEnvParams(curEnvParams)
+    const preEnv = preEnvParams ? JSON.parse(preEnvParams) : {}
+    const curEnvKeys = Object.keys(curEnv)
+    Object.entries(preEnv).forEach(([key, value]) => {
+        if (!curEnvKeys.includes(key)) {
+            curEnv[key] = value
+        }
+    })
+    return JSON.stringify(curEnv)
+}
+
 /**
  * 
  * @param options 原始用户输入
@@ -111,17 +131,37 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, defaultOv
         ;[ cpuConverted, memConverted ] = [data.cpuOutput, data.memOutput]
     }
 
+    let maxNumConverted
+    if(maxNum) {
+        maxNumConverted = convertNumber(maxNum)
+        if(maxNumConverted < 0 || maxNumConverted > 50) {
+            throw new CloudBaseError('最大副本数必须大于等于0且小于等于50')
+        }
+    }
+
+    let minNumConverted
+    if(minNum) {
+        minNumConverted = convertNumber(minNum)
+        if(minNumConverted < 0 || minNumConverted > 50) {
+            throw new CloudBaseError('最小副本数必须大于等于0且小于等于50')
+        }
+    }
+
+    if(minNumConverted > maxNumConverted) {
+        throw new CloudBaseError('最小副本数不能大于最大副本数')
+    }
+
     const newServiceOptions = {
         ServerName: serviceName,
         EnvId: envId,
         ServerConfig: {
             EnvId: envId,
-            MaxNum: maxNum
+            MaxNum: maxNumConverted
                 ? convertNumber(maxNum)
                 : _override
                     ? (previousServerConfig?.MaxNum)
                     : 50,
-            MinNum: minNum
+            MinNum: minNumConverted
                 ? convertNumber(minNum)
                 : _override
                     ? (previousServerConfig?.MinNum)
@@ -161,7 +201,7 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, defaultOv
                         },
                     ],
             EnvParams: envParams
-                ? convertEnvParams(envParams)
+                ? mergeEnvParams(envParams, previousServerConfig?.EnvParams)
                 : _override
                     ? (previousServerConfig?.EnvParams)
                     : '',
@@ -206,6 +246,5 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, defaultOv
     newServiceOptions.DeployInfo = {
         ...DeployInfo
     }
-
     return newServiceOptions
 }
