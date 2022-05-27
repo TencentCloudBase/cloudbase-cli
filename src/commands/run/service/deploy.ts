@@ -60,10 +60,6 @@ export class DeployServiceTcbr extends Command {
                     desc: '日志采集路径，默认stdout'
                 },
                 {
-                    flags: '--InitialDelaySeconds <InitialDelaySeconds>',
-                    desc: '延迟检测时间，默认3秒'
-                },
-                {
                     flags: '--envParams <envParams>',
                     desc: '环境变量，格式为xx=a&yy=b，默认为空'
                 },

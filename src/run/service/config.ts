@@ -16,7 +16,6 @@ export async function tcbrServiceConfigOptions(options: ITcbrServiceConfigOption
         maxNum,
         policyDetails,
         customLogs,
-        InitialDelaySeconds,
         envParams,
     } = options
 
@@ -77,7 +76,7 @@ export async function tcbrServiceConfigOptions(options: ITcbrServiceConfigOption
         PolicyDetails: policyDetails ? extractPolicyDetails(policyDetails) : previousServerConfig.PolicyDetails,
         CustomLogs: customLogs ? customLogs : previousServerConfig.CustomLogs,
         EnvParams: envParams ? mergeEnvParams(envParams, previousServerConfig?.EnvParams) : previousServerConfig.EnvParams,
-        InitialDelaySeconds: InitialDelaySeconds ? convertNumber(InitialDelaySeconds) : previousServerConfig.InitialDelaySeconds,
+        InitialDelaySeconds: 2,
         CreateTime: (new Date()).toLocaleString().replace(/\//g, '-'),
         Port: previousServerConfig.Port,
         HasDockerfile: true,
