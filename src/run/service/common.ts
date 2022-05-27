@@ -36,15 +36,6 @@ export const extractPolicyDetails = (policyDetails: string) => {
     })
 }
 
-export const convertEnvParams = (envParams: string) => {
-    return JSON.stringify(
-        envParams.split('&').reduce((acc, cur) => {
-            const [key, value] = cur.split('=')
-            acc[key] = value
-            return acc
-        }, {})
-    )
-}
 
 export const parseEnvParams = (envParams: string) => {
     return envParams.split('&').reduce((acc, cur) => {
