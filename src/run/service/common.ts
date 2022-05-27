@@ -1,7 +1,7 @@
 /* eslint-disable complexity */
 import { CloudApiService } from '../../utils'
 import { ITcbrServiceOptions, IDescribeWxCloudBaseRunReleaseOrder } from '../../types'
-import { CloudBaseError, loadingFactory } from '@cloudbase/toolbox'
+import { CloudBaseError } from '@cloudbase/toolbox'
 import { packageDeploy } from './index'
 import { listImage } from '..'
 import { validateCpuMem } from '../../utils/validator'
@@ -60,11 +60,12 @@ export const mergeEnvParams = (curEnvParams: string, preEnvParams: string) => {
 /**
  * 
  * @param options 原始用户输入
+ * @param isCreated 服务是否已被创建（未创建的服务不能使用镜像 tag ）
  * @param defaultOverride 是否默认用上次的服务配置替代缺省值
  * @param previousServerConfig 上次的服务配置
  * @returns 
  */
-export async function tcbrServiceOptions(options: ITcbrServiceOptions, defaultOverride?: boolean, previousServerConfig?) {
+export async function tcbrServiceOptions(options: ITcbrServiceOptions, isCreated: boolean, defaultOverride?: boolean, previousServerConfig?) {
     let {
         noConfirm: _noConfirm = false,
         override: _override = (defaultOverride || false),
@@ -100,11 +101,13 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, defaultOv
     }
     containerPort = Number(containerPort)
 
-    if (!path && !library_image && !image) {
-        throw new CloudBaseError('请使用 --path 指定代码根目录或 --library_image 指定线上镜像 tag ')
+    if(!isCreated && !path) {
+        throw new CloudBaseError('请使用 --path 指定代码根目录')
     }
 
-    const loading = loadingFactory()
+    if (isCreated && !path && !library_image && !image) {
+        throw new CloudBaseError('请使用 --path 指定代码根目录或 --library_image 指定线上镜像 tag ')
+    }
 
     // 处理用户输入的参数
     const DeployInfo: any = {

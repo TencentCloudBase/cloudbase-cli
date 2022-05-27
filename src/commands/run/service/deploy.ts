@@ -82,7 +82,7 @@ export class DeployServiceTcbr extends Command {
                 },
                 {
                     flags: '--library_image <library_image>',
-                    desc: '线上镜像仓库的 tag'
+                    desc: '线上镜像仓库的 tag，仅在服务已存在时可用'
                 },
                 {
                     flags: '--image <image>',

@@ -39,7 +39,7 @@ export async function updateTcbrService(options) {
     // 获取上次的服务配置信息
     const previousServerConfig = serviceDetail?.ServerConfig
 
-    const newServiceOptions = await tcbrServiceOptions(options, true, previousServerConfig)
+    const newServiceOptions = await tcbrServiceOptions(options, true, true, previousServerConfig)
 
     // 二次确认
     if(!options.noConfirm) {

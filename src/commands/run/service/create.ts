@@ -78,10 +78,10 @@ export class CreateServiceTcbr extends Command {
                     flags: '--dockerfile <dockerfile>',
                     desc: 'Dockerfile文件名，默认为 Dockerfile'
                 },
-                {
-                    flags: '--library_image <library_image>',
-                    desc: '线上镜像仓库的 tag'
-                },
+                // {
+                //     flags: '--library_image <library_image>',
+                //     desc: '线上镜像仓库的 tag'
+                // },
                 {
                     flags: '--image <image>',
                     desc: '镜像标签或ID'

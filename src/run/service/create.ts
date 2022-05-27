@@ -16,7 +16,7 @@ export async function createCloudRunServer(serviceConfigOptions) {
 }
 
 export async function createTcbrService(options: ITcbrServiceOptions) {
-    const newServiceOptions = await tcbrServiceOptions(options, false)
+    const newServiceOptions = await tcbrServiceOptions(options, false, false)
 
     if (!options.noConfirm) {
         const { confirm } = await inquirer.prompt([
