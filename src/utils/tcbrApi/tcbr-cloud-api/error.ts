@@ -18,13 +18,13 @@ export class CloudBaseError extends Error {
     readonly type: string;
 
     constructor(message: string, options: Options = {}) {
-      super();
-      const { code = '', action = '', original = null, requestId = '', type } = options;
-      this.message = `[${action}]\nRequestId：${requestId}\n${message}`;
-      this.original = original;
-      this.code = code;
-      this.requestId = requestId;
-      this.action = action;
-      this.type = type;
+      super()
+      const { code = '', action = '', original = null, requestId = '', type } = options
+      this.message = `[${action}]\nRequestId：${requestId}\n${message}`
+      this.original = original
+      this.code = code
+      this.requestId = requestId
+      this.action = action
+      this.type = type
     }
 }
