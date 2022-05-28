@@ -19,7 +19,7 @@ export async function callTcbrApi(action: string, data: Record<string, any>) {
         // 对特殊错误特殊处理
         if (e.code === 'AuthFailure.UnauthorizedOperation') {
             console.log('\n', `requestId: ${e.requestId}`)
-            throw new CloudBaseError('您没有权限调执行此操作，请检查 CAM 策略\n')
+            throw new CloudBaseError('您没有权限执行此操作，请检查 CAM 策略\n')
         } else if (e.code === 'LimitExceeded') {
             throw new CloudBaseError(`${e.original.Message}\n`)
         }

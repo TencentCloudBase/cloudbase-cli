@@ -141,3 +141,14 @@ export const CPU_MEM_OPTS: { cpu: number; mems: number[] }[] = [
     { cpu: 8, mems: [16] },
     { cpu: 16, mems: [32] },
 ]
+
+export const DEFAULT_CPU_MEM_SET: { PolicyType: 'mem' | 'cpu', PolicyThreshold: number }[] = [
+    {
+        PolicyType: 'mem',
+        PolicyThreshold: 60
+    },
+    {
+        PolicyType: 'cpu',
+        PolicyThreshold: 60
+    },
+]

@@ -1,10 +1,9 @@
-/* eslint-disable complexity */
-import { CloudApiService } from '../../utils'
-import { ITcbrServiceOptions, IDescribeWxCloudBaseRunReleaseOrder } from '../../types'
+import { CloudApiService, parseOptionalParams, parseInputParam } from '../../utils'
+import { ITcbrServiceOptions, IDescribeWxCloudBaseRunReleaseOrder, ITcbrServiceRequiredOptions } from '../../types'
 import { CloudBaseError } from '@cloudbase/toolbox'
 import { packageDeploy } from './index'
 import { listImage } from '..'
-import { validateCpuMem } from '../../utils/validator'
+import { DEFAULT_CPU_MEM_SET } from '../../constant'
 
 const tcbService = CloudApiService.getInstance('tcb')
 
@@ -36,15 +35,20 @@ export const extractPolicyDetails = (policyDetails: string) => {
     })
 }
 
-
 export const parseEnvParams = (envParams: string) => {
     return envParams.split('&').reduce((acc, cur) => {
-            const [key, value] = cur.split('=')
-            acc[key] = value
-            return acc
-        }, {})
+        const [key, value] = cur.split('=')
+        acc[key] = value
+        return acc
+    }, {})
 }
 
+/**
+ * @description 合并当前与已有的环境变量，当前传入的环境变量 key 去重并取位置靠后的，如与原有环境变量 key 相同，则替换
+ * @param curEnvParams 当前输入的环境变量
+ * @param preEnvParams 已有的环境变量
+ * @returns 
+ */
 export const mergeEnvParams = (curEnvParams: string, preEnvParams: string) => {
     const curEnv = parseEnvParams(curEnvParams)
     const preEnv = preEnvParams ? JSON.parse(preEnvParams) : {}
@@ -55,6 +59,28 @@ export const mergeEnvParams = (curEnvParams: string, preEnvParams: string) => {
         }
     })
     return JSON.stringify(curEnv)
+}
+
+function checkRequiredParams(options: ITcbrServiceRequiredOptions) {
+    if (!options.envId) {
+        throw new CloudBaseError('必须使用 -e 或 --envId 指定环境ID')
+    }
+
+    if (!options.serviceName) {
+        throw new CloudBaseError('必须使用 -s 或 --serviceName 指定服务名')
+    }
+
+    if (!options.containerPort) {
+        throw new CloudBaseError('必须使用 --containerPort 指定监听端口号')
+    }
+
+    if (!options.isCreated && !options.path) {
+        throw new CloudBaseError('请使用 --path 指定代码根目录')
+    }
+
+    if (options.isCreated && !options.path && !options.library_image && !options.image) {
+        throw new CloudBaseError('请使用 --path 指定代码根目录或 --library_image 指定线上镜像 tag ')
+    }
 }
 
 /**
@@ -88,26 +114,17 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, isCreated
         json: _json = false
     } = options
 
-    if (!envId) {
-        throw new CloudBaseError('必须使用 -e 或 --envId 指定环境ID')
-    }
-
-    if (!serviceName) {
-        throw new CloudBaseError('必须使用 -s 或 --serviceName 指定服务名')
-    }
-
-    if (!containerPort) {
-        throw new CloudBaseError('必须使用 --containerPort 指定监听端口号')
-    }
+    // 检查必选参数是否填写
+    checkRequiredParams({
+        envId,
+        serviceName,
+        containerPort,
+        isCreated,
+        path,
+        library_image,
+        image
+    })
     containerPort = Number(containerPort)
-
-    if(!isCreated && !path) {
-        throw new CloudBaseError('请使用 --path 指定代码根目录')
-    }
-
-    if (isCreated && !path && !library_image && !image) {
-        throw new CloudBaseError('请使用 --path 指定代码根目录或 --library_image 指定线上镜像 tag ')
-    }
 
     // 处理用户输入的参数
     const DeployInfo: any = {
@@ -116,89 +133,39 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, isCreated
             : 'package',
         DeployRemark: remark || '',
     }
-
-    let cpuConverted
-    let memConverted
-    if(cpu || mem) {
-        let data = validateCpuMem(cpu, mem)
-        ;[ cpuConverted, memConverted ] = [data.cpuOutput, data.memOutput]
-    }
-
-    let maxNumConverted
-    if(maxNum) {
-        maxNumConverted = convertNumber(maxNum)
-        if(maxNumConverted < 0 || maxNumConverted > 50) {
-            throw new CloudBaseError('最大副本数必须大于等于0且小于等于50')
-        }
-    }
-
-    let minNumConverted
-    if(minNum) {
-        minNumConverted = convertNumber(minNum)
-        if(minNumConverted < 0 || minNumConverted > 50) {
-            throw new CloudBaseError('最小副本数必须大于等于0且小于等于50')
-        }
-    }
-
-    if(minNumConverted > maxNumConverted) {
-        throw new CloudBaseError('最小副本数不能大于最大副本数')
-    }
+    // 可选参数进行校验和转换
+    let {
+        cpuConverted,
+        memConverted,
+        maxNumConverted,
+        minNumConverted
+    } = parseOptionalParams({
+        cpu,
+        mem,
+        maxNum,
+        minNum
+    })
 
     const newServiceOptions = {
         ServerName: serviceName,
         EnvId: envId,
         ServerConfig: {
             EnvId: envId,
-            MaxNum: maxNumConverted
-                ? convertNumber(maxNum)
-                : _override
-                    ? (previousServerConfig?.MaxNum)
-                    : 50,
-            MinNum: minNumConverted
-                ? convertNumber(minNum)
-                : _override
-                    ? (previousServerConfig?.MinNum)
-                    : 0,
-            BuildDir: targetDir
-                ? targetDir
-                : _override
-                    ? (previousServerConfig?.BuildDir)
-                    : '.',
-            Cpu: cpuConverted || ( _override ? (previousServerConfig?.Cpu) : 0.5 ),
-            Mem: memConverted || ( _override ? (previousServerConfig?.Mem) : 1 ),
+            MaxNum: parseInputParam(maxNumConverted, _override, convertNumber, previousServerConfig?.MaxNum, 50),
+            MinNum: parseInputParam(minNumConverted, _override, convertNumber, previousServerConfig?.MinNum, 0),
+            BuildDir: parseInputParam(targetDir, _override, null, previousServerConfig?.BuildDir, '.'),
+            Cpu: parseInputParam(cpuConverted, _override, null, previousServerConfig?.Cpu, 0.5),
+            Mem: parseInputParam(memConverted, _override, null, previousServerConfig?.Mem, 1),
             OpenAccessTypes: ['PUBLIC'],
             ServerName: serviceName,
             InitialDelaySeconds: 2,
-            CustomLogs: customLogs
-                ? customLogs
-                : _override
-                    ? (previousServerConfig?.CustomLogs)
-                    : 'stdout',
-            CreateTime: (new Date()).toLocaleString().replace(/\//g, '-'),
-            PolicyDetails: policyDetails
-                ? extractPolicyDetails(policyDetails)
-                : _override
-                    ? (previousServerConfig?.PolicyDetails)
-                    : [
-                        {
-                            PolicyType: 'mem',
-                            PolicyThreshold: 60
-                        },
-                        {
-                            PolicyType: 'cpu',
-                            PolicyThreshold: 60
-                        },
-                    ],
-            EnvParams: envParams
-                ? mergeEnvParams(envParams, previousServerConfig?.EnvParams)
-                : _override
-                    ? (previousServerConfig?.EnvParams)
-                    : '',
+            CustomLogs: parseInputParam(customLogs, _override, null, previousServerConfig?.CustomLogs, 'stdout'),
+            CreateTime: previousServerConfig?.CreateTime || (new Date()).toLocaleString().replace(/\//g, '-'),
+            PolicyDetails: parseInputParam(policyDetails, _override, extractPolicyDetails, previousServerConfig?.PolicyDetails, DEFAULT_CPU_MEM_SET),
+            EnvParams: parseInputParam(envParams, _override, mergeEnvParams, previousServerConfig?.EnvParams, '', previousServerConfig?.EnvParams),
             Port: containerPort,
             HasDockerfile: true,
-            Dockerfile: dockerfile
-                ? dockerfile
-                : 'Dockerfile',
+            Dockerfile: dockerfile || 'Dockerfile',
         },
         DeployInfo: {
             ...DeployInfo

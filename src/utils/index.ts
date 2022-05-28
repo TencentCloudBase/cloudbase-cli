@@ -22,3 +22,4 @@ export * from './parallel'
 
 export * from './tcbrApi'
 export * from './checkTcbrEnv'
+export * from './commonParamsCheck'

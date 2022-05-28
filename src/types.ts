@@ -633,3 +633,27 @@ export interface IServerInfo {
     UpdateTime: string,
     CreatedTime: string,
 }
+
+export interface ITcbrServiceRequiredOptions {
+    envId: string,
+    serviceName: string,
+    containerPort: number,
+    isCreated: boolean,
+    path: string,
+    library_image: string,
+    image: string
+}
+
+export interface ITcbrServiceOptionalOptions {
+    cpu: number | string,
+    mem: number | string,
+    maxNum: number | string,
+    minNum: number | string
+}
+
+export interface ITcbrServiceConvertedOptionalOptions {
+    cpuConverted: number,
+    memConverted: number,
+    maxNumConverted: number,
+    minNumConverted: number
+}
