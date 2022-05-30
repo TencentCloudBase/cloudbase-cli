@@ -4,9 +4,10 @@ import { prompt } from 'enquirer'
 import { Command, ICommand } from '../../common'
 import { CloudBaseError } from '../../../error'
 import { describeImageRepo, getAuthFlag } from '../../../run'
-import { loadingFactory, getUin } from '../../../utils'
+import { loadingFactory, getUin, checkTcbrEnv, logEnvCheck } from '../../../utils'
 import { InjectParams, EnvId, ArgsOptions } from '../../../decorators'
 import { imageCommonOptions } from './common'
+import { EnumEnvCheck } from '../../../constant'
 
 @ICommand()
 export class UploadImage extends Command {
@@ -38,6 +39,12 @@ export class UploadImage extends Command {
     @InjectParams()
     async execute(@EnvId() envId, @ArgsOptions() options) {
 
+        let envCheckType = await checkTcbrEnv(options.envId, false)
+        if(envCheckType !== EnumEnvCheck.EnvFit) {
+            logEnvCheck(envId, envCheckType)
+            return
+        }
+        
         const { serviceName = '', imageId = '', imageTag = '' } = options
 
         if (serviceName.length === 0 || imageId.length === 0 || imageTag.length === 0) {

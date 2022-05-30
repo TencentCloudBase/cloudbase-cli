@@ -1,5 +1,5 @@
 export const imageCommonOptions = (sub: string) => ({
-    cmd: 'run',
+    cmd: 'run:deprecated',
     childCmd: {
         cmd: 'image',
         desc: '云托管镜像管理'

@@ -2,9 +2,10 @@ import { prompt } from 'enquirer'
 import { Command, ICommand } from '../../common'
 import { CloudBaseError } from '../../../error'
 import { listVersion, modifyVersion } from '../../../run'
-import { loadingFactory, pagingSelectPromp } from '../../../utils'
+import { checkTcbrEnv, loadingFactory, logEnvCheck, pagingSelectPromp } from '../../../utils'
 import { InjectParams, EnvId, ArgsOptions } from '../../../decorators'
 import { versionCommonOptions } from './common'
+import { EnumEnvCheck } from '../../../constant'
 
 // 按百分比配置
 const modifyByFlow = async (envId: any, serviceName: string, mode: string) => {
@@ -118,6 +119,12 @@ export class ModifyVersion extends Command {
 
     @InjectParams()
     async execute(@EnvId() envId, @ArgsOptions() options) {
+        let envCheckType = await checkTcbrEnv(options.envId, false)
+        if(envCheckType !== EnumEnvCheck.EnvFit) {
+            logEnvCheck(envId, envCheckType)
+            return
+        }
+        
         let { serviceName = '', traffic: _traffic = 'FLOW' } = options
         if (serviceName.length === 0) throw new CloudBaseError('请填入有效云托管服务名')
 

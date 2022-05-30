@@ -1,9 +1,10 @@
 import { Command, ICommand } from '../../common'
 import { CloudBaseError } from '../../../error'
 import { deleteVersion } from '../../../run'
-import { loadingFactory } from '../../../utils'
+import { checkTcbrEnv, loadingFactory, logEnvCheck } from '../../../utils'
 import { InjectParams, EnvId, ArgsOptions } from '../../../decorators'
 import { versionCommonOptions } from './common'
+import { EnumEnvCheck } from '../../../constant'
 
 @ICommand()
 export class DeleteVersion extends Command {
@@ -30,7 +31,12 @@ export class DeleteVersion extends Command {
 
     @InjectParams()
     async execute(@EnvId() envId, @ArgsOptions() options) {
-
+        let envCheckType = await checkTcbrEnv(options.envId, false)
+        if(envCheckType !== EnumEnvCheck.EnvFit) {
+            logEnvCheck(envId, envCheckType)
+            return
+        }
+        
         let { serviceName = '', versionName = '' } = options
 
         if (versionName.length === 0 || serviceName.length === 0) {

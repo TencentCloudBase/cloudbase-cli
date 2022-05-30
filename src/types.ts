@@ -375,8 +375,8 @@ export interface IListBranch {
 export interface IListImage {
     envId: string,
     serviceName: string,
-    limit: number,
-    offset: number
+    limit?: number,
+    offset?: number
 }
 
 export interface IDeleteImage {
@@ -530,4 +530,130 @@ export interface IGetFunctionAliasRes {
     Description: string
     AddTime: string
     ModTime: string
+}
+
+export interface ITcbrServerBaseConfig {
+    EnvId: string,
+    ServerName: string,
+    OpenAccessTypes: string[],
+    Cpu: number,
+    Mem: number,
+    MinNum: number,
+    MaxNum: number,
+    PolicyDetails: {
+        PolicyType: string,
+        PolicyThreshold: number
+    }[],
+    CustomLogs: string,
+    EnvParams: string,
+    InitialDelaySeconds: number,
+    CreateTime: string,
+    Port: number,
+    HasDockerfile: boolean,
+    Dockerfile: string,
+    BuildDir: string,
+}
+
+export interface IDescribeCloudRunServerDetail {
+    BaseInfo: {
+        ServerName: string,
+        DefaultDomainName: string,
+        CustomDomainName: string,
+        Status: 'running' | 'deploying' | 'deploy_failed',
+        UpdateTime: string,
+    },
+    ServerConfig: ITcbrServerBaseConfig,
+    RequestId: string
+}
+
+export interface ITcbrServiceOptions {
+    noConfirm: boolean,
+    override: boolean,
+    defaultOverride: boolean,
+    envId: string,
+    serviceName: string,
+    path: string,
+    cpu: number,
+    mem: number,
+    minNum: number,
+    maxNum: number,
+    policyDetails: string,
+    customLogs: string,
+    envParams: string,
+    containerPort: number,
+    remark: string,
+    targetDir: string,
+    dockerfile: string,
+    image: string,
+    library_image: string,
+    json: boolean
+}
+
+export interface ICloudRunProcessLog {
+    EnvId: string,
+    RunId: string
+}
+
+export interface ICloudRunBuildLog {
+    EnvId: string,
+    ServerName: string,
+    ServerVersion: string,
+    BuildId: number,
+    Offset: number
+}
+
+export interface IDescribeWxCloudBaseRunReleaseOrder {
+    envId: string,
+    serviceName: string
+}
+
+export interface IGetLogs {
+    envId: string,
+    taskId: number,
+    serviceName: string,
+}
+
+export interface ITcbrServiceConfigOptions {
+    serviceName: string,
+    envId: string,
+    cpu: number,
+    mem: number,
+    minNum: number,
+    maxNum: number,
+    policyDetails: string,
+    customLogs: string,
+    envParams: string,
+}
+
+export interface IServerInfo {
+    ServerName: string,
+    DefaultDomainName: string,
+    CustomDomainName: string,
+    Status: string,
+    UpdateTime: string,
+    CreatedTime: string,
+}
+
+export interface ITcbrServiceRequiredOptions {
+    envId: string,
+    serviceName: string,
+    containerPort: number,
+    isCreated: boolean,
+    path: string,
+    library_image: string,
+    image: string
+}
+
+export interface ITcbrServiceOptionalOptions {
+    cpu: number | string,
+    mem: number | string,
+    maxNum: number | string,
+    minNum: number | string
+}
+
+export interface ITcbrServiceConvertedOptionalOptions {
+    cpuConverted: number,
+    memConverted: number,
+    maxNumConverted: number,
+    minNumConverted: number
 }

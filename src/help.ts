@@ -13,7 +13,9 @@ export const outputHelpInfo = () => {
     new             [appName] [template]       创建新的云开发应用
     open            [link]                     在浏览器中打开云开发相关连接
     storage         [cmd]                      云存储资源管理操作
-    service         [cmd]                      HTTP 访问服务管理操作`
+    service         [cmd]                      HTTP 访问服务管理操作
+    run:deprecated  [cmd]                      云托管环境管理操作 (BAAS 或 RUN 类型环境)
+    run             [cmd]                      云托管环境管理操作 (TCBR 类型环境)`
 
     const options = `
   选项

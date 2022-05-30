@@ -1,9 +1,10 @@
 import { Command, ICommand } from '../../common'
 import { CloudBaseError } from '../../../error'
 import { listImage } from '../../../run'
-import { printHorizontalTable, loadingFactory } from '../../../utils'
+import { printHorizontalTable, loadingFactory, checkTcbrEnv, logEnvCheck } from '../../../utils'
 import { InjectParams, EnvId, ArgsOptions } from '../../../decorators'
 import { imageCommonOptions } from './common'
+import { EnumEnvCheck } from '../../../constant'
 
 @ICommand()
 export class ListImage extends Command {
@@ -34,7 +35,11 @@ export class ListImage extends Command {
 
     @InjectParams()
     async execute(@EnvId() envId, @ArgsOptions() options) {
-
+        let envCheckType = await checkTcbrEnv(options.envId, false)
+        if(envCheckType !== EnumEnvCheck.EnvFit) {
+            logEnvCheck(envId, envCheckType)
+            return
+        }
         let { limit = 20, offset = 0, serviceName = '' } = options
         limit = Number(limit)
         offset = Number(offset)
