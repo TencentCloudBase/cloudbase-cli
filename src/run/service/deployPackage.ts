@@ -1,8 +1,8 @@
-import { createBuild } from '..'
-import { CloudBaseError, execWithLoading, loadingFactory, zipDir } from '@cloudbase/toolbox'
-import axios from 'axios'
 import path from 'path'
 import * as fs from 'fs'
+import fetch from 'node-fetch'
+import { createBuild } from '..'
+import { CloudBaseError, execWithLoading, loadingFactory, zipDir } from '@cloudbase/toolbox'
 
 interface IPackageDeploy {
     envId: string,
@@ -44,7 +44,9 @@ export async function packageDeploy(options: IPackageDeploy) {
     try {
         return await execWithLoading(
             async () => {
-                await axios.put(UploadUrl, fs.readFileSync(zipFile), {
+                await fetch(UploadUrl, {
+                    method: 'PUT',
+                    body: fs.createReadStream(zipFile),
                     headers: {
                         'content-type': 'application/zip'
                     }
