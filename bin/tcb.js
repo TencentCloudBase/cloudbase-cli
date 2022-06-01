@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const os = require('os')
-const yargs = require('yargs')
+const yargsParser = require('yargs-parser')
 const chalk = require('chalk')
 const address = require('address')
 const { program } = require('commander')
@@ -72,8 +72,10 @@ program.option('-r, --region <region>', '指定环境地域')
 
 // HACK: 隐藏自动生成的 help 信息
 program.helpOption(false)
+const isCommandEmpty = yargsParser(process.argv.slice(2))._.length === 0;
+
 // -v 时输出的版本信息，设置时避免影响其他命令使用 -v
-if (yargs.argv._.length === 0) {
+if (isCommandEmpty) {
     program.version(
         `\nCLI: ${pkg.version}\nFramework: ${frameworkPkg.version}`,
         '-v, --version',
@@ -99,7 +101,7 @@ program.action((command) => {
 })
 
 // 没有使用命令
-if (yargs.argv._.length === 0) {
+if (isCommandEmpty) {
     if (['-h', '--help'].includes(processArgv[2])) {
         // 需要隐藏的选项
         const hideArgs = ['-h', '--help']
@@ -111,7 +113,7 @@ if (yargs.argv._.length === 0) {
         })
         const { outputHelpInfo } = require('../lib/help')
         outputHelpInfo()
-    } else if (!['-v', '--help'].includes(processArgv[2])) {
+    } else if (!['-v', '--version'].includes(processArgv[2])) {
         // HACK: framework 智能命令
         const { smartDeploy } = require('../lib')
         smartDeploy()
