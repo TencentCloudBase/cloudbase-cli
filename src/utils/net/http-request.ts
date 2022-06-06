@@ -1,5 +1,5 @@
 import _fetch, { RequestInit } from 'node-fetch'
-import HttpsProxyAgent from 'https-proxy-agent'
+import {HttpsProxyAgent} from 'https-proxy-agent'
 import { REQUEST_TIMEOUT } from '../../constant'
 import { CloudBaseError } from '../../error'
 import { getProxy } from './proxy'
