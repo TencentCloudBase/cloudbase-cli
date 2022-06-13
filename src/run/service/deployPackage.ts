@@ -1,6 +1,6 @@
 import path from 'path'
 import * as fs from 'fs'
-import fetch from 'node-fetch'
+import { fetch } from '../../utils'
 import { createBuild } from '..'
 import { CloudBaseError, execWithLoading, loadingFactory, zipDir } from '@cloudbase/toolbox'
 
