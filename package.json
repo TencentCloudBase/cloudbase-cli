@@ -33,7 +33,7 @@
         "@cloudbase/framework-core": "^1.6.1",
         "@cloudbase/lowcode-cli": "^0.12.28",
         "@cloudbase/manager-node": "4.0.0",
-        "@cloudbase/toolbox": "^0.7.2",
+        "@cloudbase/toolbox": "^0.7.3",
         "@sentry/node": "^5.10.2",
         "address": "^1.1.2",
         "chalk": "^2.4.2",
