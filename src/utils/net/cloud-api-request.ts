@@ -30,7 +30,11 @@ export class CloudApiService {
         // 初始化 API 实例
         this.apiService = new _CloudApiService({
             service,
-            version: service === 'tcr' ? version : '2019-09-24',
+            version: service === 'tcr' 
+            ? version 
+            : service === 'tcbr'
+            ? '2022-02-17'
+            :'2019-09-24',
             baseParams,
             proxy: getProxy(),
             timeout: REQUEST_TIMEOUT,
