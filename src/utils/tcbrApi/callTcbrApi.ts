@@ -1,5 +1,5 @@
 import { CloudBaseError } from '@cloudbase/toolbox'
-import { CloudApiService } from './tcbr-cloud-api-request'
+import { CloudApiService } from '../net'
 
 const tcbrService = CloudApiService.getInstance('tcbr')
 

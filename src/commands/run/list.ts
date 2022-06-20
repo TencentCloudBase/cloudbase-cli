@@ -1,9 +1,8 @@
 import { Command, ICommand } from '../common'
 import { CloudBaseError } from '../../error'
-import { listRun, logCreate } from '../../run'
-import { printHorizontalTable, loadingFactory } from '../../utils'
+import { listRun } from '../../run'
+import { printHorizontalTable, loadingFactory, checkTcbrEnv, logEnvCheck} from '../../utils'
 import { InjectParams, EnvId, ArgsOptions } from '../../decorators'
-import { checkTcbrEnv, logEnvCheck } from '../../utils'
 import { EnumEnvCheck } from '../../constant'
 
 const StatusMap = {
