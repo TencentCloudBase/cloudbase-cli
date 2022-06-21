@@ -29,7 +29,7 @@
     "author": "cwuyiqing@gmail.com",
     "license": "ISC",
     "dependencies": {
-        "@cloudbase/cloud-api": "^0.4.0",
+        "@cloudbase/cloud-api": "^0.5.3",
         "@cloudbase/framework-core": "^1.6.1",
         "@cloudbase/lowcode-cli": "^0.13.2",
         "@cloudbase/manager-node": "4.0.0",
