@@ -42,6 +42,10 @@ export class LowCodeCreateComps extends Command {
 
     @InjectParams()
     async execute(@ArgsParams() params, @Log() log?: Logger) {
+        if (process.env.CLOUDBASE_LOWCODE_CLOUDAPI_URL !== undefined) {
+            // 没设置的时候才才设置，方便覆盖
+            process.env.CLOUDBASE_LOWCODE_CLOUDAPI_URL = 'https://lcap.cloud.tencent.com/api/v1/cliapi';
+        }
         const res = await cloudService.request('ListUserCompositeGroups')
         const comps = res?.data
         if (!comps?.count) {
@@ -65,7 +69,6 @@ export class LowCodeCreateComps extends Command {
             }
         }
 
-        // TODO: 逻辑迁移到 lowcode-cli
         await bootstrap(compsName, log);
 
     }
