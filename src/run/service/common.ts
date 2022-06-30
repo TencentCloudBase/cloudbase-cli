@@ -1,4 +1,4 @@
-import { CloudApiService, parseOptionalParams, parseInputParam } from '../../utils'
+import { CloudApiService, parseOptionalParams, parseInputParam, callTcbrApi, genClickableLink } from '../../utils'
 import { ITcbrServiceOptions, IDescribeWxCloudBaseRunReleaseOrder, ITcbrServiceRequiredOptions } from '../../types'
 import { CloudBaseError } from '@cloudbase/toolbox'
 import { packageDeploy } from './index'
@@ -6,6 +6,7 @@ import { listImage } from '..'
 import { DEFAULT_CPU_MEM_SET } from '../../constant'
 
 const tcbService = CloudApiService.getInstance('tcb')
+const tcrCloudApiService = new CloudApiService('tcr', {}, '2019-09-24')
 
 export async function describeWxCloudBaseRunReleaseOrder(options: IDescribeWxCloudBaseRunReleaseOrder) {
     const res = await tcbService.request('DescribeWxCloudBaseRunReleaseOrder', {
@@ -74,12 +75,12 @@ function checkRequiredParams(options: ITcbrServiceRequiredOptions) {
         throw new CloudBaseError('必须使用 --containerPort 指定监听端口号')
     }
 
-    if (!options.isCreated && !options.path) {
-        throw new CloudBaseError('请使用 --path 指定代码根目录')
+    if (!options.isCreated && !options.path && !options.custom_image) {
+        throw new CloudBaseError('请使用 --path 指定代码根目录或 --custom_image 指定 TCR 镜像 URL')
     }
 
-    if (options.isCreated && !options.path && !options.library_image && !options.image) {
-        throw new CloudBaseError('请使用 --path 指定代码根目录或 --library_image 指定线上镜像 tag ')
+    if (options.isCreated && !options.path && !options.custom_image && !options.library_image && !options.image) {
+        throw new CloudBaseError('请使用 --path 指定代码根目录或 --custom_image 指定 TCR 镜像 URL 或 --library_image 指定线上镜像 tag ')
     }
 }
 
@@ -110,6 +111,7 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, isCreated
         targetDir,
         dockerfile,
         image,
+        custom_image,
         library_image,
         json: _json = false
     } = options
@@ -121,18 +123,20 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, isCreated
         containerPort,
         isCreated,
         path,
+        custom_image,
         library_image,
         image
     })
     containerPort = Number(containerPort)
 
-    // 处理用户输入的参数
+    // 处理用户传入参数
+    const deployByImage = Boolean(custom_image || library_image || image)
     const DeployInfo: any = {
-        DeployType: library_image || image
-            ? 'image'
-            : 'package',
+        DeployType: deployByImage ? 'image' : 'package',
         DeployRemark: remark || '',
+        ReleaseType: 'FULL'
     }
+
     // 可选参数进行校验和转换
     let {
         cpuConverted,
@@ -146,6 +150,7 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, isCreated
         minNum
     })
 
+    const defaultLogType = 'none'
     const newServiceOptions = {
         ServerName: serviceName,
         EnvId: envId,
@@ -166,6 +171,7 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, isCreated
             Port: containerPort,
             HasDockerfile: true,
             Dockerfile: dockerfile || 'Dockerfile',
+            LogType: defaultLogType
         },
         DeployInfo: {
             ...DeployInfo
@@ -182,20 +188,35 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, isCreated
         DeployInfo.PackageName = PackageName
         DeployInfo.PackageVersion = PackageVersion
     } else if (DeployInfo.DeployType === 'image') {
-        // 拉取镜像
-        const imageList = await listImage({
-            envId,
-            serviceName
-        })
-        if (library_image) {
-            const imageInfo = imageList.find(({ Tag }) => Tag === library_image)
-            if (!imageInfo) {
-                throw new CloudBaseError(`镜像 ${library_image} 不存在`)
+        // 传入 tcr 镜像实例
+        if(custom_image) {
+            const authorizedTcrInstances = await getAuthorizedTcrInstance(envId)
+            if(!authorizedTcrInstances) {
+                const link = `https://console.cloud.tencent.com/tcbr/env?/tcbr/env=&envId=${envId}`
+                throw new CloudBaseError(`您还未授权 tcr 实例，请先到控制台授权：${genClickableLink(link)}`)
             }
-            DeployInfo.ImageUrl = imageInfo.ImageUrl
+            // 获取实例、仓库、镜像信息
+            const imageList = await getValidImageTags(authorizedTcrInstances)
+            // 检查传入的 URL 是否合法，不合法 throw error 阻止执行
+            validateTcrImageUrl(imageList, custom_image)
+            
+            DeployInfo.ImageUrl = custom_image
         } else {
-            // 暂时不支持 image 镜像
-            throw new CloudBaseError('暂不支持 --image 参数，请使用 --library_image 指定线上镜像 tag')
+            // 拉取镜像
+            const imageList = await listImage({
+                envId,
+                serviceName
+            })
+            if (library_image) {
+                const imageInfo = imageList.find(({ Tag }) => Tag === library_image)
+                if (!imageInfo) {
+                    throw new CloudBaseError(`镜像 ${library_image} 不存在`)
+                }
+                DeployInfo.ImageUrl = imageInfo.ImageUrl
+            } else {
+                // 暂时不支持 image 镜像
+                throw new CloudBaseError('暂不支持 --image 参数，请使用 --custom_image 指定 tcr 镜像 URL 或 --library_image 指定线上镜像 tag')
+            }
         }
     }
 
@@ -203,4 +224,141 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, isCreated
         ...DeployInfo
     }
     return newServiceOptions
+}
+
+
+export async function getAuthorizedTcrInstance(envId) {
+    let { data: { TcrInstances: authorizedTcrInstances } } = await callTcbrApi('DescribeTcrInstances', {
+        EnvId: envId
+    })
+    return authorizedTcrInstances
+}
+
+/**
+ * 
+ * @param authorizedTcrInstances 已授权的 tcr 实例列表
+ * @returns 组合后的实例&仓库&镜像信息
+ *  example:
+ * ```json
+ *[
+ *  {
+ *    "registryId": "xxx",
+ *    "domain": "xxx",
+ *    "repos": [
+ *      {
+ *        "Name": "mynamespace/myrepo",
+ *        "Namespace": "mynamespace",
+ *        "CreationTime": "xxx",
+ *        "UpdateTime": "xxx",
+ *        "Public": false,
+ *        "Description": "",
+ *        "BriefDescription": "",
+ *        "images": [
+ *          {
+ *            "Digest": "xxx",
+ *            "ImageVersion": "latest",
+ *            "Size": xxx,
+ *            "UpdateTime": "xxx"
+ *          },
+ *          {
+ *            "Digest": "xxx",
+ *            "ImageVersion": "tag",
+ *            "Size": xxx,
+ *            "UpdateTime": "xxx"
+ *          }
+ *        ]
+ *      },
+ *      {
+ *        "Name": "mynamespace/second",
+ *        "Namespace": "mynamespace",
+ *        "CreationTime": "xxx",
+ *        "UpdateTime": "xxx",
+ *        "Public": false,
+ *        "Description": "",
+ *        "BriefDescription": "",
+ *        "images": []
+ *      }
+ *    ]
+ *  }
+ *]
+ * ```
+ */
+export async function getValidImageTags(authorizedTcrInstances) {
+    const imageList = []
+
+    const reposUnderSpecifiedRegistry = []
+    for (const registry of authorizedTcrInstances) {
+        const repos = []
+        let { Id: registryId, Domain: domain } = registry
+        const limit = 100
+        let curIndex = 1
+        let totalCount = 0
+        do {
+            const rsp = await tcrCloudApiService.request('DescribeRepositories', {
+                RegistryId: registryId,
+                Offset: curIndex,
+                Limit: limit
+            })
+            for (let i = 0; i < rsp?.RepositoryList?.length || 0; ++i) {
+                repos.push(rsp.RepositoryList[i])
+            }
+            curIndex += 1
+            totalCount = rsp.TotalCount
+        } while (repos.length < totalCount)
+        reposUnderSpecifiedRegistry.push({ registryId, domain, repos })
+    }
+
+    if (!reposUnderSpecifiedRegistry.length) return imageList
+
+    for(const repo of reposUnderSpecifiedRegistry) {
+        const { registryId, repos } = repo
+        for(const repoItem of repos) {
+            const {Name, Namespace} = repoItem
+            const images = []
+            const limit = 100
+            let curIndex = 1
+            let totalCount = 0
+            do {
+                const rsp = await tcrCloudApiService.request('DescribeImages', {
+                    RegistryId: registryId,
+                    NamespaceName: Namespace,
+                    RepositoryName: Name.split(`${Namespace}/`)[1],
+                    Offset: curIndex,
+                    Limit: limit
+                })
+                for (let i = 0; i < rsp?.ImageInfoList?.length || 0; ++i) {
+                    images.push(rsp.ImageInfoList[i])
+                }
+                curIndex += 1
+                totalCount = rsp.TotalCount
+            } while (images.length < totalCount)
+            repoItem.images = images
+            imageList.push({...repo})
+        }
+    }
+    return imageList
+}
+/**
+ * @description 校验镜像列表是否合法
+ * @param imageList 组合后的实例&仓库&镜像信息
+ * @param imageUrl 输入的镜像地址
+ */
+export function validateTcrImageUrl(imageList, imageUrl) {
+    try {
+        const host = imageUrl.split('/')[0]
+        const namespace = imageUrl.split('/')[1]
+        const name = `${namespace}/${imageUrl.split('/')[2].split(':')[0]}`
+        const tag = imageUrl.split('/')[2].split(':')[1]
+
+        if (
+            !imageList.some(({ repos, domain }) => host === domain && repos.some((repo) =>
+            namespace === repo.Namespace && name === repo.Name 
+            && repo?.images.some(({ ImageVersion }) => tag === ImageVersion)))
+        ) {
+            throw new CloudBaseError('镜像URL解析失败，请检查输入的镜像URL是否正确')
+        }
+
+    } catch (error) {
+        throw new CloudBaseError('镜像URL解析失败，请检查输入的镜像URL是否正确')
+    }
 }

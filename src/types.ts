@@ -585,6 +585,7 @@ export interface ITcbrServiceOptions {
     targetDir: string,
     dockerfile: string,
     image: string,
+    custom_image: string,
     library_image: string,
     json: boolean
 }
@@ -640,6 +641,7 @@ export interface ITcbrServiceRequiredOptions {
     containerPort: number,
     isCreated: boolean,
     path: string,
+    custom_image: string,
     library_image: string,
     image: string
 }

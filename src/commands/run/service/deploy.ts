@@ -81,6 +81,10 @@ export class DeployServiceTcbr extends Command {
                     desc: 'Dockerfile文件名，默认为 Dockerfile'
                 },
                 {
+                    flags: '--custom_image <custom_image>',
+                    desc: 'TCR 仓库镜像 URL'  
+                  },
+                {
                     flags: '--library_image <library_image>',
                     desc: '线上镜像仓库的 tag，仅在服务已存在时可用'
                 },
