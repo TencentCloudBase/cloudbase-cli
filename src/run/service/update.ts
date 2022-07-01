@@ -1,6 +1,7 @@
 import { CloudBaseError, logger } from '@cloudbase/toolbox'
 import inquirer from 'inquirer'
 import { describeCloudRunServerDetail } from '..'
+import { ITcbrServiceOptions } from '../../types'
 import { callTcbrApi } from '../../utils'
 import { tcbrServiceOptions } from './common'
 import { getBuildStatus, getLogs } from './showLogs'
@@ -14,7 +15,7 @@ export async function updateCloudRunServer(serviceConfigOptions) {
     }
 }
 
-export async function updateTcbrService(options) {
+export async function updateTcbrService(options: ITcbrServiceOptions) {
     const { data: serviceDetail } = await describeCloudRunServerDetail({
         envId: options.envId,
         serviceName: options.serviceName

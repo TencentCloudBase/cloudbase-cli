@@ -659,3 +659,14 @@ export interface ITcbrServiceConvertedOptionalOptions {
     maxNumConverted: number,
     minNumConverted: number
 }
+
+export interface IAuthorizedTcrInstance {
+    Id: string,
+    Name: string,
+    Domain: string
+}
+
+export enum DEPLOY_TYPE {
+    PACKAGE = 'package',
+    IMAGE = 'image'
+}

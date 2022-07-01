@@ -1,5 +1,5 @@
 import { CloudApiService, parseOptionalParams, parseInputParam, callTcbrApi, genClickableLink } from '../../utils'
-import { ITcbrServiceOptions, IDescribeWxCloudBaseRunReleaseOrder, ITcbrServiceRequiredOptions } from '../../types'
+import { ITcbrServiceOptions, IDescribeWxCloudBaseRunReleaseOrder, ITcbrServiceRequiredOptions, DEPLOY_TYPE, IAuthorizedTcrInstance } from '../../types'
 import { CloudBaseError } from '@cloudbase/toolbox'
 import { packageDeploy } from './index'
 import { listImage } from '..'
@@ -132,7 +132,7 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, isCreated
     // 处理用户传入参数
     const deployByImage = Boolean(custom_image || library_image || image)
     const DeployInfo: any = {
-        DeployType: deployByImage ? 'image' : 'package',
+        DeployType: deployByImage ? DEPLOY_TYPE.IMAGE : DEPLOY_TYPE.PACKAGE,
         DeployRemark: remark || '',
         ReleaseType: 'FULL'
     }
@@ -178,7 +178,7 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, isCreated
         }
     }
 
-    if (DeployInfo.DeployType === 'package') {
+    if (DeployInfo.DeployType === DEPLOY_TYPE.PACKAGE) {
         // 本地上传
         const { PackageName, PackageVersion } = await packageDeploy({
             envId,
@@ -187,7 +187,7 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, isCreated
         })
         DeployInfo.PackageName = PackageName
         DeployInfo.PackageVersion = PackageVersion
-    } else if (DeployInfo.DeployType === 'image') {
+    } else if (DeployInfo.DeployType === DEPLOY_TYPE.IMAGE) {
         // 传入 tcr 镜像实例
         if (custom_image) {
             const authorizedTcrInstances = await getAuthorizedTcrInstance(envId)
@@ -225,7 +225,7 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, isCreated
 }
 
 // 获取授权 tcr 实例
-export async function getAuthorizedTcrInstance(envId) {
+export async function getAuthorizedTcrInstance(envId: string): Promise<IAuthorizedTcrInstance[] | null> {
     let { data: { TcrInstances: authorizedTcrInstances } } = await callTcbrApi('DescribeTcrInstances', {
         EnvId: envId
     })
@@ -234,10 +234,11 @@ export async function getAuthorizedTcrInstance(envId) {
 
 /**
  * 
+ * @description 校验输入的 tcr 镜像 URL 是否合法
  * @param authorizedTcrInstances 已授权的 tcr 实例列表
  * @param imageUrl 输入的镜像 URL 地址
  */
-export async function validateTcrImageURL(authorizedTcrInstances, imageUrl) {
+export async function validateTcrImageURL(authorizedTcrInstances: IAuthorizedTcrInstance[] | null, imageUrl: string) {
     const errMsg = '镜像URL解析失败，请检查输入的镜像URL是否正确'
     try {
         const host = imageUrl.split('/')[0]
@@ -277,7 +278,7 @@ export async function validateTcrImageURL(authorizedTcrInstances, imageUrl) {
             const { registryId, repos } = repo
             const filteredRepos = repos.filter(({ Name }) => Name === name)
 
-            if (!filteredRepos.length) {
+            if (!filteredRepos?.length) {
                 throw new CloudBaseError(errMsg)
             }
 
