@@ -189,17 +189,15 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, isCreated
         DeployInfo.PackageVersion = PackageVersion
     } else if (DeployInfo.DeployType === 'image') {
         // 传入 tcr 镜像实例
-        if(custom_image) {
+        if (custom_image) {
             const authorizedTcrInstances = await getAuthorizedTcrInstance(envId)
-            if(!authorizedTcrInstances) {
+            if (!authorizedTcrInstances) {
                 const link = `https://console.cloud.tencent.com/tcbr/env?/tcbr/env=&envId=${envId}`
                 throw new CloudBaseError(`您还未授权 tcr 实例，请先到控制台授权：${genClickableLink(link)}`)
             }
-            // 获取实例、仓库、镜像信息
-            const imageList = await getValidImageTags(authorizedTcrInstances)
             // 检查传入的 URL 是否合法，不合法 throw error 阻止执行
-            validateTcrImageUrl(imageList, custom_image)
-            
+            await validateTcrImageURL(authorizedTcrInstances, custom_image)
+
             DeployInfo.ImageUrl = custom_image
         } else {
             // 拉取镜像
@@ -226,7 +224,7 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, isCreated
     return newServiceOptions
 }
 
-
+// 获取授权 tcr 实例
 export async function getAuthorizedTcrInstance(envId) {
     let { data: { TcrInstances: authorizedTcrInstances } } = await callTcbrApi('DescribeTcrInstances', {
         EnvId: envId
@@ -237,128 +235,79 @@ export async function getAuthorizedTcrInstance(envId) {
 /**
  * 
  * @param authorizedTcrInstances 已授权的 tcr 实例列表
- * @returns 组合后的实例&仓库&镜像信息
- *  example:
- * ```json
- *[
- *  {
- *    "registryId": "xxx",
- *    "domain": "xxx",
- *    "repos": [
- *      {
- *        "Name": "mynamespace/myrepo",
- *        "Namespace": "mynamespace",
- *        "CreationTime": "xxx",
- *        "UpdateTime": "xxx",
- *        "Public": false,
- *        "Description": "",
- *        "BriefDescription": "",
- *        "images": [
- *          {
- *            "Digest": "xxx",
- *            "ImageVersion": "latest",
- *            "Size": xxx,
- *            "UpdateTime": "xxx"
- *          },
- *          {
- *            "Digest": "xxx",
- *            "ImageVersion": "tag",
- *            "Size": xxx,
- *            "UpdateTime": "xxx"
- *          }
- *        ]
- *      },
- *      {
- *        "Name": "mynamespace/second",
- *        "Namespace": "mynamespace",
- *        "CreationTime": "xxx",
- *        "UpdateTime": "xxx",
- *        "Public": false,
- *        "Description": "",
- *        "BriefDescription": "",
- *        "images": []
- *      }
- *    ]
- *  }
- *]
- * ```
+ * @param imageUrl 输入的镜像 URL 地址
  */
-export async function getValidImageTags(authorizedTcrInstances) {
-    const imageList = []
-
-    const reposUnderSpecifiedRegistry = []
-    for (const registry of authorizedTcrInstances) {
-        const repos = []
-        let { Id: registryId, Domain: domain } = registry
-        const limit = 100
-        let curIndex = 1
-        let totalCount = 0
-        do {
-            const rsp = await tcrCloudApiService.request('DescribeRepositories', {
-                RegistryId: registryId,
-                Offset: curIndex,
-                Limit: limit
-            })
-            for (let i = 0; i < rsp?.RepositoryList?.length || 0; ++i) {
-                repos.push(rsp.RepositoryList[i])
-            }
-            curIndex += 1
-            totalCount = rsp.TotalCount
-        } while (repos.length < totalCount)
-        reposUnderSpecifiedRegistry.push({ registryId, domain, repos })
-    }
-
-    if (!reposUnderSpecifiedRegistry.length) return imageList
-
-    for(const repo of reposUnderSpecifiedRegistry) {
-        const { registryId, repos } = repo
-        for(const repoItem of repos) {
-            const {Name, Namespace} = repoItem
-            const images = []
-            const limit = 100
-            let curIndex = 1
-            let totalCount = 0
-            do {
-                const rsp = await tcrCloudApiService.request('DescribeImages', {
-                    RegistryId: registryId,
-                    NamespaceName: Namespace,
-                    RepositoryName: Name.split(`${Namespace}/`)[1],
-                    Offset: curIndex,
-                    Limit: limit
-                })
-                for (let i = 0; i < rsp?.ImageInfoList?.length || 0; ++i) {
-                    images.push(rsp.ImageInfoList[i])
-                }
-                curIndex += 1
-                totalCount = rsp.TotalCount
-            } while (images.length < totalCount)
-            repoItem.images = images
-            imageList.push({...repo})
-        }
-    }
-    return imageList
-}
-/**
- * @description 校验镜像列表是否合法
- * @param imageList 组合后的实例&仓库&镜像信息
- * @param imageUrl 输入的镜像地址
- */
-export function validateTcrImageUrl(imageList, imageUrl) {
+export async function validateTcrImageURL(authorizedTcrInstances, imageUrl) {
+    const errMsg = '镜像URL解析失败，请检查输入的镜像URL是否正确'
     try {
         const host = imageUrl.split('/')[0]
         const namespace = imageUrl.split('/')[1]
         const name = `${namespace}/${imageUrl.split('/')[2].split(':')[0]}`
         const tag = imageUrl.split('/')[2].split(':')[1]
 
-        if (
-            !imageList.some(({ repos, domain }) => host === domain && repos.some((repo) =>
-            namespace === repo.Namespace && name === repo.Name 
-            && repo?.images.some(({ ImageVersion }) => tag === ImageVersion)))
-        ) {
-            throw new CloudBaseError('镜像URL解析失败，请检查输入的镜像URL是否正确')
+        const filteredInstances = authorizedTcrInstances?.filter(({ Domain }) => host === Domain)
+
+        if (!filteredInstances?.length) {
+            throw new CloudBaseError(errMsg)
         }
 
-    } catch (error) {
-        throw new CloudBaseError('镜像URL解析失败，请检查输入的镜像URL是否正确')
+        const reposUnderSpecifiedRegistry = []
+        for (const registry of filteredInstances) {
+            const repos = []
+            let { Id: registryId, Domain: domain } = registry
+            const limit = 100
+            let curIndex = 1
+            let totalCount = 0
+            do {
+                const rsp = await tcrCloudApiService.request('DescribeRepositories', {
+                    RegistryId: registryId,
+                    Offset: curIndex,
+                    Limit: limit
+                })
+                for (let i = 0; i < rsp?.RepositoryList?.length || 0; ++i) {
+                    repos.push(rsp.RepositoryList[i])
+                }
+                curIndex += 1
+                totalCount = rsp.TotalCount
+            } while (repos.length < totalCount)
+            reposUnderSpecifiedRegistry.push({ registryId, domain, repos })
+        }
+
+        for (const repo of reposUnderSpecifiedRegistry) {
+            const { registryId, repos } = repo
+            const filteredRepos = repos.filter(({ Name }) => Name === name)
+
+            if (!filteredRepos.length) {
+                throw new CloudBaseError(errMsg)
+            }
+
+            for (const repoItem of repos) {
+                const { Name, Namespace } = repoItem
+                const images = []
+                const limit = 100
+                let curIndex = 1
+                let totalCount = 0
+                do {
+                    const rsp = await tcrCloudApiService.request('DescribeImages', {
+                        RegistryId: registryId,
+                        NamespaceName: Namespace,
+                        RepositoryName: Name.split(`${Namespace}/`)[1],
+                        Offset: curIndex,
+                        Limit: limit
+                    })
+                    for (let i = 0; i < rsp?.ImageInfoList?.length || 0; ++i) {
+                        images.push(rsp.ImageInfoList[i])
+                    }
+                    curIndex += 1
+                    totalCount = rsp.TotalCount
+                } while (images.length < totalCount)
+
+                if (!images.some(({ ImageVersion }) => ImageVersion === tag)) {
+                    throw new CloudBaseError(errMsg)
+                }
+            }
+        }
+    } catch (e) {
+        throw new CloudBaseError(errMsg)
     }
 }
