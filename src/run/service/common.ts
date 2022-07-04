@@ -234,7 +234,7 @@ export async function getAuthorizedTcrInstance(envId: string): Promise<IAuthoriz
 
 /**
  * 
- * @description 校验输入的 tcr 镜像 URL 是否合法
+ * @description 校验输入的 tcr 镜像 URL 是否合法（域名/仓库名:镜像tag）
  * @param authorizedTcrInstances 已授权的 tcr 实例列表
  * @param imageUrl 输入的镜像 URL 地址
  */
@@ -245,13 +245,13 @@ export async function validateTcrImageURL(authorizedTcrInstances: IAuthorizedTcr
         const namespace = imageUrl.split('/')[1]
         const name = `${namespace}/${imageUrl.split('/')[2].split(':')[0]}`
         const tag = imageUrl.split('/')[2].split(':')[1]
-
+        // 获取授权实例，校验域名
         const filteredInstances = authorizedTcrInstances?.filter(({ Domain }) => host === Domain)
 
         if (!filteredInstances?.length) {
             throw new CloudBaseError(errMsg)
         }
-
+        // 获取实例中仓库，校验仓库名
         const reposUnderSpecifiedRegistry = []
         for (const registry of filteredInstances) {
             const repos = []
@@ -265,47 +265,44 @@ export async function validateTcrImageURL(authorizedTcrInstances: IAuthorizedTcr
                     Offset: curIndex,
                     Limit: limit
                 })
-                for (let i = 0; i < rsp?.RepositoryList?.length || 0; ++i) {
-                    repos.push(rsp.RepositoryList[i])
-                }
+                repos.push(...rsp.RepositoryList)
                 curIndex += 1
                 totalCount = rsp.TotalCount
             } while (repos.length < totalCount)
             reposUnderSpecifiedRegistry.push({ registryId, domain, repos })
         }
 
+        const filteredRepos = []
         for (const repo of reposUnderSpecifiedRegistry) {
             const { registryId, repos } = repo
-            const filteredRepos = repos.filter(({ Name }) => Name === name)
-
+            filteredRepos.push(...repos.filter(({ Name }) => Name === name))
             if (!filteredRepos?.length) {
                 throw new CloudBaseError(errMsg)
             }
+            filteredRepos.forEach(item => { item.registryId = registryId })   // 手动插入实例id，获取镜像接口用
+        }
+        // 获取仓库内镜像，校验tag
+        for (const repoItem of filteredRepos) {
+            const { Name, Namespace, registryId } = repoItem
+            const images = []
+            const limit = 100
+            let curIndex = 1
+            let totalCount = 0
+            do {
+                const rsp = await tcrCloudApiService.request('DescribeImages', {
+                    RegistryId: registryId,
+                    NamespaceName: Namespace,
+                    RepositoryName: Name.split(`${Namespace}/`)[1],
+                    Offset: curIndex,
+                    Limit: limit
+                })
+                images.push(...rsp.ImageInfoList)
+                curIndex += 1
+                totalCount = rsp.TotalCount
+            } while (images.length < totalCount)
 
-            for (const repoItem of repos) {
-                const { Name, Namespace } = repoItem
-                const images = []
-                const limit = 100
-                let curIndex = 1
-                let totalCount = 0
-                do {
-                    const rsp = await tcrCloudApiService.request('DescribeImages', {
-                        RegistryId: registryId,
-                        NamespaceName: Namespace,
-                        RepositoryName: Name.split(`${Namespace}/`)[1],
-                        Offset: curIndex,
-                        Limit: limit
-                    })
-                    for (let i = 0; i < rsp?.ImageInfoList?.length || 0; ++i) {
-                        images.push(rsp.ImageInfoList[i])
-                    }
-                    curIndex += 1
-                    totalCount = rsp.TotalCount
-                } while (images.length < totalCount)
-
-                if (!images.some(({ ImageVersion }) => ImageVersion === tag)) {
-                    throw new CloudBaseError(errMsg)
-                }
+            if (!images.some(({ ImageVersion }) => ImageVersion === tag)) {
+                throw new CloudBaseError(errMsg)
             }
         }
     } catch (e) {
