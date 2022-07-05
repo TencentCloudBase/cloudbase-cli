@@ -83,6 +83,10 @@ export class CreateServiceTcbr extends Command {
                 //     desc: '线上镜像仓库的 tag'
                 // },
                 {
+                  flags: '--custom_image <custom_image>',
+                  desc: 'TCR 仓库镜像 URL'  
+                },
+                {
                     flags: '--image <image>',
                     desc: '镜像标签或ID'
                 },

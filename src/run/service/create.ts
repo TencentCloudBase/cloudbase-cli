@@ -11,7 +11,7 @@ export const describeCloudRunServerDetail = async (options: { envId: string; ser
     })
 }
 
-export async function createCloudRunServer(serviceConfigOptions) {
+export async function createCloudRunServer(serviceConfigOptions: Record<string, any>) {
     return callTcbrApi('CreateCloudRunServer', serviceConfigOptions)
 }
 

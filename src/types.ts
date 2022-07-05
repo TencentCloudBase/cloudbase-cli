@@ -585,6 +585,7 @@ export interface ITcbrServiceOptions {
     targetDir: string,
     dockerfile: string,
     image: string,
+    custom_image: string,
     library_image: string,
     json: boolean
 }
@@ -640,6 +641,7 @@ export interface ITcbrServiceRequiredOptions {
     containerPort: number,
     isCreated: boolean,
     path: string,
+    custom_image: string,
     library_image: string,
     image: string
 }
@@ -656,4 +658,15 @@ export interface ITcbrServiceConvertedOptionalOptions {
     memConverted: number,
     maxNumConverted: number,
     minNumConverted: number
+}
+
+export interface IAuthorizedTcrInstance {
+    Id: string,
+    Name: string,
+    Domain: string
+}
+
+export enum DEPLOY_TYPE {
+    PACKAGE = 'package',
+    IMAGE = 'image'
 }
