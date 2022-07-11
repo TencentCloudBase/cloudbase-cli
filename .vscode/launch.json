@@ -5,6 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Launch Program",
+            "program": "${workspaceFolder}/bin/tcb.js",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "args": ["lowcode", "watch"],
+            "type": "node"
+        },
+        {
             "type": "node",
             "request": "launch",
             "name": "Debug: cloudbase logout",

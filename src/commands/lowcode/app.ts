@@ -28,7 +28,25 @@ export class LowCodeWatch extends Command {
     async execute(@CmdContext() ctx, @ArgsOptions() options) {
         await watchApp({
             watchPort: 8288,
-            wxDevtoolPath: options?.wxDevtoolPath,
+            wxDevtoolPath: options?.wxDevtoolPath
         })
+    }
+}
+
+@ICommand()
+export class DanielWatch extends Command {
+    get options() {
+        return {
+            cmd: 'lowcode',
+            childCmd: 'watch-ws',
+            options: [],
+            desc: '开启云开发低码的本地开发模式',
+            requiredEnvId: false
+        }
+    }
+
+    @InjectParams()
+    async execute(@CmdContext() ctx, @ArgsOptions() options) {
+        console.log('>>> 启动啦')
     }
 }
