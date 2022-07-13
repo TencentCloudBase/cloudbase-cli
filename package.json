@@ -11,7 +11,8 @@
         "test": "jest --runInBand --forceExit --detectOpenHandles --coverage --verbose --testTimeout=10000",
         "tsc": "tsc",
         "pkg": "pkg ./bin/cloudbase.js --out-path ./pkg",
-        "postinstall": "node ./post-install.js || exit 0"
+        "postinstall": "node ./post-install.js || exit 0",
+        "prepublishOnly": "npm run build"
     },
     "repository": {
         "type": "git",
@@ -23,7 +24,7 @@
     },
     "husky": {
         "hooks": {
-            "pre-commit": "npm run build && git add ."
+            "pre-commit": "npm run build"
         }
     },
     "author": "cwuyiqing@gmail.com",
