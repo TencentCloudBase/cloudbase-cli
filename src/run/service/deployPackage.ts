@@ -1,9 +1,7 @@
 import path from 'path'
 import * as fs from 'fs'
-import { fetch } from '../../utils'
-import { createBuild } from '..'
+import { createBuild, uploadZip } from '..'
 import { CloudBaseError, execWithLoading, loadingFactory, zipDir } from '@cloudbase/toolbox'
-
 interface IPackageDeploy {
     envId: string,
     serviceName: string,
@@ -18,7 +16,7 @@ export async function packageDeploy(options: IPackageDeploy) {
         filePath,
         fileToIgnore
     } = options
-    let { PackageName, PackageVersion, UploadUrl } = await createBuild({
+    let { PackageName, PackageVersion, UploadUrl, UploadHeaders } = await createBuild({
         envId,
         serviceName
     })
@@ -28,13 +26,13 @@ export async function packageDeploy(options: IPackageDeploy) {
     const dstPath = path.join(process.cwd(), zipFile)
 
     try {
-        if(fs.statSync(filePath).isDirectory()) {
+        if (fs.statSync(filePath).isDirectory()) {
             loading.start('正在压缩文件…')
             await zipDir(filePath, dstPath, fileToIgnore)
             loading.succeed('压缩文件完成')
-        } 
+        }
     } catch (error) {
-        if(error.code === 'ENOENT') {
+        if (error.code === 'ENOENT') {
             throw new CloudBaseError('找不到指定文件夹，请检查文件路径是否正确')
         } else {
             throw new CloudBaseError(error.message)
@@ -44,13 +42,7 @@ export async function packageDeploy(options: IPackageDeploy) {
     try {
         return await execWithLoading(
             async () => {
-                await fetch(UploadUrl, {
-                    method: 'PUT',
-                    body: fs.createReadStream(zipFile),
-                    headers: {
-                        'content-type': 'application/zip'
-                    }
-                })
+                await uploadZip(zipFile, UploadUrl, UploadHeaders[0])
                 return { PackageName, PackageVersion }
             },
             {
