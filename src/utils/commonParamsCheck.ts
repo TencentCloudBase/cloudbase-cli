@@ -42,11 +42,13 @@ export function parseOptionalParams(options: ITcbrServiceOptionalOptions): ITcbr
 /**
  * 
  * @description 通用两层三元运算符的参数处理，例如
+ * ```
  *              MaxNum: maxNumConverted
                 ? convertNumber(maxNum)
                 : _override
                     ? (previousServerConfig?.MaxNum)
                     : 50
+    ```
  * @param originalParam 原始参数，如 maxNumConverted
  * @param override 是否覆盖，如 _override
  * @param handler 处理参数的函数，如 convertNumber
