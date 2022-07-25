@@ -566,6 +566,10 @@ export interface IDescribeCloudRunServerDetail {
     RequestId: string
 }
 
+export const enum TCBR_LOG_TYPE {
+    NONE = 'none'
+}
+
 export interface ITcbrServiceOptions {
     noConfirm: boolean,
     override: boolean,
@@ -587,6 +591,7 @@ export interface ITcbrServiceOptions {
     image: string,
     custom_image: string,
     library_image: string,
+    log_type: TCBR_LOG_TYPE,
     json: boolean
 }
 

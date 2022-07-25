@@ -1,5 +1,5 @@
 import { CloudApiService, parseOptionalParams, parseInputParam, callTcbrApi, genClickableLink } from '../../utils'
-import { ITcbrServiceOptions, IDescribeWxCloudBaseRunReleaseOrder, ITcbrServiceRequiredOptions, DEPLOY_TYPE, IAuthorizedTcrInstance } from '../../types'
+import { ITcbrServiceOptions, IDescribeWxCloudBaseRunReleaseOrder, ITcbrServiceRequiredOptions, DEPLOY_TYPE, IAuthorizedTcrInstance, TCBR_LOG_TYPE } from '../../types'
 import { CloudBaseError } from '@cloudbase/toolbox'
 import { packageDeploy } from './index'
 import { listImage } from '..'
@@ -113,6 +113,7 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, isCreated
         image,
         custom_image,
         library_image,
+        log_type,
         json: _json = false
     } = options
 
@@ -150,7 +151,11 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, isCreated
         minNum
     })
 
-    const defaultLogType = 'none'
+    if (log_type && log_type !== TCBR_LOG_TYPE.NONE) {
+        throw new CloudBaseError('日志类型 log_type 只能为 none，如需自定义日志，请前往控制台配置')
+    }
+
+    const defaultLogType = TCBR_LOG_TYPE.NONE
     const newServiceOptions = {
         ServerName: serviceName,
         EnvId: envId,
@@ -171,7 +176,11 @@ export async function tcbrServiceOptions(options: ITcbrServiceOptions, isCreated
             Port: containerPort,
             HasDockerfile: true,
             Dockerfile: dockerfile || 'Dockerfile',
-            LogType: defaultLogType
+            LogType: parseInputParam(log_type, _override, null, previousServerConfig?.LogType, defaultLogType),
+            // CLS配置, 当日志类型为 custom 时生效, 未开放，默认传原来的
+            LogSetId: previousServerConfig?.LogSetId,
+            LogTopicId: previousServerConfig?.LogTopicId,
+            LogParseType: previousServerConfig?.LogParseType,
         },
         DeployInfo: {
             ...DeployInfo

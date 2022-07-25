@@ -63,6 +63,10 @@ export class DeployServiceTcbr extends Command {
                     flags: '--envParams <envParams>',
                     desc: '环境变量，格式为xx=a&yy=b，默认为空'
                 },
+                {
+                    flags: '--log_type <log_type>',
+                    desc: '日志类型，只能为 none，如需自定义日志，请前往控制台配置'
+                },
                 // 版本有关
                 {
                     flags: '--containerPort <containerPort>',
