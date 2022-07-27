@@ -8,6 +8,13 @@ import { DEFAULT_CPU_MEM_SET } from '../../constant'
 const tcbService = CloudApiService.getInstance('tcb')
 const tcrCloudApiService = new CloudApiService('tcr', {}, '2019-09-24')
 
+export const describeCloudRunServerDetail = async (options: { envId: string; serviceName: string }) => {
+    return await callTcbrApi('DescribeCloudRunServerDetail', {
+        EnvId: options.envId,
+        ServerName: options.serviceName,
+    })
+}
+
 export async function describeWxCloudBaseRunReleaseOrder(options: IDescribeWxCloudBaseRunReleaseOrder) {
     const res = await tcbService.request('DescribeWxCloudBaseRunReleaseOrder', {
         EnvId: options.envId,
@@ -64,15 +71,15 @@ export const mergeEnvParams = (curEnvParams: string, preEnvParams: string) => {
 
 function checkRequiredParams(options: ITcbrServiceRequiredOptions) {
     if (!options.envId) {
-        throw new CloudBaseError('必须使用 -e 或 --envId 指定环境ID')
+        throw new CloudBaseError('请使用 -e 或 --envId 指定环境ID')
     }
 
     if (!options.serviceName) {
-        throw new CloudBaseError('必须使用 -s 或 --serviceName 指定服务名')
+        throw new CloudBaseError('请使用 -s 或 --serviceName 指定服务名')
     }
 
     if (!options.containerPort) {
-        throw new CloudBaseError('必须使用 --containerPort 指定监听端口号')
+        throw new CloudBaseError('请使用 --containerPort 指定监听端口号')
     }
 
     if (!options.isCreated && !options.path && !options.custom_image) {
