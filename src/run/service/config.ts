@@ -1,8 +1,7 @@
-import { describeCloudRunServerDetail } from './create'
 import { ITcbrServiceConfigOptions, IDescribeCloudRunServerDetail } from '../../types'
 import { CloudBaseError } from '@cloudbase/toolbox'
-import { mergeEnvParams, extractPolicyDetails } from './common'
-import { callTcbrApi, parseOptionalParams } from '../../utils'
+import { mergeEnvParams, extractPolicyDetails, describeCloudRunServerDetail } from './common'
+import { callTcbrApi, genClickableLink, parseOptionalParams } from '../../utils'
 
 export async function tcbrServiceConfigOptions(options: ITcbrServiceConfigOptions) {
     let {
@@ -42,8 +41,8 @@ export async function tcbrServiceConfigOptions(options: ITcbrServiceConfigOption
         serviceName
     })
 
-    if(serviceInfo instanceof Error && serviceInfo['code'] === 'InvalidParameter') {
-        throw new CloudBaseError('服务不存在，请检查服务名是否正确或用 tcb run service:create 创建服务')
+    if (serviceInfo instanceof Error && serviceInfo['code'] === 'InvalidParameter') {
+        throw new CloudBaseError(`服务不存在，请检查服务名是否正确或到控制台 ${genClickableLink('https://console.cloud.tencent.com/tcbr')} 创建服务`)
     }
 
     const { ServerConfig: previousServerConfig } = serviceInfo.data as IDescribeCloudRunServerDetail
