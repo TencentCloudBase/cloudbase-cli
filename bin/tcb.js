@@ -84,20 +84,20 @@ if (isCommandEmpty) {
 }
 
 // 处理无效命令
-program.action((command) => {
-    const args = command.args
+program.action(() => {
+    const args = program.args
     if (!Array.isArray(args) || !args.length) {
         return
     }
     const cmd = args.join(' ')
-    console.log(chalk.bold.red('Error: ') + `${cmd} 不是有效的命令！`)
+    console.log(chalk.bold.red('Error: ') + `${cmd} 不是有效的命令`)
     didYouMean.threshold = 0.5
     didYouMean.caseSensitive = false
     const suggest = didYouMean(cmd, ALL_COMMANDS)
     if (suggest) {
-        console.log(chalk.bold(`\n您是不是想使用命令：cloudbase ${suggest}\n`))
+        console.log(chalk.bold(`\n您是不是想使用命令：tcb ${suggest}\n`))
     }
-    console.log(`使用 ${chalk.bold('cloudbase -h')} 查看所有命令~`)
+    console.log(`💡使用 ${chalk.bold('tcb -h')} 查看所有命令`)
 })
 
 // 没有使用命令

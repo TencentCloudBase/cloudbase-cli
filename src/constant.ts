@@ -49,7 +49,6 @@ export const ALL_COMMANDS = [
     'open',
     'env list',
     'env rename',
-    'env create',
     'env domain list',
     'env domain create',
     'env domain delete',
@@ -99,6 +98,21 @@ export const ALL_COMMANDS = [
     'run standalonegateway package list',
     'run standalonegateway turn on',
     'run standalonegateway turn off',
+    'run:deprecated list',
+    'run:deprecated delete',
+    'run:deprecated version list',
+    'run:deprecated version create',
+    'run:deprecated version modify',
+    'run:deprecated version delete',
+    'run:deprecated version update',
+    'run:deprecated image list',
+    'run:deprecated image upload',
+    'run:deprecated image download',
+    'run:deprecated image delete',
+    'run service:list',
+    'run service:deploy',
+    'run deploy',
+    'run service:config'
 ]
 
 export const StatusMap = {

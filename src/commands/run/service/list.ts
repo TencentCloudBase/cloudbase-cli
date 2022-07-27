@@ -57,8 +57,8 @@ export class ListServiceTcbr extends Command {
                 code: 0,
                 errmsg: 'success',
                 data: specificServer.length ?
-                specificServer
-                : serverList
+                    specificServer
+                    : serverList
             }, null, 2))
             return
         }

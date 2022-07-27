@@ -26,11 +26,11 @@ export interface ICommandOptions {
     cmd: string
     // 嵌套子命令
     childCmd?:
-        | string
-        | {
-              cmd: string
-              desc: string
-          }
+    | string
+    | {
+        cmd: string
+        desc: string
+    }
     childSubCmd?: string
     // 命令选项
     options: ICommandOption[]
@@ -142,14 +142,14 @@ export abstract class Command extends EventEmitter {
         const { cmd, desc, options, requiredEnvId = true, withoutAuth = false } = this.options
         instance.storeOptionsAsProperties(false)
         options.forEach((option) => {
-            
+
             const { hideHelp } = option
-            if(hideHelp) {
+            if (hideHelp) {
                 instance.addOption(new Option(option.flags, option.desc).hideHelp())
             } else {
                 instance.option(option.flags, option.desc)
             }
-            
+
         })
 
         instance.description(desc)
