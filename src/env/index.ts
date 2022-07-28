@@ -13,16 +13,6 @@ export async function initTcb(skey: string) {
     return res
 }
 
-// 创建新环境
-export async function createEnv({ alias, paymentMode }) {
-    const { env } = await getMangerService()
-
-    return env.createEnv({
-        paymentMode,
-        name: alias
-    })
-}
-
 // 获取环境信息
 export async function getEnvInfo(envId: string) {
     const { EnvList } = await tcbService.request('DescribeEnvs', {

@@ -2,6 +2,7 @@ import { getCredentialWithoutCheck, getRegion, Credential, getProxy } from '@clo
 import { CloudApiService as _CloudApiService } from '@cloudbase/cloud-api'
 import { CloudBaseError } from '../../error'
 import { REQUEST_TIMEOUT } from '../../constant'
+import { debugLogger } from '../debug-logger'
 
 let commonCredential: Credential
 
@@ -57,6 +58,11 @@ export class CloudApiService {
 
     async request(action: string, data: Record<string, any> = {}, method: 'POST' | 'GET' = 'POST') {
         const region = this.region || (await getRegion())
-        return this.apiService.request({ action, data, method, region })
+        const reqOptions = { action, data, method, region }
+        const startTime = new Date()
+        const res = await this.apiService.request(reqOptions)
+        const endTime = new Date()
+        debugLogger(reqOptions, res, startTime, endTime)
+        return res
     }
 }

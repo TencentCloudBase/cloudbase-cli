@@ -1,12 +1,12 @@
 import { Command, ICommand } from '../../common'
 import { InjectParams, ArgsOptions } from '../../../decorators'
 import {
-    describeCloudRunServerDetail, 
-    createTcbrService,
+    describeCloudRunServerDetail,
     updateTcbrService
 } from '../../../run'
 import { EnumEnvCheck } from '../../../constant'
-import { checkTcbrEnv, logEnvCheck } from '../../../utils'
+import { checkTcbrEnv, genClickableLink, logEnvCheck } from '../../../utils'
+import { CloudBaseError } from '@cloudbase/toolbox'
 @ICommand()
 export class DeployServiceTcbr extends Command {
     get options() {
@@ -63,6 +63,10 @@ export class DeployServiceTcbr extends Command {
                     flags: '--envParams <envParams>',
                     desc: '环境变量，格式为xx=a&yy=b，默认为空'
                 },
+                {
+                    flags: '--log_type <log_type>',
+                    desc: '日志类型，只能为 none，如需自定义日志，请前往控制台配置'
+                },
                 // 版本有关
                 {
                     flags: '--containerPort <containerPort>',
@@ -82,8 +86,8 @@ export class DeployServiceTcbr extends Command {
                 },
                 {
                     flags: '--custom_image <custom_image>',
-                    desc: 'TCR 仓库镜像 URL'  
-                  },
+                    desc: 'TCR 仓库镜像 URL'
+                },
                 {
                     flags: '--library_image <library_image>',
                     desc: '线上镜像仓库的 tag，仅在服务已存在时可用'
@@ -114,10 +118,10 @@ export class DeployServiceTcbr extends Command {
             envId: options.envId,
             serviceName: options.serviceName
         })
-        
+
         if (serviceDetail === undefined) {
-            // 服务不存在，创建新服务
-            await createTcbrService(options)
+            // 服务不存在，引导至控制台
+            throw new CloudBaseError(`当前服务不存在，请前往控制台 ${genClickableLink('https://console.cloud.tencent.com/tcbr')} 创建服务`)
         } else {
             await updateTcbrService(options)
         }

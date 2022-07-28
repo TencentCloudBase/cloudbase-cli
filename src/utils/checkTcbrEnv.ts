@@ -2,7 +2,7 @@ import chalk from 'chalk'
 import { CloudBaseError } from '../error'
 import { CloudApiService } from './net'
 import { EnumEnvCheck } from '../constant'
-const tcbService = CloudApiService.getInstance('tcb')
+import { callTcbrApi } from './tcbrApi'
 
 const oldCmdSet =
     `
@@ -36,15 +36,17 @@ const newCmdSet =
  * @returns 
  */
 export async function checkTcbrEnv(envId: string | undefined, isTcbr: boolean): Promise<EnumEnvCheck> | never {
-    if(envId === undefined) {
+    if (envId === undefined) {
         throw new CloudBaseError('请使用 -e 或 --envId 指定环境 ID')
     }
-    const { EnvList: [envInfo] } = await tcbService.request('DescribeEnvs', {
+    const { data: res } = await callTcbrApi('DescribeCloudRunEnvs', {
         EnvId: envId
     })
+    const { EnvList } = res
+    const envInfo = EnvList?.find((item: { EnvId: string }) => item?.EnvId === envId)
 
-    if(envInfo === undefined) {
-        throw new CloudBaseError('无法读取到有效的环境信息，请检查环境 ID 是否正确')
+    if (envInfo === undefined) {
+        throw new CloudBaseError(`无法读取到有效的环境信息，请检查环境 ID 是否正确\nrequestId: ${res?.RequestId}`)
     }
 
     if ((envInfo.EnvType === 'tcbr' && isTcbr) || (envInfo.EnvType !== 'tcbr' && !isTcbr)) {
@@ -57,7 +59,7 @@ export async function checkTcbrEnv(envId: string | undefined, isTcbr: boolean): 
 }
 
 export function logEnvCheck(envId: string, warningType: EnumEnvCheck) {
-    if(warningType === EnumEnvCheck.EnvNewCmdOld) {
+    if (warningType === EnumEnvCheck.EnvNewCmdOld) {
         // 当前环境是 tcbr 环境且使用的不是 tcbr 新操作集
         throw new CloudBaseError(`当前能力不支持 ${envId} 环境，请使用如下操作集：${chalk.grey(newCmdSet)}`)
     } else if (warningType === EnumEnvCheck.EnvOldCmdNew) {

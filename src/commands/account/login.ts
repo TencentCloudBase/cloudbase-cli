@@ -17,10 +17,6 @@ import {
 function printSuggestion() {
     const tips = `可使用下面命令继续操作：
 
-${chalk.gray('–')} 创建免费环境
-
-  ${chalk.cyan('$ tcb env create envName')}
-
 ${chalk.gray('–')} 初始化云开发项目
 
   ${chalk.cyan('$ tcb new')}
@@ -172,17 +168,18 @@ export class LoginCommand extends Command {
             }
         }
 
+        const consoleUrl = 'https://console.cloud.tencent.com/tcb/env/index?action=CreateEnv&from=cli'
         // 检测用户是否存在，不存在则初始化
         try {
             const envs = await listEnvs()
             if (!envs.length) {
-                log.warn('您还没有可用的环境，请使用 cloudbase env:create $name 创建环境')
+                log.warn(`您还没有可用的环境，请前往控制台 ${genClickableLink(consoleUrl)} 创建环境`)
             }
         } catch (e) {
             // 用户不存在
-            // 主账户可以直接使用 env:create 完成初始化工作
+            // 主账户可以直接使用 env:create 完成初始化工作 => deprecated, 计费变更关闭创建环境入口
             if (e.code === 'ResourceNotFound.UserNotExists') {
-                log.error('您还没有可用的环境，请使用 cloudbase env:create $name 创建环境！')
+                log.error(`您还没有可用的环境，请前往控制台 ${genClickableLink(consoleUrl)} 创建环境`)
             } else {
                 console.error(e)
                 throw e
