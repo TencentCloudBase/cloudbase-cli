@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch Program",
+            "name": "Debug: lowcode watch",
             "program": "${workspaceFolder}/bin/tcb.js",
             "request": "launch",
             "skipFiles": [
