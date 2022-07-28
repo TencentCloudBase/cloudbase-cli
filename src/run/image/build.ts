@@ -1,6 +1,4 @@
-import { createReadStream, createWriteStream, readdirSync } from 'fs'
-import { join } from 'path'
-import { zip } from 'compressing'
+import { createReadStream } from 'fs'
 import { CloudApiService, fetchStream } from '../../utils'
 import {
     IBuildImage
