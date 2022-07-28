@@ -28,7 +28,7 @@ export class LowCodeWatch extends Command {
     async execute(@CmdContext() ctx, @ArgsOptions() options) {
         await watchApp({
             watchPort: 8288,
-            wxDevtoolPath: options?.wxDevtoolPath,
+            wxDevtoolPath: options?.wxDevtoolPath
         })
     }
 }

@@ -82,3 +82,5 @@ pkg/
 # Build files
 /lib
 /types
+
+.history
