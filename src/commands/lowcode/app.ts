@@ -19,7 +19,7 @@ export class LowCodeWatch extends Command {
                     desc: '微信开发者工具的安装路径'
                 }
             ],
-            desc: '开启云开发低码的本地构建模式',
+            desc: '开启微搭低代码的本地构建模式',
             requiredEnvId: false
         }
     }
