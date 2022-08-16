@@ -4,15 +4,10 @@ import { Command, ICommand } from '../common'
 import { InjectParams, Log, Logger, ArgsParams, ArgsOptions, CmdContext } from '../../decorators'
 import { CloudApiService, execWithLoading, fetchStream } from '../../utils'
 import { CloudBaseError } from '../../error'
-import chalk from 'chalk'
-import { 
-    build as buildComps, 
-    debug as debugComps, 
-    publishComps,  
+import {   
     graceBuildComps,
     graceDebugComps,
     gracePublishComps,
-    IPublishCompsInfo,
     publishVersion,
     bootstrap,
 } from '@cloudbase/lowcode-cli'
@@ -21,7 +16,6 @@ import fse from 'fs-extra'
 import * as semver from 'semver'
 
 const cloudService = CloudApiService.getInstance('lowcode')
-const DEFAULE_TEMPLATE_PATH = 'https://comp-public-1303824488.cos.ap-shanghai.myqcloud.com/lcc/template.zip'
 
 @ICommand()
 export class LowCodeCreateComps extends Command {
@@ -103,9 +97,9 @@ export class LowCodeBuildComps extends Command {
             })
             return
         }
-        // 没有RC配置, 使用旧接口
-        const compsPath = path.resolve(process.cwd())
-        await _build(compsPath)
+        // 没有RC配置
+        throw new CloudBaseError('请参考文档填写 cloudbaserc 配置: https://docs.cloudbase.net/lowcode/custom-components/config/config-comps')
+        
     }
 }
 
@@ -148,9 +142,8 @@ export class LowCodeDebugComps extends Command {
             })
             return
         }
-        // 没有RC配置, 使用旧接口
-        const compsPath = path.resolve(process.cwd())
-        await debugComps(compsPath, options?.debugPort || 8388)
+        // 没有RC配置
+        throw new CloudBaseError('请参考文档填写 cloudbaserc 配置: https://docs.cloudbase.net/lowcode/custom-components/config/config-comps')
     }
 }
 
@@ -191,31 +184,8 @@ export class LowCodePublishComps extends Command {
             log.success('组件库 - 已同步到云端，请到低码控制台发布该组件库！')
             return
         }
-        // 没有RC配置, 使用旧接口
-        // 读取本地组件库信息
-        const compsPath = path.resolve(process.cwd())
-        const compsName = fse.readJSONSync(path.resolve(compsPath, 'package.json')).name
-        // 读取云端组件库列表
-        const res = await cloudService.request('ListUserCompositeGroups')
-        const comps = res?.data
-        if (!comps?.count) {
-            throw new CloudBaseError(`云端不存在组件库 ${compsName}，请到低码控制台新建该组件库！`)
-        }
-        // 校验组件库信息
-        const comp = comps.rows.find((row) => row.groupName === compsName)
-        if (!comp) {
-            throw new CloudBaseError(`云端不存在组件库 ${compsName}，请到低码控制台新建该组件库！`)
-        }
-        // 上传组件库
-        await _build(compsPath)
-        await _publish({
-            id: comp.id,
-            name: compsName,
-            path: compsPath,
-            log,
-        })
-
-        log.info('\n👉 组件库已经同步到云端，请到低码控制台发布该组件库！')
+        // 没有RC配置
+        throw new CloudBaseError('请参考文档填写 cloudbaserc 配置: https://docs.cloudbase.net/lowcode/custom-components/config/config-comps')
     }
 }
 
@@ -297,29 +267,4 @@ export class LowCodePublishVersionComps extends Command {
             return
         }
     }
-}
-
-
-async function _build(compsPath) {
-    await execWithLoading(
-        async () => { 
-            await buildComps(compsPath)
-        },
-        {
-            startTip: '组件库 - 构建中',
-            successTip: '组件库 - 构建成功'
-        }
-    )
-}
-
-async function _publish(info: IPublishCompsInfo) {
-    await execWithLoading(
-        async () => {
-            await publishComps(info)
-        },
-        {
-            startTip: '组件库 - 发布中',
-            successTip: '组件库 - 发布成功'
-        }
-    )
 }
