@@ -1,16 +1,14 @@
 import _ from 'lodash'
-import path from 'path'
 import { Command, ICommand } from '../common'
 import { InjectParams, Log, Logger, ArgsParams, ArgsOptions, CmdContext } from '../../decorators'
-import { CloudApiService, execWithLoading } from '../../utils'
+import { CloudApiService } from '../../utils'
 import { CloudBaseError } from '../../error'
 import { prompt } from 'enquirer'
-import fse from 'fs-extra'
 import * as semver from 'semver'
 
 const cloudService = CloudApiService.getInstance('lowcode')
 
-// use dynamic import for lowcode-cli to reduce startup time remarkably
+// use dynamic import for lowcode-cli to reduce startup time
 type lowcodeCli = typeof import('@cloudbase/lowcode-cli')
 
 let buildComps: lowcodeCli['build']
@@ -286,33 +284,4 @@ export class LowCodePublishVersionComps extends Command {
             return
         }
     }
-<<<<<<< HEAD
-}
-=======
-}
-
-
-async function _build(compsPath) {
-    await execWithLoading(
-        async () => {
-            await buildComps(compsPath)
-        },
-        {
-            startTip: '组件库 - 构建中',
-            successTip: '组件库 - 构建成功'
-        }
-    )
-}
-
-type IPublishCompsInfo = Parameters<typeof publishComps>[0]
-async function _publish(info: IPublishCompsInfo) {
-    await execWithLoading(
-        async () => {
-            await publishComps(info)
-        },
-        {
-            startTip: '组件库 - 发布中',
-            successTip: '组件库 - 发布成功'
-        }
-    )
 }
