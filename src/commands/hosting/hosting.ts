@@ -11,7 +11,9 @@ import {
     hostingDeploy,
     hostingDelete,
     hostingList,
-    walkLocalDir
+    walkLocalDir,
+    getEnvInfoByEnvId,
+    subscribeHosting
 } from '../../hosting'
 import { CloudBaseError } from '../../error'
 import {
@@ -27,6 +29,8 @@ import {
 } from '../../utils'
 
 import { InjectParams, EnvId, ArgsParams, ArgsOptions, Log, Logger } from '../../decorators'
+import { EnvType } from '../../constant'
+import CloudBase from '@cloudbase/manager-node'
 
 const HostingStatusMap = {
     init: '初始化中',
@@ -67,10 +71,30 @@ export class HostingDetail extends Command {
         const website = res?.data?.[0]
 
         if (!website) {
-            const link = genClickableLink('https://console.cloud.tencent.com/tcb')
-            throw new CloudBaseError(
-                `您还没有开启静态网站服务，请先到云开发控制台开启静态网站服务！\n 👉 ${link}`
-            )
+            const envInfo = await getEnvInfoByEnvId({ envId })
+            if (envInfo.EnvType === EnvType.BAAS) {
+                // 开通静态托管
+                const { confirm } = await inquirer.prompt({
+                    type: 'confirm',
+                    name: 'confirm',
+                    message: '您还未开通静态托管，是否立即开通？'
+                })
+                if (confirm) {
+                    const res = await subscribeHosting({ envId })
+                    if (!res.code) {
+                        log.success('开通静态托管成功！资源正在初始化中，请稍候3~5分钟再试...\n')
+                        return
+                    } else {
+                        throw new CloudBaseError(`开通静态托管失败\n request id: ${res.requestId}\n`)
+                    }
+                } else return
+
+            } else {
+                const link = genClickableLink('https://console.cloud.tencent.com/tcb')
+                throw new CloudBaseError(
+                    `您还没有开启静态网站服务，请先到云开发控制台开启静态网站服务！\n 👉 ${link}`
+                )
+            }
         }
 
         const link = genClickableLink(`https://${website.cdnDomain}`)
