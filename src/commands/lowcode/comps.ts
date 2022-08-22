@@ -5,34 +5,19 @@ import { CloudApiService } from '../../utils'
 import { CloudBaseError } from '../../error'
 import { prompt } from 'enquirer'
 import * as semver from 'semver'
+import { getLowcodeCli } from './utils'
 
 const cloudService = CloudApiService.getInstance('lowcode')
 
-// use dynamic import for lowcode-cli to reduce startup time
-type lowcodeCli = typeof import('@cloudbase/lowcode-cli')
+// use dynamic import for lowcode-cli to reduce setup time
+type LowcodeCli = typeof import('@cloudbase/lowcode-cli')
 
-let buildComps: lowcodeCli['build']
-let debugComps: lowcodeCli['debug']
-let publishComps: lowcodeCli['publishComps']
-let graceBuildComps: lowcodeCli['graceBuildComps']
-let graceDebugComps: lowcodeCli['graceDebugComps']
-let gracePublishComps: lowcodeCli['gracePublishComps']
-let publishVersion: lowcodeCli['publishVersion']
-let bootstrap: lowcodeCli['bootstrap']
+let lowcodeCli: LowcodeCli | undefined
 
 if (process.argv.includes('lowcode')) {
-    import('@cloudbase/lowcode-cli').then((res) => {
-        buildComps = res.build
-        debugComps = res.debug
-        publishComps = res.publishComps
-        graceBuildComps = res.graceBuildComps
-        graceDebugComps = res.graceDebugComps
-        gracePublishComps = res.gracePublishComps
-        publishVersion = res.publishVersion
-        bootstrap = res.bootstrap
-    })
+    // cannot use top-level await here
+    getLowcodeCli().then(_ => lowcodeCli = _)
 }
-
 
 @ICommand()
 export class LowCodeCreateComps extends Command {
@@ -80,7 +65,7 @@ export class LowCodeCreateComps extends Command {
             }
         }
 
-        await bootstrap(compsName, log)
+        await lowcodeCli.bootstrap(compsName, log)
 
     }
 }
@@ -107,7 +92,7 @@ export class LowCodeBuildComps extends Command {
         // 有RC配置, 使用新接口
         const config = ctx.config.lowcodeCustomComponents
         if (config) {
-            await graceBuildComps({
+            await lowcodeCli.graceBuildComps({
                 ...config,
                 context: config.context || process.cwd(),
                 logger: log
@@ -150,7 +135,7 @@ export class LowCodeDebugComps extends Command {
         // 有RC配置, 使用新接口
         const config = ctx.config.lowcodeCustomComponents
         if (config) {
-            await graceDebugComps({
+            await lowcodeCli.graceDebugComps({
                 ...config,
                 context: config.context || process.cwd(),
                 debugPort: options?.debugPort || 8388,
@@ -192,7 +177,7 @@ export class LowCodePublishComps extends Command {
 
         const config = ctx.config.lowcodeCustomComponents
         if (config) {
-            await gracePublishComps({
+            await lowcodeCli.gracePublishComps({
                 ...config,
                 context: config.context || process.cwd(),
                 logger: log,
@@ -258,7 +243,7 @@ export class LowCodePublishVersionComps extends Command {
             log.error('组件库 - 请添加组件库配置到cloudbaserc.json 以使用该命令')
         }
 
-        const res = await publishVersion({
+        const res = await lowcodeCli.publishVersion({
             ...config,
             context: config.context || process.cwd(),
             logger: log,
