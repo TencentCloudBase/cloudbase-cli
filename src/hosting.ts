@@ -50,38 +50,44 @@ export async function getHostingInfo(options: IBaseOptions) {
     return data
 }
 
+export async function initHosting(options: IBaseOptions) {
+    const { envId } = options
+    const envInfo = await getEnvInfoByEnvId({ envId })
+    if (envInfo.EnvType === EnvType.BAAS) {
+        // 开通静态托管
+        const { confirm } = await inquirer.prompt({
+            type: 'confirm',
+            name: 'confirm',
+            message: '您还未开通静态托管，是否立即开通？'
+        })
+        if (confirm) {
+            const res = await subscribeHosting({ envId })
+            if (!res.code) {
+                logger.success('开通静态托管成功！资源正在初始化中，请稍候3~5分钟再试...')
+                return
+            } else {
+                throw new CloudBaseError(`开通静态托管失败\n request id: ${res.requestId}`)
+            }
+        } else return
+
+    } else {
+        const link = genClickableLink('https://console.cloud.tencent.com/tcb')
+        throw new CloudBaseError(
+            `您还没有开启静态网站服务，请先到云开发控制台开启静态网站服务！\n👉 ${link}`,
+            {
+                code: 'INVALID_OPERATION'
+            }
+        )
+    }
+}
+
+
 export async function checkHostingStatus(envId: string) {
     const hostings = await getHostingInfo({ envId })
 
-    const link = genClickableLink('https://console.cloud.tencent.com/tcb')
-
     if (!hostings.data || !hostings.data.length) {
-        const envInfo = await getEnvInfoByEnvId({ envId })
-        if (envInfo.EnvType === EnvType.BAAS) {
-            // 开通静态托管
-            const { confirm } = await inquirer.prompt({
-                type: 'confirm',
-                name: 'confirm',
-                message: '您还未开通静态托管，是否立即开通？'
-            })
-            if (confirm) {
-                const res = await subscribeHosting({ envId })
-                if (!res.code) {
-                    logger.success('开通静态托管成功！资源正在初始化中，请稍候3~5分钟再试...')
-                    return
-                } else {
-                    throw new CloudBaseError(`开通静态托管失败\n request id: ${res.requestId}`)
-                }
-            } else return
-
-        } else {
-            throw new CloudBaseError(
-                `您还没有开启静态网站服务，请先到云开发控制台开启静态网站服务！\n👉 ${link}`,
-                {
-                    code: 'INVALID_OPERATION'
-                }
-            )
-        }
+        await initHosting({ envId })
+        return
     }
 
     const website = hostings.data[0]
