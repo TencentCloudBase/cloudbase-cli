@@ -1,21 +1,23 @@
 import _ from 'lodash'
-import path from 'path'
 import { Command, ICommand } from '../common'
 import { InjectParams, Log, Logger, ArgsParams, ArgsOptions, CmdContext } from '../../decorators'
-import { CloudApiService, execWithLoading, fetchStream } from '../../utils'
+import { CloudApiService } from '../../utils'
 import { CloudBaseError } from '../../error'
-import {   
-    graceBuildComps,
-    graceDebugComps,
-    gracePublishComps,
-    publishVersion,
-    bootstrap,
-} from '@cloudbase/lowcode-cli'
 import { prompt } from 'enquirer'
-import fse from 'fs-extra'
 import * as semver from 'semver'
+import { getLowcodeCli } from './utils'
 
 const cloudService = CloudApiService.getInstance('lowcode')
+
+// use dynamic import for lowcode-cli to reduce setup time
+type LowcodeCli = typeof import('@cloudbase/lowcode-cli')
+
+let lowcodeCli: LowcodeCli | undefined
+
+if (process.argv.includes('lowcode')) {
+    // cannot use top-level await here
+    getLowcodeCli().then(_ => lowcodeCli = _)
+}
 
 @ICommand()
 export class LowCodeCreateComps extends Command {
@@ -38,7 +40,7 @@ export class LowCodeCreateComps extends Command {
     async execute(@ArgsParams() params, @Log() log?: Logger) {
         if (process.env.CLOUDBASE_LOWCODE_CLOUDAPI_URL === undefined) {
             // 没设置的时候才才设置，方便覆盖
-            process.env.CLOUDBASE_LOWCODE_CLOUDAPI_URL = 'https://lcap.cloud.tencent.com/api/v1/cliapi';
+            process.env.CLOUDBASE_LOWCODE_CLOUDAPI_URL = 'https://lcap.cloud.tencent.com/api/v1/cliapi'
         }
         const res = await cloudService.request('ListUserCompositeGroups')
         const comps = res?.data
@@ -63,7 +65,7 @@ export class LowCodeCreateComps extends Command {
             }
         }
 
-        await bootstrap(compsName, log);
+        await lowcodeCli.bootstrap(compsName, log)
 
     }
 }
@@ -90,7 +92,7 @@ export class LowCodeBuildComps extends Command {
         // 有RC配置, 使用新接口
         const config = ctx.config.lowcodeCustomComponents
         if (config) {
-            await graceBuildComps({
+            await lowcodeCli.graceBuildComps({
                 ...config,
                 context: config.context || process.cwd(),
                 logger: log
@@ -133,7 +135,7 @@ export class LowCodeDebugComps extends Command {
         // 有RC配置, 使用新接口
         const config = ctx.config.lowcodeCustomComponents
         if (config) {
-            await graceDebugComps({
+            await lowcodeCli.graceDebugComps({
                 ...config,
                 context: config.context || process.cwd(),
                 debugPort: options?.debugPort || 8388,
@@ -175,7 +177,7 @@ export class LowCodePublishComps extends Command {
 
         const config = ctx.config.lowcodeCustomComponents
         if (config) {
-            await gracePublishComps({
+            await lowcodeCli.gracePublishComps({
                 ...config,
                 context: config.context || process.cwd(),
                 logger: log,
@@ -222,32 +224,32 @@ export class LowCodePublishVersionComps extends Command {
     @InjectParams()
     async execute(@CmdContext() ctx, @ArgsOptions() options, @Log() log?: Logger) {
         // 有RC配置, 使用新接口
-        const {tag, comment, admin} = options
-        if(!comment) {
+        const { tag, comment, admin } = options
+        if (!comment) {
             log.error('请使用 --comment 填写版本注释')
             return
         }
-        if(!tag) {
+        if (!tag) {
             log.error('请使用 --tag 填写符合semver的版本号')
             return
         }
-        if(!semver.valid(tag)) {
+        if (!semver.valid(tag)) {
             log.error('组件库版本不符合semver标准')
             return
         }
         const config = ctx.config.lowcodeCustomComponents
 
-        if(!config) {
+        if (!config) {
             log.error('组件库 - 请添加组件库配置到cloudbaserc.json 以使用该命令')
         }
-        
-        const res = await publishVersion({
+
+        const res = await lowcodeCli.publishVersion({
             ...config,
             context: config.context || process.cwd(),
             logger: log,
             isAdmin: options.admin
         }, comment, tag)
-        if(res.data.code === 200) {
+        if (res.data.code === 200) {
             log.success('组件库 - 已发布新版本！')
             return
         }
@@ -259,7 +261,7 @@ export class LowCodePublishVersionComps extends Command {
             log.error('组件库 - comment 重复， 请使用有意义的comment')
             return
         } else {
-            if(res.data.msg) {
+            if (res.data.msg) {
                 log.error(`组件库 - ${res.data.msg} RequestId: ${res.requestId}`)
             } else {
                 log.error('组件库 - 未知错误')

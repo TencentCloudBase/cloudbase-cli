@@ -31,7 +31,7 @@
     "license": "ISC",
     "dependencies": {
         "@cloudbase/cloud-api": "^0.5.5",
-        "@cloudbase/framework-core": "^1.6.1",
+        "@cloudbase/framework-core": "^1.9.5",
         "@cloudbase/lowcode-cli": "^0.16.0",
         "@cloudbase/manager-node": "4.0.1",
         "@cloudbase/toolbox": "^0.7.3",

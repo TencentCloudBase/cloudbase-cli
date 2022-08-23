@@ -1,7 +1,6 @@
 import _ from 'lodash'
 import { Command, ICommand } from '../common'
-import { watchApp } from '@cloudbase/lowcode-cli'
-import { InjectParams, Log, Logger, CmdContext, ArgsOptions } from '../../decorators'
+import { InjectParams, CmdContext, ArgsOptions } from '../../decorators'
 
 @ICommand()
 export class LowCodeWatch extends Command {
@@ -26,9 +25,11 @@ export class LowCodeWatch extends Command {
 
     @InjectParams()
     async execute(@CmdContext() ctx, @ArgsOptions() options) {
-        await watchApp({
-            watchPort: 8288,
-            wxDevtoolPath: options?.wxDevtoolPath
+        import('@cloudbase/lowcode-cli').then(async (res) => {
+            await res.watchApp({
+                watchPort: 8288,
+                wxDevtoolPath: options?.wxDevtoolPath,
+            })
         })
     }
 }

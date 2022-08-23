@@ -166,3 +166,10 @@ export const DEFAULT_CPU_MEM_SET: { PolicyType: 'mem' | 'cpu', PolicyThreshold: 
         PolicyThreshold: 60
     },
 ]
+
+export enum EnvType {
+    BAAS = 'baas',
+    RUN = 'run',
+    HOTING = 'hoting',
+    WEDA = 'weda'
+}

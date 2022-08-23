@@ -5,9 +5,12 @@ import {
     isDirectory,
     genClickableLink,
     checkReadable,
-    getStorageService
+    getStorageService,
+    logger
 } from './utils'
 import { CloudBaseError } from './error'
+import inquirer from 'inquirer'
+import { EnvType } from './constant'
 
 interface IBaseOptions {
     envId: string
@@ -47,18 +50,44 @@ export async function getHostingInfo(options: IBaseOptions) {
     return data
 }
 
-export async function checkHostingStatus(envId: string) {
-    const hostings = await getHostingInfo({ envId })
+export async function initHosting(options: IBaseOptions) {
+    const { envId } = options
+    const envInfo = await getEnvInfoByEnvId({ envId })
+    if (envInfo.EnvType === EnvType.BAAS) {
+        // 开通静态托管
+        const { confirm } = await inquirer.prompt({
+            type: 'confirm',
+            name: 'confirm',
+            message: '您还未开通静态托管，是否立即开通？'
+        })
+        if (confirm) {
+            const res = await subscribeHosting({ envId })
+            if (!res.code) {
+                logger.success('开通静态托管成功！资源正在初始化中，请稍候3~5分钟再试...')
+                return
+            } else {
+                throw new CloudBaseError(`开通静态托管失败\n request id: ${res.requestId}`)
+            }
+        } else return
 
-    const link = genClickableLink('https://console.cloud.tencent.com/tcb')
-
-    if (!hostings.data || !hostings.data.length) {
+    } else {
+        const link = genClickableLink('https://console.cloud.tencent.com/tcb')
         throw new CloudBaseError(
             `您还没有开启静态网站服务，请先到云开发控制台开启静态网站服务！\n👉 ${link}`,
             {
                 code: 'INVALID_OPERATION'
             }
         )
+    }
+}
+
+
+export async function checkHostingStatus(envId: string) {
+    const hostings = await getHostingInfo({ envId })
+
+    if (!hostings.data || !hostings.data.length) {
+        await initHosting({ envId })
+        return
     }
 
     const website = hostings.data[0]
@@ -87,6 +116,28 @@ export async function enableHosting(options: IBaseOptions) {
     }
 
     const res = await tcbService.request('CreateStaticStore', {
+        EnvId: envId
+    })
+    const code = res.Result === 'succ' ? 0 : -1
+    return {
+        code,
+        requestId: res.RequestId
+    }
+}
+
+// 获取指定环境信息
+export async function getEnvInfoByEnvId(options: IBaseOptions) {
+    const { envId } = options
+    const res = await tcbService.request('DescribeEnvs', {
+        EnvId: envId
+    })
+    return res?.EnvList?.filter(item => item.EnvId === envId)[0]
+}
+
+// 开通静态网站托管
+export async function subscribeHosting(options: IBaseOptions) {
+    const { envId } = options
+    const res = await tcbService.request('DescribeStaticStore', {
         EnvId: envId
     })
     const code = res.Result === 'succ' ? 0 : -1

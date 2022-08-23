@@ -23,3 +23,15 @@ export function promisifyProcess(p: ChildProcess, pipe = false) {
       }
   })
 }
+
+export async function getLowcodeCli(): Promise<typeof import('@cloudbase/lowcode-cli')> {
+    const key = '@cloudbase/lowcode-cli'
+    const cache = new Map()
+    let result: typeof import('@cloudbase/lowcode-cli')
+    if(!cache.get(key)) {
+        const module = await import(key)
+        cache.set(key, module)
+    }
+    result = cache.get(key)
+    return result
+}
