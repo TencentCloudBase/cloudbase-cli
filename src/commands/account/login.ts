@@ -154,7 +154,7 @@ export class LoginCommand extends Command {
             }
         } else {
             // 使用临时密钥登录-支持自动续期
-            loading.start('获取授权中...')
+            loading.start('请在浏览器中打开的授权页面进行授权...')
             const res = await login()
 
             if (res.code === 'SUCCESS') {
