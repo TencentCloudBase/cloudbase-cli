@@ -74,7 +74,7 @@ export async function checkLogin() {
         log.info('你还没有登录，请在控制台中授权登录')
 
         const res = await execWithLoading(() => login(), {
-            startTip: '获取授权中...',
+            startTip: '请在浏览器中打开的授权页面进行授权...',
             successTip: '授权登录成功！'
         })
 
