@@ -11,7 +11,8 @@ import {
     hostingDeploy,
     hostingDelete,
     hostingList,
-    walkLocalDir
+    walkLocalDir,
+    initHosting
 } from '../../hosting'
 import { CloudBaseError } from '../../error'
 import {
@@ -67,10 +68,8 @@ export class HostingDetail extends Command {
         const website = res?.data?.[0]
 
         if (!website) {
-            const link = genClickableLink('https://console.cloud.tencent.com/tcb')
-            throw new CloudBaseError(
-                `您还没有开启静态网站服务，请先到云开发控制台开启静态网站服务！\n 👉 ${link}`
-            )
+            await initHosting({ envId })
+            return
         }
 
         const link = genClickableLink(`https://${website.cdnDomain}`)
