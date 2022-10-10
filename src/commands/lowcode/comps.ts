@@ -19,7 +19,9 @@ if (process.argv.includes('lowcode')) {
     getLowcodeCli().then(_ => lowcodeCli = _)
 }
 
-@ICommand()
+@ICommand({
+    supportPrivate: true
+})
 export class LowCodeCreateComps extends Command {
     get options() {
         return {

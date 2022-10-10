@@ -47,10 +47,22 @@ type CommandConstructor = new () => Command
 const registrableCommands: CommandConstructor[] = []
 const cmdMap = new Map()
 
+interface ICommandDecoratorOptions {
+    supportPrivate: boolean
+}
+const defaultCmdDecoratorOpts: ICommandDecoratorOptions = {
+    supportPrivate: false
+}
+
+// TODO isPrivate
+const isPrivate = true
+
 // 装饰器收集命令
-export function ICommand(): ClassDecorator {
+export function ICommand(options: ICommandDecoratorOptions = defaultCmdDecoratorOpts): ClassDecorator {
     return (target: any) => {
-        registrableCommands.push(target)
+        if(!isPrivate || options.supportPrivate) {
+            registrableCommands.push(target)
+        }
     }
 }
 
