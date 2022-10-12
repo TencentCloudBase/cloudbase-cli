@@ -15,14 +15,40 @@ export const getArgs = (): Arguments<IArgs> => {
     // console.log(yargs.argv)
     return yargs.alias('e', 'envId').alias('r', 'region').argv as any
 }
+const hasOwn = (obj: object, name: string): boolean => {
+    return Object.prototype.hasOwnProperty.call(obj, name)
+}
+
+/**
+ * 用是否设置privateSettings来决定它是否是私有化环境
+ */
+type IPrivateCloudBaseRcSettings = ICloudBaseRcSettings & Required<Pick<ICloudBaseRcSettings, 'privateSettings'>>
+export function hasPrivateSettings(config: ICloudBaseRcSettings): config is IPrivateCloudBaseRcSettings {
+    return hasOwn(config, 'privateSettings')
+}
+
+
+type IAbsUrl = `http://${string}` | `https://${string}`
+/**
+ * 私有化配置
+ */
+export interface IPrivateSettings {
+    SecretID: string;
+    SecretKey: string;
+    editorEntrypoint: IAbsUrl;
+    cliApiEntrypoint: IAbsUrl;
+}
+
+export interface ICloudBaseRcSettings extends ICloudBaseConfig {
+    privateSettings?: IPrivateSettings
+}
 
 // 获取 cloudbase 配置
-export const getCloudBaseConfig = async (configPath?: string): Promise<ICloudBaseConfig> => {
+export const getCloudBaseConfig = async (configPath?: string): Promise<ICloudBaseRcSettings> => {
     const args = getArgs()
 
     let specificConfigPath = configPath || args.configPath
     specificConfigPath = specificConfigPath ? path.resolve(specificConfigPath) : undefined
-
     const parser = new ConfigParser({
         configPath: specificConfigPath
     })

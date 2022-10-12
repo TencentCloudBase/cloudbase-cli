@@ -2,7 +2,9 @@ import _ from 'lodash'
 import { Command, ICommand } from '../common'
 import { InjectParams, CmdContext, ArgsOptions } from '../../decorators'
 
-@ICommand()
+@ICommand({
+    supportPrivate: true
+})
 export class LowCodeWatch extends Command {
     get options() {
         return {

@@ -1,10 +1,10 @@
 import _ from 'lodash'
 import { Command, ICommand } from '../common'
 import { InjectParams, Log, Logger, ArgsParams, ArgsOptions, CmdContext } from '../../decorators'
-import { CloudApiService } from '../../utils'
-import { CloudBaseError } from '../../error'
 import { prompt } from 'enquirer'
 import * as semver from 'semver'
+import { CloudApiService } from '../../utils'
+import { CloudBaseError } from '../../error'
 import { getLowcodeCli } from './utils'
 
 const cloudService = CloudApiService.getInstance('lowcode')
@@ -72,7 +72,6 @@ export class LowCodeCreateComps extends Command {
     }
 }
 
-@ICommand()
 export class LowCodeBuildComps extends Command {
     get options() {
         return {

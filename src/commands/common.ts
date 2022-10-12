@@ -2,6 +2,7 @@ import chalk from 'chalk'
 import * as Sentry from '@sentry/node'
 import { EventEmitter } from 'events'
 import { program, Command as Commander, Option } from 'commander'
+import yargsParser from 'yargs-parser'
 import { CloudBaseError } from '../error'
 import { ICommandContext } from '../types'
 import {
@@ -10,7 +11,8 @@ import {
     loadingFactory,
     getNotification,
     getCloudBaseConfig,
-    authSupevisor
+    authSupevisor,
+    hasPrivateSettings
 } from '../utils'
 
 interface ICommandOption {
@@ -44,33 +46,46 @@ export interface ICommandOptions {
 
 type CommandConstructor = new () => Command
 
-const registrableCommands: CommandConstructor[] = []
+const registrableCommands: {Command: CommandConstructor, decoratorOptions: ICommandDecoratorOptions}[] = []
 const cmdMap = new Map()
 
 interface ICommandDecoratorOptions {
-    supportPrivate: boolean
+    supportPrivate: boolean | 'only'
 }
 const defaultCmdDecoratorOpts: ICommandDecoratorOptions = {
     supportPrivate: false
 }
 
-// TODO isPrivate
-const isPrivate = true
 
 // 装饰器收集命令
 export function ICommand(options: ICommandDecoratorOptions = defaultCmdDecoratorOpts): ClassDecorator {
     return (target: any) => {
-        if(!isPrivate || options.supportPrivate) {
-            registrableCommands.push(target)
-        }
+        registrableCommands.push({Command: target, decoratorOptions: options})
     }
 }
 
 // 注册命令
-export function registerCommands() {
-    registrableCommands.forEach((Command) => {
-        const command = new Command()
-        command.init()
+export async function registerCommands() {
+    const args = yargsParser(process.argv.slice(2))
+    const config = await getCloudBaseConfig(args.configFile)
+    const isPrivate = hasPrivateSettings(config)
+
+    registrableCommands.forEach(({Command, decoratorOptions}) => {
+        if(isPrivate) {
+            // 私有化的
+            if(decoratorOptions.supportPrivate) {
+                const command = new Command()
+                command.init()
+            }
+        } else {
+            // 非私有化的
+            if(decoratorOptions.supportPrivate !== 'only') {
+                const command = new Command()
+                command.init()
+            }
+        }
+        
+        
     })
 }
 
