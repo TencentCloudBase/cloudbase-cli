@@ -14,7 +14,7 @@ const pkg = require('../package.json')
 const store = require('../lib/utils/store')
 const { ALL_COMMANDS } = require('../lib/constant')
 const { getProxy } = require('../lib/utils/net')
-const { getCloudBaseConfig, hasPrivateSettings } = require('../lib/utils/config')
+const { getCloudBaseConfig, checkPrivateSettingsExisted } = require('../lib/utils/config')
 const {registerCommands} = require('../lib')
 
 async function main() {
@@ -53,7 +53,7 @@ console.log(chalk.gray(`CloudBase Framework ${frameworkPkg.version}`))
 
 const yargsParsedResult = yargsParser(process.argv.slice(2));
 const config = await getCloudBaseConfig(yargsParsedResult.configFile);
-const isPrivateEnv = hasPrivateSettings(config)
+const isPrivateEnv = checkPrivateSettingsExisted(config)
 if (isPrivateEnv) {
     console.log(chalk.gray(`检测到私有化配置`))
 }
