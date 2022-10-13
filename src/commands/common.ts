@@ -12,7 +12,7 @@ import {
     getNotification,
     getCloudBaseConfig,
     authSupevisor,
-    hasPrivateSettings
+    checkPrivateSettingsExisted
 } from '../utils'
 
 interface ICommandOption {
@@ -68,7 +68,7 @@ export function ICommand(options: ICommandDecoratorOptions = defaultCmdDecorator
 export async function registerCommands() {
     const args = yargsParser(process.argv.slice(2))
     const config = await getCloudBaseConfig(args.configFile)
-    const isPrivate = hasPrivateSettings(config)
+    const isPrivate = checkPrivateSettingsExisted(config)
 
     registrableCommands.forEach(({Command, decoratorOptions}) => {
         if(isPrivate) {
@@ -190,6 +190,7 @@ export abstract class Command extends EventEmitter {
 
             const config = await getCloudBaseConfig(parentOptions?.configFile)
             const envId = cmdOptions?.envId || config?.envId
+            const hasPrivateSettings = checkPrivateSettingsExisted(config)
 
             const loginState = await authSupevisor.getLoginState()
 
@@ -209,7 +210,8 @@ export abstract class Command extends EventEmitter {
                 envId,
                 config,
                 params,
-                options: cmdOptions
+                options: cmdOptions,
+                hasPrivateSettings
             }
 
             // 处理前

@@ -23,7 +23,7 @@ const hasOwn = (obj: object, name: string): boolean => {
  * 用是否设置privateSettings来决定它是否是私有化环境
  */
 type IPrivateCloudBaseRcSettings = ICloudBaseRcSettings & Required<Pick<ICloudBaseRcSettings, 'privateSettings'>>
-export function hasPrivateSettings(config: ICloudBaseRcSettings): config is IPrivateCloudBaseRcSettings {
+export function checkPrivateSettingsExisted(config: ICloudBaseRcSettings): config is IPrivateCloudBaseRcSettings {
     return hasOwn(config, 'privateSettings')
 }
 
