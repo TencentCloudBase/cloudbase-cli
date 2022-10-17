@@ -201,6 +201,7 @@ export class LowCodePublishComps extends Command {
                 ...config,
                 context: config.context || process.cwd(),
                 logger: log,
+                privateSettings: ctx.config.privateSettings,
                 isAdmin: Boolean(options.admin)
             })
             log.success('组件库 - 已同步到云端，请到低码控制台发布该组件库！')
