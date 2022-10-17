@@ -51,7 +51,7 @@ export async function loginWithKey(secretId?: string, secretKey?: string, token?
     }
 
     const credential = await authSupevisor.loginByApiSecret(secretId, secretKey, token)
-
+    
     if (_.isEmpty(credential)) {
         return LoginRes.INVALID_TOKEN
     }

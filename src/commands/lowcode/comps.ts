@@ -1,13 +1,12 @@
 import _ from 'lodash'
 import { Command, ICommand } from '../common'
-import { InjectParams, Log, Logger, ArgsParams, ArgsOptions, CmdContext } from '../../decorators'
+import { InjectParams, Log, Logger, ArgsParams, ArgsOptions, CmdContext, IsPrivateEnv, Config } from '../../decorators'
 import { prompt } from 'enquirer'
 import * as semver from 'semver'
-import { CloudApiService } from '../../utils'
+import { CloudApiService } from '@cloudbase/cloud-api'
 import { CloudBaseError } from '../../error'
 import { getLowcodeCli } from './utils'
-
-const cloudService = CloudApiService.getInstance('lowcode')
+import { config } from 'yargs'
 
 // use dynamic import for lowcode-cli to reduce setup time
 type LowcodeCli = typeof import('@cloudbase/lowcode-cli')
@@ -39,12 +38,30 @@ export class LowCodeCreateComps extends Command {
     }
 
     @InjectParams()
-    async execute(@ArgsParams() params, @Log() log?: Logger) {
+    async execute(@ArgsParams() params, @IsPrivateEnv() isPrivateEnv: boolean, @Config() config, @Log() log?: Logger) {
         if (process.env.CLOUDBASE_LOWCODE_CLOUDAPI_URL === undefined) {
             // 没设置的时候才才设置，方便覆盖
             process.env.CLOUDBASE_LOWCODE_CLOUDAPI_URL = 'https://lcap.cloud.tencent.com/api/v1/cliapi'
         }
-        const res = await cloudService.request('ListUserCompositeGroups')
+        // console.log(config, 123)
+        // console.log({
+        //     secretId: config.privateSettings.secretID,
+        //     secretKey: config.privateSettings.secretKey
+        // })
+        const serviceOptions: Parameters<typeof CloudApiService.getInstance>[0] = {
+            service: 'lowcode',
+        }
+        if(isPrivateEnv) {
+            serviceOptions.credential = {
+                secretId: config.privateSettings.secretID,
+                secretKey: config.privateSettings.secretKey
+            }
+        }
+        const cloudService =  CloudApiService.getInstance(serviceOptions)
+        console.log(cloudService.credential, 'CLI cred')
+        const res = await cloudService.request('ListUserCompositeGroups', {
+            privateUin: config.privateSettings.privateUin
+        })
         const comps = res?.data
         if (!comps?.count) {
             throw new CloudBaseError('没有可关联的云端组件库，请到低码控制台新建组件库！')
@@ -150,7 +167,9 @@ export class LowCodeDebugComps extends Command {
     }
 }
 
-@ICommand()
+@ICommand(
+    {supportPrivate: true}
+)
 export class LowCodePublishComps extends Command {
     get options() {
         return {

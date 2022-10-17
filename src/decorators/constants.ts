@@ -8,5 +8,6 @@ export enum ParamTypes {
     EnvId = '__EnvId__',
     Config = '__Config__',
     ArgsOptions = '__ArgsOptions__',
-    ArgsParams = '__ArgsParams__'
+    ArgsParams = '__ArgsParams__',
+    IsPrivateEnv = '__ISPrivateEnv__'
 }

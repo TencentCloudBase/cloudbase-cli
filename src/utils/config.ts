@@ -33,10 +33,11 @@ type IAbsUrl = `http://${string}` | `https://${string}`
  * 私有化配置
  */
 export interface IPrivateSettings {
-    SecretID: string;
-    SecretKey: string;
+    secretID: string;
+    secretKey: string;
     editorEntrypoint: IAbsUrl;
     cliApiEntrypoint: IAbsUrl;
+    privateUin: string
 }
 
 export interface ICloudBaseRcSettings extends ICloudBaseConfig {

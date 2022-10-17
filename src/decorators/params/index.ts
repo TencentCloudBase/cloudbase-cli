@@ -33,3 +33,6 @@ export const EnvId = createParamDecorator(ParamTypes.EnvId, EmptyValue)
 
 // 注入环境配置
 export const Config = createParamDecorator(ParamTypes.Config, EmptyValue)
+
+// 是否是私有化
+export const IsPrivateEnv = createParamDecorator(ParamTypes.IsPrivateEnv, EmptyValue)

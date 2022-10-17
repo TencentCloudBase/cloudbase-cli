@@ -56,6 +56,9 @@ const config = await getCloudBaseConfig(yargsParsedResult.configFile);
 const isPrivateEnv = checkPrivateSettingsExisted(config)
 if (isPrivateEnv) {
     console.log(chalk.gray(`检测到私有化配置`))
+    // 初始化 lowcode 服务cliapi入口
+    process.env.CLOUDBASE_LOWCODE_CLOUDAPI_URL = config.privateSettings.cliApiEntrypoint;
+
 }
 
 // 注册命令

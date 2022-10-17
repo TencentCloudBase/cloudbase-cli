@@ -5,6 +5,7 @@ import { program, Command as Commander, Option } from 'commander'
 import yargsParser from 'yargs-parser'
 import { CloudBaseError } from '../error'
 import { ICommandContext } from '../types'
+import type {Credential} from '@cloudbase/toolbox'
 import {
     usageStore,
     collectUsage,
@@ -14,6 +15,9 @@ import {
     authSupevisor,
     checkPrivateSettingsExisted
 } from '../utils'
+
+
+type PrivateCredential =  Pick<Credential, 'secretId'|'secretKey'>
 
 interface ICommandOption {
     flags: string
@@ -192,8 +196,18 @@ export abstract class Command extends EventEmitter {
             const envId = cmdOptions?.envId || config?.envId
             const hasPrivateSettings = checkPrivateSettingsExisted(config)
 
-            const loginState = await authSupevisor.getLoginState()
+            let loginState: Credential | PrivateCredential
+            if(hasPrivateSettings) {
+                // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+                loginState = {
+                    secretId: config.privateSettings.secretID,
+                    secretKey: config.privateSettings.secretKey
+                } as PrivateCredential
+            } else {
+                loginState = await authSupevisor.getLoginState() as Credential
+            }
 
+            console.log(loginState, 123)
             // 校验登陆态
             if (!withoutAuth && !loginState) {
                 throw new CloudBaseError('无有效身份信息，请使用 cloudbase login 登录')
