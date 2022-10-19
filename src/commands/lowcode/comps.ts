@@ -3,10 +3,10 @@ import { Command, ICommand } from '../common'
 import { InjectParams, Log, Logger, ArgsParams, ArgsOptions, CmdContext, IsPrivateEnv, Config } from '../../decorators'
 import { prompt } from 'enquirer'
 import * as semver from 'semver'
-import { CloudApiService } from '@cloudbase/cloud-api'
+import { CloudApiService } from '../../utils'
+import { CloudApiService as PrivateCloudApiService } from '@cloudbase/cloud-api'
 import { CloudBaseError } from '../../error'
 import { getLowcodeCli } from './utils'
-import { config } from 'yargs'
 
 // use dynamic import for lowcode-cli to reduce setup time
 type LowcodeCli = typeof import('@cloudbase/lowcode-cli')
@@ -30,6 +30,10 @@ export class LowCodeCreateComps extends Command {
                 {
                     flags: '--verbose',
                     desc: '是否打印详细日志'
+                },
+                {
+                    flags: '--skip-validate',
+                    desc: '是否跳过组件存在性检查'
                 }
             ],
             desc: '创建组件库',
@@ -38,30 +42,35 @@ export class LowCodeCreateComps extends Command {
     }
 
     @InjectParams()
-    async execute(@ArgsParams() params, @IsPrivateEnv() isPrivateEnv: boolean, @Config() config, @Log() log?: Logger) {
+    async execute( @ArgsOptions() opts, @ArgsParams() params, @IsPrivateEnv() isPrivateEnv: boolean, @Config() config, @Log() log?: Logger) {
+        if(opts.skipValidate) {
+            if (!params?.[0]) {
+                throw new CloudBaseError('skip validate 需要指定组件库名 eg: `tcb lowcode create mydemo`')
+            }
+            await lowcodeCli.bootstrap(params?.[0], log)
+            return
+        }
+
         if (process.env.CLOUDBASE_LOWCODE_CLOUDAPI_URL === undefined) {
             // 没设置的时候才才设置，方便覆盖
             process.env.CLOUDBASE_LOWCODE_CLOUDAPI_URL = 'https://lcap.cloud.tencent.com/api/v1/cliapi'
         }
-        // console.log(config, 123)
-        // console.log({
-        //     secretId: config.privateSettings.secretID,
-        //     secretKey: config.privateSettings.secretKey
-        // })
-        const serviceOptions: Parameters<typeof CloudApiService.getInstance>[0] = {
-            service: 'lowcode',
+        let cloudService: CloudApiService | PrivateCloudApiService
+        if (isPrivateEnv) {
+            cloudService =  PrivateCloudApiService.getInstance( {
+                service: 'lowcode',
+                credential: {
+                    secretId: config.privateSettings.secretID,
+                    secretKey: config.privateSettings.secretKey
+                }
+            })
+            
+        } else {
+            cloudService = CloudApiService.getInstance('lowcode')
         }
-        if(isPrivateEnv) {
-            serviceOptions.credential = {
-                secretId: config.privateSettings.secretID,
-                secretKey: config.privateSettings.secretKey
-            }
-        }
-        const cloudService =  CloudApiService.getInstance(serviceOptions)
-        console.log(cloudService.credential, 'CLI cred')
-        const res = await cloudService.request('ListUserCompositeGroups', {
+        const res = await cloudService.request('ListUserCompositeGroups', isPrivateEnv ? {
             privateUin: config.privateSettings.privateUin
-        })
+        }: undefined)
         const comps = res?.data
         if (!comps?.count) {
             throw new CloudBaseError('没有可关联的云端组件库，请到低码控制台新建组件库！')
@@ -113,7 +122,8 @@ export class LowCodeBuildComps extends Command {
             await lowcodeCli.graceBuildComps({
                 ...config,
                 context: config.context || process.cwd(),
-                logger: log
+                logger: log,
+                privateSettings: _.get(ctx, 'config.privateSettings')
             })
             return
         }
@@ -158,7 +168,8 @@ export class LowCodeDebugComps extends Command {
                 context: config.context || process.cwd(),
                 debugPort: options?.debugPort || 8388,
                 logger: log,
-                wxDevtoolPath: options?.wxDevtoolPath
+                wxDevtoolPath: options?.wxDevtoolPath,
+                debugBaseUrl: _.get(ctx, 'config.privateSettings.editorEntrypoint')
             })
             return
         }
@@ -201,7 +212,7 @@ export class LowCodePublishComps extends Command {
                 ...config,
                 context: config.context || process.cwd(),
                 logger: log,
-                privateSettings: ctx.config.privateSettings,
+                privateSettings: _.get(ctx, 'config.privateSettings'),
                 isAdmin: Boolean(options.admin)
             })
             log.success('组件库 - 已同步到云端，请到低码控制台发布该组件库！')
@@ -268,7 +279,8 @@ export class LowCodePublishVersionComps extends Command {
             ...config,
             context: config.context || process.cwd(),
             logger: log,
-            isAdmin: options.admin
+            isAdmin: options.admin,
+            privateSettings: _.get(ctx, 'config.privateSettings')
         }, comment, tag)
         if (res.data.code === 200) {
             log.success('组件库 - 已发布新版本！')
