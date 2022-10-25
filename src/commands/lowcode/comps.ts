@@ -223,7 +223,9 @@ export class LowCodePublishComps extends Command {
     }
 }
 
-@ICommand()
+@ICommand({
+    supportPrivate: true
+})
 export class LowCodePublishVersionComps extends Command {
     get options() {
         return {
@@ -258,12 +260,10 @@ export class LowCodePublishVersionComps extends Command {
         // 有RC配置, 使用新接口
         const { tag, comment, admin } = options
         if (!comment) {
-            log.error('请使用 --comment 填写版本注释')
-            return
+            throw new CloudBaseError('请使用 --comment 填写版本注释')
         }
         if (!tag) {
-            log.error('请使用 --tag 填写符合semver的版本号')
-            return
+            throw new CloudBaseError('请使用 --tag 填写符合semver的版本号')
         }
         if (!semver.valid(tag)) {
             log.error('组件库版本不符合semver标准')
@@ -272,7 +272,7 @@ export class LowCodePublishVersionComps extends Command {
         const config = ctx.config.lowcodeCustomComponents
 
         if (!config) {
-            log.error('组件库 - 请添加组件库配置到cloudbaserc.json 以使用该命令')
+            throw new CloudBaseError('组件库 - 请添加组件库配置到cloudbaserc.json 以使用该命令')
         }
 
         const res = await lowcodeCli.publishVersion({
