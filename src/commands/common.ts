@@ -5,7 +5,7 @@ import { program, Command as Commander, Option } from 'commander'
 import yargsParser from 'yargs-parser'
 import { CloudBaseError } from '../error'
 import { ICommandContext } from '../types'
-import type {Credential} from '@cloudbase/toolbox'
+import type { Credential } from '@cloudbase/toolbox'
 import {
     usageStore,
     collectUsage,
@@ -13,11 +13,10 @@ import {
     getNotification,
     getCloudBaseConfig,
     authSupevisor,
-    checkPrivateSettingsExisted
+    getPrivateSettings
 } from '../utils'
 
-
-type PrivateCredential =  Pick<Credential, 'secretId'|'secretKey'>
+type PrivateCredential = Pick<Credential, 'secretId' | 'secretKey'>
 
 interface ICommandOption {
     flags: string
@@ -32,11 +31,11 @@ export interface ICommandOptions {
     cmd: string
     // 嵌套子命令
     childCmd?:
-    | string
-    | {
-        cmd: string
-        desc: string
-    }
+        | string
+        | {
+              cmd: string
+              desc: string
+          }
     childSubCmd?: string
     // 命令选项
     options: ICommandOption[]
@@ -50,7 +49,10 @@ export interface ICommandOptions {
 
 type CommandConstructor = new () => Command
 
-const registrableCommands: {Command: CommandConstructor, decoratorOptions: ICommandDecoratorOptions}[] = []
+const registrableCommands: {
+    Command: CommandConstructor
+    decoratorOptions: ICommandDecoratorOptions
+}[] = []
 const cmdMap = new Map()
 
 interface ICommandDecoratorOptions {
@@ -60,11 +62,12 @@ const defaultCmdDecoratorOpts: ICommandDecoratorOptions = {
     supportPrivate: false
 }
 
-
 // 装饰器收集命令
-export function ICommand(options: ICommandDecoratorOptions = defaultCmdDecoratorOpts): ClassDecorator {
+export function ICommand(
+    options: ICommandDecoratorOptions = defaultCmdDecoratorOpts
+): ClassDecorator {
     return (target: any) => {
-        registrableCommands.push({Command: target, decoratorOptions: options})
+        registrableCommands.push({ Command: target, decoratorOptions: options })
     }
 }
 
@@ -72,24 +75,23 @@ export function ICommand(options: ICommandDecoratorOptions = defaultCmdDecorator
 export async function registerCommands() {
     const args = yargsParser(process.argv.slice(2))
     const config = await getCloudBaseConfig(args.configFile)
-    const isPrivate = checkPrivateSettingsExisted(config)
+    const isPrivate = getPrivateSettings(config)
 
-    registrableCommands.forEach(({Command, decoratorOptions}) => {
-        if(isPrivate) {
+    console.log(process.argv)
+    registrableCommands.forEach(({ Command, decoratorOptions }) => {
+        if (isPrivate) {
             // 私有化的
-            if(decoratorOptions.supportPrivate) {
+            if (decoratorOptions.supportPrivate) {
                 const command = new Command()
                 command.init()
             }
         } else {
             // 非私有化的
-            if(decoratorOptions.supportPrivate !== 'only') {
+            if (decoratorOptions.supportPrivate !== 'only') {
                 const command = new Command()
                 command.init()
             }
         }
-        
-        
     })
 }
 
@@ -173,14 +175,12 @@ export abstract class Command extends EventEmitter {
         const { cmd, desc, options, requiredEnvId = true, withoutAuth = false } = this.options
         instance.storeOptionsAsProperties(false)
         options.forEach((option) => {
-
             const { hideHelp } = option
             if (hideHelp) {
                 instance.addOption(new Option(option.flags, option.desc).hideHelp())
             } else {
                 instance.option(option.flags, option.desc)
             }
-
         })
 
         instance.description(desc)
@@ -194,20 +194,16 @@ export abstract class Command extends EventEmitter {
 
             const config = await getCloudBaseConfig(parentOptions?.configFile)
             const envId = cmdOptions?.envId || config?.envId
-            const hasPrivateSettings = checkPrivateSettingsExisted(config)
+            const privateSettings = getPrivateSettings(config, cmd)
 
             let loginState: Credential | PrivateCredential
-            if(hasPrivateSettings) {
+            if (privateSettings) {
                 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-                loginState = {
-                    secretId: config.privateSettings.secretID,
-                    secretKey: config.privateSettings.secretKey
-                } as PrivateCredential
+                loginState = privateSettings.credential as PrivateCredential
             } else {
-                loginState = await authSupevisor.getLoginState() as Credential
+                loginState = (await authSupevisor.getLoginState()) as Credential
             }
 
-            console.log(loginState, 123)
             // 校验登陆态
             if (!withoutAuth && !loginState) {
                 throw new CloudBaseError('无有效身份信息，请使用 cloudbase login 登录')
@@ -225,7 +221,7 @@ export abstract class Command extends EventEmitter {
                 config,
                 params,
                 options: cmdOptions,
-                hasPrivateSettings
+                hasPrivateSettings: Boolean(privateSettings)
             }
 
             // 处理前

@@ -2,6 +2,7 @@ import _ from 'lodash'
 import path from 'path'
 import yargs, { Arguments } from 'yargs'
 import { ConfigParser, ICloudBaseConfig } from '@cloudbase/toolbox'
+import { Credential } from '../types'
 
 export interface IArgs {
     envId: string
@@ -22,21 +23,28 @@ const hasOwn = (obj: object, name: string): boolean => {
 /**
  * 用是否设置privateSettings来决定它是否是私有化环境
  */
-type IPrivateCloudBaseRcSettings = ICloudBaseRcSettings & Required<Pick<ICloudBaseRcSettings, 'privateSettings'>>
-export function checkPrivateSettingsExisted(config: ICloudBaseRcSettings): config is IPrivateCloudBaseRcSettings {
-    return hasOwn(config, 'privateSettings')
+export function getPrivateSettings(
+    config: ICloudBaseRcSettings,
+    cmd?: string
+): undefined | IPrivateSettings {
+    const commonConfig = config
+    const currentConfig = cmd ? config : config?.[cmd]
+    if (hasOwn(currentConfig, 'privateSettings') || hasOwn(commonConfig, 'privateSettings')) {
+        return { ...commonConfig.privateSettings, ...currentConfig.privateSettings }
+    }
+    return undefined
 }
-
 
 type IAbsUrl = `http://${string}` | `https://${string}`
 /**
  * 私有化配置
  */
 export interface IPrivateSettings {
-    secretID: string;
-    secretKey: string;
-    editorEntrypoint: IAbsUrl;
-    cliApiEntrypoint: IAbsUrl;
+    credential: Credential
+    endpoints: {
+        editor: IAbsUrl
+        cliApi: IAbsUrl
+    }
     privateUin: string
 }
 

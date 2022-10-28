@@ -1,12 +1,22 @@
 import _ from 'lodash'
 import { Command, ICommand } from '../common'
-import { InjectParams, Log, Logger, ArgsParams, ArgsOptions, CmdContext, IsPrivateEnv, Config } from '../../decorators'
+import {
+    InjectParams,
+    Log,
+    Logger,
+    ArgsParams,
+    ArgsOptions,
+    CmdContext,
+    IsPrivateEnv,
+    Config
+} from '../../decorators'
 import { prompt } from 'enquirer'
 import * as semver from 'semver'
-import { CloudApiService } from '../../utils'
+import { CloudApiService, getPrivateSettings } from '../../utils'
 import { CloudApiService as PrivateCloudApiService } from '@cloudbase/cloud-api'
 import { CloudBaseError } from '../../error'
-import { getLowcodeCli } from './utils'
+import { getCmdConfig, getLowcodeCli, getMergedOptions } from './utils'
+import { PermanentCredential } from '../../types'
 
 // use dynamic import for lowcode-cli to reduce setup time
 type LowcodeCli = typeof import('@cloudbase/lowcode-cli')
@@ -15,7 +25,7 @@ let lowcodeCli: LowcodeCli | undefined
 
 if (process.argv.includes('lowcode')) {
     // cannot use top-level await here
-    getLowcodeCli().then(_ => lowcodeCli = _)
+    getLowcodeCli().then((_) => (lowcodeCli = _))
 }
 
 @ICommand({
@@ -42,35 +52,48 @@ export class LowCodeCreateComps extends Command {
     }
 
     @InjectParams()
-    async execute( @ArgsOptions() opts, @ArgsParams() params, @IsPrivateEnv() isPrivateEnv: boolean, @Config() config, @Log() log?: Logger) {
-        if(opts.skipValidate) {
+    async execute(
+        @ArgsOptions() opts,
+        @ArgsParams() params,
+        @IsPrivateEnv() isPrivateEnv: boolean,
+        @Config() config,
+        @Log() log?: Logger
+    ) {
+        const mergesOptions = getMergedOptions(getCmdConfig(config, this.options), opts)
+        if (mergesOptions.skipValidate) {
             if (!params?.[0]) {
-                throw new CloudBaseError('skip validate 需要指定组件库名 eg: `tcb lowcode create mydemo`')
+                throw new CloudBaseError(
+                    'skip validate 需要指定组件库名 eg: `tcb lowcode create mydemo`'
+                )
             }
             await lowcodeCli.bootstrap(params?.[0], log)
             return
         }
 
+        const privateSettings = getPrivateSettings(config, this.options.cmd)
+
         if (process.env.CLOUDBASE_LOWCODE_CLOUDAPI_URL === undefined) {
             // 没设置的时候才才设置，方便覆盖
-            process.env.CLOUDBASE_LOWCODE_CLOUDAPI_URL = 'https://lcap.cloud.tencent.com/api/v1/cliapi'
+            process.env.CLOUDBASE_LOWCODE_CLOUDAPI_URL =
+                'https://lcap.cloud.tencent.com/api/v1/cliapi'
         }
         let cloudService: CloudApiService | PrivateCloudApiService
         if (isPrivateEnv) {
-            cloudService =  PrivateCloudApiService.getInstance( {
+            cloudService = PrivateCloudApiService.getInstance({
                 service: 'lowcode',
-                credential: {
-                    secretId: config.privateSettings.secretID,
-                    secretKey: config.privateSettings.secretKey
-                }
+                credential: privateSettings.credential as Required<PermanentCredential>
             })
-            
         } else {
             cloudService = CloudApiService.getInstance('lowcode')
         }
-        const res = await cloudService.request('ListUserCompositeGroups', isPrivateEnv ? {
-            privateUin: config.privateSettings.privateUin
-        }: undefined)
+        const res = await cloudService.request(
+            'ListUserCompositeGroups',
+            isPrivateEnv
+                ? {
+                      privateUin: privateSettings.privateUin
+                  }
+                : undefined
+        )
         const comps = res?.data
         if (!comps?.count) {
             throw new CloudBaseError('没有可关联的云端组件库，请到低码控制台新建组件库！')
@@ -89,12 +112,13 @@ export class LowCodeCreateComps extends Command {
             // 自己输入的组件库名称，校验是否在云端也有
             const comp = comps.rows.find((row) => row.groupName === compsName)
             if (!comp) {
-                throw new CloudBaseError(`云端不存在组件库 ${compsName}，请到低码控制台新建该组件库！`)
+                throw new CloudBaseError(
+                    `云端不存在组件库 ${compsName}，请到低码控制台新建该组件库！`
+                )
             }
         }
 
         await lowcodeCli.bootstrap(compsName, log)
-
     }
 }
 
@@ -123,13 +147,14 @@ export class LowCodeBuildComps extends Command {
                 ...config,
                 context: config.context || process.cwd(),
                 logger: log,
-                privateSettings: _.get(ctx, 'config.privateSettings')
+                privateSettings: getPrivateSettings(ctx.config, this.options.cmd)
             })
             return
         }
         // 没有RC配置
-        throw new CloudBaseError('请参考文档填写 cloudbaserc 配置: https://docs.cloudbase.net/lowcode/custom-components/config/config-comps')
-        
+        throw new CloudBaseError(
+            '请参考文档填写 cloudbaserc 配置: https://docs.cloudbase.net/lowcode/custom-components/config/config-comps'
+        )
     }
 }
 
@@ -162,25 +187,29 @@ export class LowCodeDebugComps extends Command {
     async execute(@CmdContext() ctx, @ArgsOptions() options, @Log() log) {
         // 有RC配置, 使用新接口
         const config = ctx.config.lowcodeCustomComponents
+        const privateSettings = getPrivateSettings(ctx.config, this.options.cmd)
+
         if (config) {
+            const cmdConfig = getCmdConfig(ctx.config, this.options)
+            const mergesOptions = getMergedOptions(cmdConfig, options)
             await lowcodeCli.graceDebugComps({
                 ...config,
                 context: config.context || process.cwd(),
-                debugPort: options?.debugPort || 8388,
+                debugPort: mergesOptions?.debugPort || 8388,
                 logger: log,
-                wxDevtoolPath: options?.wxDevtoolPath,
-                debugBaseUrl: _.get(ctx, 'config.privateSettings.editorEntrypoint')
+                wxDevtoolPath: mergesOptions?.wxDevtoolPath,
+                debugBaseUrl: privateSettings?.endpoints?.editor
             })
             return
         }
         // 没有RC配置
-        throw new CloudBaseError('请参考文档填写 cloudbaserc 配置: https://docs.cloudbase.net/lowcode/custom-components/config/config-comps')
+        throw new CloudBaseError(
+            '请参考文档填写 cloudbaserc 配置: https://docs.cloudbase.net/lowcode/custom-components/config/config-comps'
+        )
     }
 }
 
-@ICommand(
-    {supportPrivate: true}
-)
+@ICommand({ supportPrivate: true })
 export class LowCodePublishComps extends Command {
     get options() {
         return {
@@ -208,18 +237,21 @@ export class LowCodePublishComps extends Command {
 
         const config = ctx.config.lowcodeCustomComponents
         if (config) {
+            const mergesOptions = getMergedOptions(getCmdConfig(ctx.config, this.options), options)
             await lowcodeCli.gracePublishComps({
                 ...config,
                 context: config.context || process.cwd(),
                 logger: log,
-                privateSettings: _.get(ctx, 'config.privateSettings'),
-                isAdmin: Boolean(options.admin)
+                privateSettings: getPrivateSettings(ctx.config, this.options.cmd),
+                isAdmin: Boolean(mergesOptions.admin)
             })
             log.success('组件库 - 已同步到云端，请到低码控制台发布该组件库！')
             return
         }
         // 没有RC配置
-        throw new CloudBaseError('请参考文档填写 cloudbaserc 配置: https://docs.cloudbase.net/lowcode/custom-components/config/config-comps')
+        throw new CloudBaseError(
+            '请参考文档填写 cloudbaserc 配置: https://docs.cloudbase.net/lowcode/custom-components/config/config-comps'
+        )
     }
 }
 
@@ -238,7 +270,7 @@ export class LowCodePublishVersionComps extends Command {
                 },
                 {
                     flags: '--comment <comment>',
-                    desc: '版本备注',
+                    desc: '版本备注'
                 },
                 {
                     flags: '--tag <version>',
@@ -258,7 +290,8 @@ export class LowCodePublishVersionComps extends Command {
     @InjectParams()
     async execute(@CmdContext() ctx, @ArgsOptions() options, @Log() log?: Logger) {
         // 有RC配置, 使用新接口
-        const { tag, comment, admin } = options
+        const { tag, comment, admin } =
+            getMergedOptions(getCmdConfig(ctx.config, this.options), options) || {}
         if (!comment) {
             throw new CloudBaseError('请使用 --comment 填写版本注释')
         }
@@ -275,13 +308,17 @@ export class LowCodePublishVersionComps extends Command {
             throw new CloudBaseError('组件库 - 请添加组件库配置到cloudbaserc.json 以使用该命令')
         }
 
-        const res = await lowcodeCli.publishVersion({
-            ...config,
-            context: config.context || process.cwd(),
-            logger: log,
-            isAdmin: options.admin,
-            privateSettings: _.get(ctx, 'config.privateSettings')
-        }, comment, tag)
+        const res = await lowcodeCli.publishVersion(
+            {
+                ...config,
+                context: config.context || process.cwd(),
+                logger: log,
+                isAdmin: options.admin,
+                privateSettings: getPrivateSettings(ctx.config, this.options.cmd)
+            },
+            comment,
+            tag
+        )
         if (res.data.code === 200) {
             log.success('组件库 - 已发布新版本！')
             return
