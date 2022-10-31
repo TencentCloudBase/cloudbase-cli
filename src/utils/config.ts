@@ -17,7 +17,7 @@ export const getArgs = (): Arguments<IArgs> => {
     return yargs.alias('e', 'envId').alias('r', 'region').argv as any
 }
 const hasOwn = (obj: object, name: string): boolean => {
-    return Object.prototype.hasOwnProperty.call(obj, name)
+    return Object.prototype.hasOwnProperty.call(obj ?? {}, name)
 }
 
 /**
@@ -28,7 +28,7 @@ export function getPrivateSettings(
     cmd?: string
 ): undefined | IPrivateSettings {
     const commonConfig = config
-    const currentConfig = cmd ? config : config?.[cmd]
+    const currentConfig = cmd ? config?.[cmd] : config
     if (hasOwn(currentConfig, 'privateSettings') || hasOwn(commonConfig, 'privateSettings')) {
         return { ...commonConfig.privateSettings, ...currentConfig.privateSettings }
     }

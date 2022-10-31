@@ -14,7 +14,7 @@ const pkg = require('../package.json')
 const store = require('../lib/utils/store')
 const { ALL_COMMANDS } = require('../lib/constant')
 const { getProxy } = require('../lib/utils/net')
-const { getCloudBaseConfig, checkPrivateSettingsExisted } = require('../lib/utils/config')
+const { getCloudBaseConfig, getPrivateSettings } = require('../lib/utils/config')
 const {registerCommands} = require('../lib')
 
 async function main() {
@@ -53,14 +53,14 @@ console.log(chalk.gray(`CloudBase Framework ${frameworkPkg.version}`))
 
 const yargsParsedResult = yargsParser(process.argv.slice(2));
 const config = await getCloudBaseConfig(yargsParsedResult.configFile);
-const isPrivateEnv = checkPrivateSettingsExisted(config)
-if (isPrivateEnv) {
+const privateSettings = getPrivateSettings(config, yargsParsedResult._?.[0])
+
+if (privateSettings) {
     console.log(chalk.gray(`检测到私有化配置`))
     // 初始化 lowcode 服务cliapi入口
-    process.env.CLOUDBASE_LOWCODE_CLOUDAPI_URL = config.privateSettings.cliApiEntrypoint;
+    process.env.CLOUDBASE_LOWCODE_CLOUDAPI_URL = privateSettings.endpoints.cliApi;
 
 }
-
 // 注册命令
 await registerCommands()
 
@@ -84,7 +84,7 @@ program.option('--mode <mode>', '指定加载 env 文件的环境')
 program.option('--config-file <path>', '设置配置文件，默认为 cloudbaserc.json')
 program.option('-r, --region <region>', '指定环境地域')
 
-if(!isPrivateEnv) {
+if(!privateSettings) {
     // HACK: 隐藏自动生成的 help 信息
     program.helpOption(false)
 }
@@ -118,7 +118,7 @@ program.action(() => {
 
 // 没有使用命令
 if (isCommandEmpty) {
-    if(isPrivateEnv) {
+    if(privateSettings) {
         program.outputHelp()
     } else {
         if (['-h', '--help'].includes(processArgv[2])) {
@@ -207,5 +207,12 @@ notifier.notify({
 }
 
 if(require.main === module) {
-    main()
+    try {
+        main()
+    } catch (error) {
+        console.log(error)
+    }
 }
+process.on('unhandledRejection', (err) => {
+    console.log('unhandledRejection', err)
+})
