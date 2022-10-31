@@ -71,7 +71,16 @@ export class LowCodeBuildApp extends Command {
         return {
             cmd: 'lowcode',
             childCmd: 'build:app',
-            options: [],
+            options: [
+                {
+                    flags: '--clean',
+                    desc: '清理构建目录'
+                },
+                {
+                    flags: '--out <out>',
+                    desc: '输出目录'
+                }
+            ],
             desc: '构建应用',
             requiredEnvId: false
         }
@@ -120,11 +129,10 @@ export class LowCodeDeployApp extends Command {
         @Log() log: Logger,
         @ArgsOptions() options: any
     ) {
-        const { src, ...restOptions } = options
         let credential
         const privateSettings = getPrivateSettings(ctx.config, this.options.cmd)
         const config = getCmdConfig(ctx.config, this.options)
-        const mergesOptions = getMergedOptions(config, restOptions)
+        const { src, ...restMergedOptions } = getMergedOptions(config, options)
 
         if (ctx.hasPrivateSettings) {
             process.env.IS_PRIVATE = 'true'
@@ -142,8 +150,8 @@ export class LowCodeDeployApp extends Command {
             },
             {
                 credential,
-                ...mergesOptions,
-                projectPath: src
+                ...restMergedOptions,
+                projectPath: src || restMergedOptions.projectPath
             }
         )
     }

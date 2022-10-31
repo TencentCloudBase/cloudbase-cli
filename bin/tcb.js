@@ -53,12 +53,13 @@ console.log(chalk.gray(`CloudBase Framework ${frameworkPkg.version}`))
 
 const yargsParsedResult = yargsParser(process.argv.slice(2));
 const config = await getCloudBaseConfig(yargsParsedResult.configFile);
-const privateSettings = getPrivateSettings(config, yargsParsedResult._?.[0])
-
-if (privateSettings) {
+const isPrivateEnv = Boolean(getPrivateSettings(config))
+if (isPrivateEnv) {
     console.log(chalk.gray(`检测到私有化配置`))
-    // 初始化 lowcode 服务cliapi入口
-    process.env.CLOUDBASE_LOWCODE_CLOUDAPI_URL = privateSettings.endpoints.cliApi;
+    if(privateSettings.endpoints && privateSettings.endpoints.cliApi){
+        // 初始化 lowcode 服务cliapi入口
+        process.env.CLOUDBASE_LOWCODE_CLOUDAPI_URL = privateSettings.endpoints.cliApi;
+    }
 
 }
 // 注册命令

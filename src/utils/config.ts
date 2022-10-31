@@ -29,7 +29,10 @@ export function getPrivateSettings(
 ): undefined | IPrivateSettings {
     const commonConfig = config
     const currentConfig = cmd ? config?.[cmd] : config
-    if (hasOwn(currentConfig, 'privateSettings') || hasOwn(commonConfig, 'privateSettings')) {
+    if (
+        hasOwn(currentConfig || {}, 'privateSettings') ||
+        hasOwn(commonConfig || {}, 'privateSettings')
+    ) {
         return { ...commonConfig.privateSettings, ...currentConfig.privateSettings }
     }
     return undefined
