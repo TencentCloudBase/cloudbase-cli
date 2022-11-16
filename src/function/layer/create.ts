@@ -19,7 +19,7 @@ export async function createLayer(options: IFunctionLayerOptions): Promise<void>
 
     checkFullAccess(contentPath)
 
-    const validRuntime = ['Nodejs8.9', 'Php7', 'Java8']
+    const validRuntime = ['Nodejs8.9', 'Php7', 'Java8', 'Nodejs12.16']
     if (runtimes.some(item => validRuntime.indexOf(item) === -1)) {
         throw new CloudBaseError(
             `Invalid runtime value. Now only support: ${validRuntime.join(', ')}`

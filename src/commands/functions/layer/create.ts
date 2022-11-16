@@ -32,7 +32,7 @@ export class CreateFileLayer extends Command {
 
         const layerName = `${alias}_${envId}`
         const filePath = path.resolve(file)
-        const runtimes = ['Nodejs8.9', 'Php7', 'Java8']
+        const runtimes = ['Nodejs12.16', 'Nodejs8.9', 'Php7', 'Java8']
 
         const loading = loadingFactory()
 
