@@ -1,16 +1,7 @@
 import _ from 'lodash'
 import { Command, ICommand } from '../common'
-import {
-    InjectParams,
-    Log,
-    Logger,
-    CmdContext,
-    ArgsOptions,
-    IsPrivateEnv,
-    Config
-} from '../../decorators'
+import { InjectParams, Log, Logger, CmdContext, ArgsOptions } from '../../decorators'
 import { getLowcodeCli, getCmdConfig, getMergedOptions } from './utils'
-import { CloudBaseError } from '../../error'
 import { ICommandContext } from '../../types'
 import { authSupevisor, getPrivateSettings } from '../../utils'
 
@@ -59,7 +50,7 @@ export class LowCodeWatch extends Command {
             await res.watchApp({
                 watchPort: 8288,
                 wxDevtoolPath: options?.wxDevtoolPath,
-                forceInstall: options?.forceInstall,
+                forceInstall: options?.forceInstall
             })
         })
     }
