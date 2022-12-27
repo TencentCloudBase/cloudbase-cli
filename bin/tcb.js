@@ -53,8 +53,8 @@ console.log(chalk.gray(`CloudBase Framework ${frameworkPkg.version}`))
 
 const yargsParsedResult = yargsParser(process.argv.slice(2));
 const config = await getCloudBaseConfig(yargsParsedResult.configFile);
-const isPrivateEnv = Boolean(getPrivateSettings(config))
-if (isPrivateEnv) {
+const privateSettings = getPrivateSettings(config);
+if (privateSettings) {
     console.log(chalk.gray(`检测到私有化配置`))
     if(privateSettings.endpoints && privateSettings.endpoints.cliApi){
         // 初始化 lowcode 服务cliapi入口
