@@ -75,7 +75,7 @@ export function ICommand(
 export async function registerCommands() {
     const args = yargsParser(process.argv.slice(2))
     const config = await getCloudBaseConfig(args.configFile)
-    const isPrivate = getPrivateSettings(config, args?._?.[0] || undefined)
+    const isPrivate = getPrivateSettings(config, args?._?.[0]?.toString() )
     registrableCommands.forEach(({ Command, decoratorOptions }) => {
         if (isPrivate) {
             // 私有化的
