@@ -122,6 +122,9 @@ export class LowCodeCreateComps extends Command {
     }
 }
 
+@ICommand({
+    supportPrivate: true
+})
 export class LowCodeBuildComps extends Command {
     get options() {
         return {
