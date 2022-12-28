@@ -8,6 +8,7 @@ export interface ICommandContext {
     config: ICloudBaseConfig
     options: any
     params: string[]
+    hasPrivateSettings: boolean
 }
 
 /* eslint-disable */

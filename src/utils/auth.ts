@@ -11,5 +11,6 @@ export const authSupevisor = AuthSupevisor.getInstance({
 })
 
 export async function getLoginState() {
-    return authSupevisor.getLoginState()
+    const state = authSupevisor.getLoginState();
+    return state;
 }

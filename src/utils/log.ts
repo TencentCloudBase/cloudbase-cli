@@ -52,6 +52,13 @@ export class Logger {
         }
     }
 
+    /**
+     * alias for verbose
+     */
+    debug(...args: any) {
+        return this.verbose(...args)
+    }
+
     genClickableLink(link: string) {
         if (terminalLink.isSupported) {
             const clickablelink = terminalLink(link, link)

@@ -14,7 +14,10 @@ const pkg = require('../package.json')
 const store = require('../lib/utils/store')
 const { ALL_COMMANDS } = require('../lib/constant')
 const { getProxy } = require('../lib/utils/net')
+const { getCloudBaseConfig, getPrivateSettings } = require('../lib/utils/config')
+const {registerCommands} = require('../lib')
 
+async function main() {
 let processArgv = process.argv
 const isBeta = pkg.version.indexOf('-') > -1
 process.CLI_VERSION = pkg.version
@@ -47,8 +50,20 @@ Sentry.init({
 console.log(chalk.gray(`CloudBase CLI ${pkg.version}`))
 console.log(chalk.gray(`CloudBase Framework ${frameworkPkg.version}`))
 
+
+const yargsParsedResult = yargsParser(process.argv.slice(2));
+const config = await getCloudBaseConfig(yargsParsedResult.configFile);
+const privateSettings = getPrivateSettings(config);
+if (privateSettings) {
+    console.log(chalk.gray(`检测到私有化配置`))
+    if(privateSettings.endpoints && privateSettings.endpoints.cliApi){
+        // 初始化 lowcode 服务cliapi入口
+        process.env.CLOUDBASE_LOWCODE_CLOUDAPI_URL = privateSettings.endpoints.cliApi;
+    }
+
+}
 // 注册命令
-require('../lib')
+await registerCommands()
 
 // 设置 Sentry 上报的用户 uin
 Sentry.configureScope((scope) => {
@@ -70,9 +85,11 @@ program.option('--mode <mode>', '指定加载 env 文件的环境')
 program.option('--config-file <path>', '设置配置文件，默认为 cloudbaserc.json')
 program.option('-r, --region <region>', '指定环境地域')
 
-// HACK: 隐藏自动生成的 help 信息
-program.helpOption(false)
-const isCommandEmpty = yargsParser(process.argv.slice(2))._.length === 0;
+if(!privateSettings) {
+    // HACK: 隐藏自动生成的 help 信息
+    program.helpOption(false)
+}
+const isCommandEmpty = yargsParsedResult._.length === 0;
 
 // -v 时输出的版本信息，设置时避免影响其他命令使用 -v
 if (isCommandEmpty) {
@@ -102,21 +119,25 @@ program.action(() => {
 
 // 没有使用命令
 if (isCommandEmpty) {
-    if (['-h', '--help'].includes(processArgv[2])) {
-        // 需要隐藏的选项
-        const hideArgs = ['-h', '--help']
-        hideArgs.forEach((arg) => {
-            const index = processArgv.indexOf(arg)
-            if (index > -1) {
-                processArgv.splice(index, 1)
-            }
-        })
-        const { outputHelpInfo } = require('../lib/help')
-        outputHelpInfo()
-    } else if (!['-v', '--version'].includes(processArgv[2])) {
-        // HACK: framework 智能命令
-        const { smartDeploy } = require('../lib')
-        smartDeploy()
+    if(privateSettings) {
+        program.outputHelp()
+    } else {
+        if (['-h', '--help'].includes(processArgv[2])) {
+            // 需要隐藏的选项
+            const hideArgs = ['-h', '--help']
+            hideArgs.forEach((arg) => {
+                const index = processArgv.indexOf(arg)
+                if (index > -1) {
+                    processArgv.splice(index, 1)
+                }
+            })
+            const { outputHelpInfo } = require('../lib/help')
+            outputHelpInfo()
+        } else if (!['-v', '--version'].includes(processArgv[2])) {
+            // HACK: framework 智能命令
+            const { smartDeploy } = require('../lib')
+            smartDeploy()
+        }
     }
 }
 
@@ -182,4 +203,17 @@ const notifier = updateNotifier({
 
 notifier.notify({
     isGlobal: true
+})
+
+}
+
+if(require.main === module) {
+    try {
+        main()
+    } catch (error) {
+        console.log(error)
+    }
+}
+process.on('unhandledRejection', (err) => {
+    console.log('unhandledRejection', err)
 })

@@ -2,16 +2,21 @@ import chalk from 'chalk'
 import * as Sentry from '@sentry/node'
 import { EventEmitter } from 'events'
 import { program, Command as Commander, Option } from 'commander'
+import yargsParser from 'yargs-parser'
 import { CloudBaseError } from '../error'
 import { ICommandContext } from '../types'
+import type { Credential } from '@cloudbase/toolbox'
 import {
     usageStore,
     collectUsage,
     loadingFactory,
     getNotification,
     getCloudBaseConfig,
-    authSupevisor
+    authSupevisor,
+    getPrivateSettings
 } from '../utils'
+
+type PrivateCredential = Pick<Credential, 'secretId' | 'secretKey'>
 
 interface ICommandOption {
     flags: string
@@ -26,11 +31,11 @@ export interface ICommandOptions {
     cmd: string
     // 嵌套子命令
     childCmd?:
-    | string
-    | {
-        cmd: string
-        desc: string
-    }
+        | string
+        | {
+              cmd: string
+              desc: string
+          }
     childSubCmd?: string
     // 命令选项
     options: ICommandOption[]
@@ -44,21 +49,47 @@ export interface ICommandOptions {
 
 type CommandConstructor = new () => Command
 
-const registrableCommands: CommandConstructor[] = []
+const registrableCommands: {
+    Command: CommandConstructor
+    decoratorOptions: ICommandDecoratorOptions
+}[] = []
 const cmdMap = new Map()
 
+interface ICommandDecoratorOptions {
+    supportPrivate: boolean | 'only'
+}
+const defaultCmdDecoratorOpts: ICommandDecoratorOptions = {
+    supportPrivate: false
+}
+
 // 装饰器收集命令
-export function ICommand(): ClassDecorator {
+export function ICommand(
+    options: ICommandDecoratorOptions = defaultCmdDecoratorOpts
+): ClassDecorator {
     return (target: any) => {
-        registrableCommands.push(target)
+        registrableCommands.push({ Command: target, decoratorOptions: options })
     }
 }
 
 // 注册命令
-export function registerCommands() {
-    registrableCommands.forEach((Command) => {
-        const command = new Command()
-        command.init()
+export async function registerCommands() {
+    const args = yargsParser(process.argv.slice(2))
+    const config = await getCloudBaseConfig(args.configFile)
+    const isPrivate = getPrivateSettings(config, args?._?.[0] || undefined)
+    registrableCommands.forEach(({ Command, decoratorOptions }) => {
+        if (isPrivate) {
+            // 私有化的
+            if (decoratorOptions.supportPrivate) {
+                const command = new Command()
+                command.init()
+            }
+        } else {
+            // 非私有化的
+            if (decoratorOptions.supportPrivate !== 'only') {
+                const command = new Command()
+                command.init()
+            }
+        }
     })
 }
 
@@ -142,14 +173,12 @@ export abstract class Command extends EventEmitter {
         const { cmd, desc, options, requiredEnvId = true, withoutAuth = false } = this.options
         instance.storeOptionsAsProperties(false)
         options.forEach((option) => {
-
             const { hideHelp } = option
             if (hideHelp) {
                 instance.addOption(new Option(option.flags, option.desc).hideHelp())
             } else {
                 instance.option(option.flags, option.desc)
             }
-
         })
 
         instance.description(desc)
@@ -163,8 +192,15 @@ export abstract class Command extends EventEmitter {
 
             const config = await getCloudBaseConfig(parentOptions?.configFile)
             const envId = cmdOptions?.envId || config?.envId
+            const privateSettings = getPrivateSettings(config, cmd)
 
-            const loginState = await authSupevisor.getLoginState()
+            let loginState: Credential | PrivateCredential
+            if (privateSettings) {
+                // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+                loginState = privateSettings.credential as PrivateCredential
+            } else {
+                loginState = (await authSupevisor.getLoginState()) as Credential
+            }
 
             // 校验登陆态
             if (!withoutAuth && !loginState) {
@@ -182,7 +218,8 @@ export abstract class Command extends EventEmitter {
                 envId,
                 config,
                 params,
-                options: cmdOptions
+                options: cmdOptions,
+                hasPrivateSettings: Boolean(privateSettings)
             }
 
             // 处理前

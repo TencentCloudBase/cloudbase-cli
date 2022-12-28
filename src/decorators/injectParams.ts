@@ -36,6 +36,9 @@ export function InjectParams(): MethodDecorator {
                             case ParamTypes.EnvId:
                                 args[index] = ctx.envId
                                 break
+                            case ParamTypes.IsPrivateEnv:
+                                args[index] = ctx.hasPrivateSettings
+                                break
                             default: {
                                 // 注入其他与命令行不相关的参数
                                 const injectValue = await getter(target)
