@@ -144,6 +144,51 @@ export class LowCodePreviewApp extends Command {
 }
 
 @ICommand({ supportPrivate: true })
+export class LowCodeBuildAppConfig extends Command {
+    get options() {
+        return {
+            cmd: 'lowcode',
+            childCmd: 'build:app-config',
+            options: [
+                {
+                    flags: '--out <out>',
+                    desc: '输出目录'
+                },
+                {
+                    flags: '--build-type-list <type...>',
+                    desc: '输出目录'
+                },
+                {
+                    flags: '--domain <domain>',
+                    desc: '托管域名'
+                }
+            ],
+            desc: '构建应用配置',
+            requiredEnvId: false
+        }
+    }
+    @InjectParams()
+    async execute(
+        @CmdContext() ctx: ICommandContext,
+        @Log() log: Logger,
+        @ArgsOptions() options: any
+    ) {
+        const config = getCmdConfig(ctx.config, this.options)
+        const mergesOptions = getMergedOptions(config, options)
+
+        await lowcodeCli.buildAppConfig(
+            {
+                envId: ctx.envId || ctx.config.envId,
+                projectPath: process.cwd(),
+                logger: log,
+                privateSettings: getPrivateSettings(ctx.config, this.options.cmd)
+            },
+            mergesOptions
+        )
+    }
+}
+
+@ICommand({ supportPrivate: true })
 export class LowCodeDeployApp extends Command {
     get options() {
         return {
