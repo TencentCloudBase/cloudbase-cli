@@ -1,0 +1,10 @@
+{
+    "envId": "{{envId}}",
+    "servers": [
+        {
+            "type": "node",
+            "name": "helloworld",
+            "path": "./"
+        }
+    ]
+}

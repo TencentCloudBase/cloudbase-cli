@@ -1,0 +1,35 @@
+{
+    "extends": ["alloy", "alloy/typescript"],
+    "rules": {
+        "no-console": "off",
+        "no-unused-vars": "off",
+        "no-implicit-coercion": [2, { "number": false }],
+        "quotes": [
+            "error",
+            "single",
+            {
+                "avoidEscape": true
+            }
+        ],
+        "semi": ["error", "never"],
+        "max-params": "off",
+        "@typescript-eslint/explicit-member-accessibility": "off",
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/interface-name-prefix": "off",
+        "@typescript-eslint/no-explicit-any": "off"
+    },
+    "env": {
+        "es6": true,
+        "node": true,
+        "jest": true
+    },
+    "parser": "@typescript-eslint/parser",
+    "overrides": [
+        {
+            "files": ["*.js"],
+            "rules": {
+                "@typescript-eslint/no-var-requires": "off"
+            }
+        }
+    ]
+}

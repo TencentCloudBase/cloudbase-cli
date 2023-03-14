@@ -1,0 +1,89 @@
+{
+    "name": "@cloudbase/cli",
+    "version": "2.2.4",
+    "description": "cli tool for cloudbase",
+    "main": "lib/index.js",
+    "scripts": {
+        "build": "rimraf lib types && tsc",
+        "watch": "rimraf lib types && tsc -w",
+        "dev": "rimraf lib types && tsc -w",
+        "eslint": "eslint \"./**/*.ts\"",
+        "test": "jest --runInBand --forceExit --detectOpenHandles --coverage --verbose --testTimeout=10000",
+        "tsc": "tsc",
+        "pkg": "pkg ./bin/cloudbase.js --out-path ./pkg",
+        "postinstall": "node ./post-install.js || exit 0",
+        "prepublishOnly": "npm run build"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/TencentCloudBase/cloud-base-cli.git"
+    },
+    "bin": {
+        "tcb": "bin/tcb.js",
+        "cloudbase": "bin/cloudbase.js"
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "npm run build"
+        }
+    },
+    "author": "cwuyiqing@gmail.com",
+    "license": "ISC",
+    "dependencies": {
+        "@cloudbase/cloud-api": "^0.5.5",
+        "@cloudbase/framework-core": "^1.9.6",
+        "@cloudbase/lowcode-cli": "^0.18.5",
+        "@cloudbase/manager-node": "4.0.1",
+        "@cloudbase/toolbox": "^0.7.4",
+        "@sentry/node": "^5.10.2",
+        "address": "^1.1.2",
+        "chalk": "^2.4.2",
+        "cli-table3": "^0.5.1",
+        "commander": "7",
+        "del": "^5.1.0",
+        "didyoumean": "^1.2.2",
+        "enquirer": "^2.3.6",
+        "execa": "^4.0.3",
+        "fs-extra": "^8.1.0",
+        "https-proxy-agent": "^5.0.1",
+        "inquirer": "^6.5.0",
+        "lodash": "^4.17.21",
+        "log-symbols": "^3.0.0",
+        "lowdb": "^1.0.0",
+        "make-dir": "^3.0.0",
+        "node-fetch": "^2.6.0",
+        "open": "^7.0.0",
+        "ora": "^4.0.2",
+        "portfinder": "^1.0.28",
+        "progress": "^2.0.3",
+        "query-string": "^6.8.1",
+        "reflect-metadata": "^0.1.13",
+        "semver": "^7.3.7",
+        "tar-fs": "^2.0.1",
+        "terminal-link": "^2.1.1",
+        "unzipper": "^0.10.10",
+        "update-notifier": "^4.0.0",
+        "xdg-basedir": "^4.0.0",
+        "yargs": "^16.2.0",
+        "yargs-parser": "^21.0.1"
+    },
+    "devDependencies": {
+        "@types/jest": "^27",
+        "@types/koa__router": "^8.0.11",
+        "@types/lodash": "^4.14.182",
+        "@types/node": "^12.12.38",
+        "@types/node-fetch": "^2.5.4",
+        "@types/react": "^17.0.37",
+        "@types/semver": "^7.3.9",
+        "@types/webpack-dev-server": "^3.11.1",
+        "@typescript-eslint/eslint-plugin": "^4.8.1",
+        "@typescript-eslint/parser": "^4.8.1",
+        "eslint": "^7.14.0",
+        "eslint-config-alloy": "^3.8.2",
+        "husky": "^3.0.9",
+        "jest": "^27",
+        "rimraf": "^3.0.2",
+        "ts-jest": "^27",
+        "typescript": "^4.7.2"
+    }
+}

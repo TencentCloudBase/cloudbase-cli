@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es2015",
+        "moduleResolution": "node",
+        "outDir": "lib",
+        "removeComments": true,
+        "types": ["node"],
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "declaration": true,
+        "declarationDir": "./types",
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "newLine": "LF"
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "test"]
+}
