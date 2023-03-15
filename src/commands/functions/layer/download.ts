@@ -6,12 +6,14 @@ import { CloudBaseError } from '../../../error'
 import { Command, ICommand } from '../../common'
 import { InjectParams, EnvId, ArgsOptions } from '../../../decorators'
 import { downloadLayer, listLayers, listLayerVersions } from '../../../function'
+import { layerCommonOptions } from './common'
 
 @ICommand()
 export class DownloadFileLayer extends Command {
     get options() {
         return {
-            cmd: 'functions:layer:download',
+            ...layerCommonOptions('download'),
+            deprecateCmd: 'functions:layer:download',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -49,7 +51,7 @@ export class DownloadFileLayer extends Command {
             throw new CloudBaseError('当前环境没有可用的文件层，请先创建文件层！')
         }
 
-        const { layer } = await prompt({
+        const { layer } = await prompt<any>({
             type: 'select',
             name: 'layer',
             message: '选择文件层名称',
@@ -62,7 +64,7 @@ export class DownloadFileLayer extends Command {
 
         versions = versions.map((item) => String(item.LayerVersion))
 
-        const { version } = await prompt({
+        const { version } = await prompt<any>({
             type: 'select',
             name: 'version',
             message: '选择文件层版本',

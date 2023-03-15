@@ -11,6 +11,7 @@ import { Command, ICommand } from '../../common'
 import { loadingFactory } from '../../../utils'
 import { CloudBaseError } from '../../../error'
 import { InjectParams, EnvId, ArgsOptions, ArgsParams } from '../../../decorators'
+import { layerCommonOptions } from './common'
 
 const LayerStatusMap = {
     Active: '正常',
@@ -23,7 +24,8 @@ const LayerStatusMap = {
 export class AttachFileLayer extends Command {
     get options() {
         return {
-            cmd: 'functions:layer:bind <name>',
+            ...layerCommonOptions('bind <name>'),
+            deprecateCmd: 'functions:layer:bind <name>',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -71,7 +73,7 @@ export class AttachFileLayer extends Command {
             throw new CloudBaseError('没有可用的文件层，请先创建文件层！')
         }
 
-        const { layer } = await prompt({
+        const { layer } = await prompt<any>({
             type: 'select',
             name: 'layer',
             message: '选择文件层名称',
@@ -92,7 +94,7 @@ export class AttachFileLayer extends Command {
             throw new CloudBaseError('没有可用的文件层版本，请先创建文件层版本！')
         }
 
-        const { version } = await prompt({
+        const { version } = await prompt<any>({
             type: 'select',
             name: 'version',
             message: '选择文件层版本',
@@ -116,7 +118,8 @@ export class AttachFileLayer extends Command {
 export class UnAttachFileLayer extends Command {
     get options() {
         return {
-            cmd: 'functions:layer:unbind <name>',
+            ...layerCommonOptions('unbind <name>'),
+            deprecateCmd: 'functions:layer:unbind <name>',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -132,8 +135,9 @@ export class UnAttachFileLayer extends Command {
     }
 
     @InjectParams()
-    async execute(@EnvId() envId, @ArgsOptions() options) {
+    async execute(@EnvId() envId, @ArgsParams() params, @ArgsOptions() options) {
         const { codeSecret } = options
+        const fnName = params?.[0]
 
         const loading = loadingFactory()
         loading.start('数据加载中...')
@@ -141,7 +145,7 @@ export class UnAttachFileLayer extends Command {
         const detail = await getFunctionDetail({
             envId,
             codeSecret,
-            functionName: name
+            functionName: fnName
         })
 
         if (!detail?.Layers?.length) {
@@ -155,7 +159,7 @@ export class UnAttachFileLayer extends Command {
             value: item
         }))
 
-        const { layer } = await prompt({
+        const { layer } = await prompt<any>({
             type: 'select',
             name: 'layer',
             message: '选择文件层',
@@ -168,7 +172,7 @@ export class UnAttachFileLayer extends Command {
         loading.start('文件层解绑中...')
         await unAttachLayer({
             envId,
-            functionName: name,
+            functionName: fnName,
             layerName: layer.LayerName,
             layerVersion: layer.LayerVersion,
             codeSecret

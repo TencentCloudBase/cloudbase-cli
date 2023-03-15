@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
-import { CloudBaseError } from '../../error'
-import { CloudApiService, zipDir, checkFullAccess, isDirectory, delSync } from '../../utils'
+import { CloudBaseError, zipDir } from '@cloudbase/toolbox'
+import { CloudApiService, checkFullAccess, isDirectory, delSync } from '../../utils'
 
 const scfService = new CloudApiService('scf')
 
@@ -19,7 +19,7 @@ export async function createLayer(options: IFunctionLayerOptions): Promise<void>
 
     checkFullAccess(contentPath)
 
-    const validRuntime = ['Nodejs8.9', 'Php7', 'Java8']
+    const validRuntime = ['Nodejs8.9', 'Php7', 'Java8', 'Nodejs12.16']
     if (runtimes.some(item => validRuntime.indexOf(item) === -1)) {
         throw new CloudBaseError(
             `Invalid runtime value. Now only support: ${validRuntime.join(', ')}`

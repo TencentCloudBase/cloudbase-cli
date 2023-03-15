@@ -4,12 +4,14 @@ import { loadingFactory } from '../../../utils'
 import { CloudBaseError } from '../../../error'
 import { InjectParams, EnvId } from '../../../decorators'
 import { deleteLayer, listLayers, listLayerVersions } from '../../../function'
+import { layerCommonOptions } from './common'
 
 @ICommand()
 export class DeleteFileLayer extends Command {
     get options() {
         return {
-            cmd: 'functions:layer:delete',
+            ...layerCommonOptions('delete'),
+            deprecateCmd: 'functions:layer:delete',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -41,7 +43,7 @@ export class DeleteFileLayer extends Command {
             throw new CloudBaseError('当前环境没有可用的文件层，请先创建文件层！')
         }
 
-        const { layer } = await prompt({
+        const { layer } = await prompt<any>({
             type: 'select',
             name: 'layer',
             message: '选择文件层名称',
@@ -54,7 +56,7 @@ export class DeleteFileLayer extends Command {
 
         versions = versions.map((item) => String(item.LayerVersion))
 
-        const { version } = await prompt({
+        const { version } = await prompt<any>({
             type: 'select',
             name: 'version',
             message: '选择文件层版本',

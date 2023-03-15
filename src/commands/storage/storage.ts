@@ -41,11 +41,18 @@ function checkCloudPath(cloudPath: string) {
 export class UploadCommand extends Command {
     get options() {
         return {
-            cmd: 'storage:upload <localPath> [cloudPath]',
+            cmd: 'storage',
+            childCmd: 'upload <localPath> [cloudPath]',
+            deprecateCmd: 'storage:upload <localPath> [cloudPath]',
             options: [
                 {
                     flags: '-e, --envId <envId>',
                     desc: '环境 Id'
+                },
+                { flags: '--times <times>', desc: '设置上传重试次数，默认值为 1' },
+                {
+                    flags: '--interval <interval>',
+                    desc: '设置上传失败时，重试时间间隔(毫秒)，默认值为 500'
                 }
             ],
             desc: '上传文件/文件夹'
@@ -53,12 +60,22 @@ export class UploadCommand extends Command {
     }
 
     @InjectParams()
-    async execute(@EnvId() envId, @ArgsParams() params, @Log() log: Logger) {
+    async execute(
+        @EnvId() envId,
+        @ArgsParams() params,
+        @ArgsOptions() options,
+        @Log() log: Logger
+    ) {
         const localPath = params?.[0]
         const cloudPath = params?.[1]
+        const retryCount = options?.times
+        const retryInterval = options?.interval
         const resolveLocalPath = path.resolve(localPath)
         if (!checkFullAccess(resolveLocalPath)) {
             throw new CloudBaseError('文件未找到！')
+        }
+        if (retryCount > 10) {
+            throw new CloudBaseError('上传重试次数为 0-10 次之间')
         }
 
         const loading = loadingFactory()
@@ -74,19 +91,6 @@ export class UploadCommand extends Command {
             totalFiles = files.length
         }
 
-        if (totalFiles > 1000) {
-            const { confirm } = await inquirer.prompt({
-                type: 'confirm',
-                name: 'confirm',
-                message: '上传文件数量大于 1000，是否继续',
-                default: false
-            })
-
-            if (!confirm) {
-                throw new CloudBaseError('上传中止')
-            }
-        }
-
         // 上传进度条
         const onProgress = createUploadProgressBar(
             () => {
@@ -99,7 +103,6 @@ export class UploadCommand extends Command {
 
         const successFiles = []
         const failedFiles = []
-
         if (isDir) {
             await storageService.uploadDirectory({
                 localPath: resolveLocalPath,
@@ -113,7 +116,10 @@ export class UploadCommand extends Command {
                     } else {
                         successFiles.push(fileInfo.Key)
                     }
-                }
+                },
+                retryCount: retryCount || 1,
+                retryInterval,
+                parallel: 20
             })
 
             log.success(`文件共计 ${totalFiles} 个`)
@@ -157,7 +163,9 @@ export class UploadCommand extends Command {
 export class DownloadCommand extends Command {
     get options() {
         return {
-            cmd: 'storage:download <cloudPath> <localPath>',
+            cmd: 'storage',
+            childCmd: 'download <cloudPath> <localPath>',
+            deprecateCmd: 'storage:download <cloudPath> <localPath>',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -193,7 +201,8 @@ export class DownloadCommand extends Command {
         if (dir) {
             await storageService.downloadDirectory({
                 localPath: resolveLocalPath,
-                cloudPath
+                cloudPath,
+                parallel: 20
             })
         } else {
             await storageService.downloadFile({
@@ -210,7 +219,9 @@ export class DownloadCommand extends Command {
 export class DeleteFileCommand extends Command {
     get options() {
         return {
-            cmd: 'storage:delete <cloudPath>',
+            cmd: 'storage',
+            childCmd: 'delete [cloudPath]',
+            deprecateCmd: 'storage:delete [cloudPath]',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -227,15 +238,34 @@ export class DeleteFileCommand extends Command {
 
     @InjectParams()
     async execute(@EnvId() envId, @ArgsOptions() options, @ArgsParams() params) {
+        let isDir = options.dir
         const cloudPath = params?.[0]
+        const loading = loadingFactory()
         const storageService = await getStorageService(envId)
 
-        const { dir } = options
-        const fileText = dir ? '文件夹' : '文件'
-        const loading = loadingFactory()
+        // 删除所有文件，危险操作，需要提示
+        if (!cloudPath) {
+            const { confirm } = await inquirer.prompt({
+                type: 'confirm',
+                name: 'confirm',
+                message: '指定云端路径为空，将会删除所有文件，是否继续',
+                default: false
+            })
+            if (!confirm) {
+                throw new CloudBaseError('操作终止！')
+            }
+            isDir = true
+        }
+
+        // cloudPath 为 / 时，只能删除文件夹
+        if (cloudPath === '/') {
+            isDir = true
+        }
+
+        const fileText = isDir ? '文件夹' : '文件'
         loading.start(`删除${fileText}中`)
 
-        if (dir) {
+        if (isDir) {
             await storageService.deleteDirectory(cloudPath)
         } else {
             await storageService.deleteFile([cloudPath])
@@ -249,7 +279,9 @@ export class DeleteFileCommand extends Command {
 export class StorageListCommand extends Command {
     get options() {
         return {
-            cmd: 'storage:list [cloudPath]',
+            cmd: 'storage',
+            childCmd: 'list [cloudPath]',
+            deprecateCmd: 'storage:list [cloudPath]',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -299,7 +331,9 @@ export class StorageListCommand extends Command {
 export class GetUrlCommand extends Command {
     get options() {
         return {
-            cmd: 'storage:url <cloudPath>',
+            cmd: 'storage',
+            childCmd: 'url <cloudPath>',
+            deprecateCmd: 'storage:url <cloudPath>',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -326,7 +360,9 @@ export class GetUrlCommand extends Command {
 export class StorageDetailCommand extends Command {
     get options() {
         return {
-            cmd: 'storage:detail <cloudPath>',
+            cmd: 'storage',
+            childCmd: 'detail <cloudPath>',
+            deprecateCmd: 'storage:detail <cloudPath>',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -355,7 +391,9 @@ export class StorageDetailCommand extends Command {
 export class GetAclCommand extends Command {
     get options() {
         return {
-            cmd: 'storage:get-acl',
+            cmd: 'storage',
+            childCmd: 'get-acl',
+            deprecateCmd: 'storage:get-acl',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -379,7 +417,9 @@ export class GetAclCommand extends Command {
 export class setAclCommand extends Command {
     get options() {
         return {
-            cmd: 'storage:set-acl',
+            cmd: 'storage',
+            childCmd: 'set-acl',
+            deprecateCmd: 'storage:set-acl',
             options: [
                 {
                     flags: '-e, --envId <envId>',

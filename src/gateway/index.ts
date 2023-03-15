@@ -10,7 +10,7 @@ import {
 
 const tcbService = CloudApiService.getInstance('tcb')
 
-// 云接入开关
+// HTTP 访问服务开关
 export async function switchHttpService(options: { envId: string; enable: boolean }) {
     const { envId, enable } = options
 
@@ -30,7 +30,7 @@ export async function switchHttpService(options: { envId: string; enable: boolea
     return res
 }
 
-// 云接入鉴权开关
+// HTTP 访问服务鉴权开关
 export async function switchHttpServiceAuth(options: { envId: string; enable: boolean }) {
     const { envId, enable } = options
 
@@ -50,7 +50,7 @@ export async function switchHttpServiceAuth(options: { envId: string; enable: bo
     return res
 }
 
-// 获取云接入权限信息
+// 获取HTTP 访问服务权限信息
 export async function getHttpServicePrivilege(options: { envId: string }) {
     const { envId } = options
 
@@ -64,10 +64,11 @@ export async function createGateway(options: ICreateFunctionGatewayOptions) {
     const { envId, path, name } = options
 
     const res: any = await tcbService.request('CreateCloudBaseGWAPI', {
-        ServiceId: envId,
-        Path: path,
         Type: 1,
-        Name: name
+        Path: path,
+        Name: name,
+        ServiceId: envId,
+        EnableUnion: true
     })
     return res
 }
@@ -81,8 +82,8 @@ export async function queryGateway(options: IQueryGatewayOptions) {
         Domain: domain,
         Path: path,
         APIId: gatewayId,
-        Type: 1,
-        Name: name
+        Name: name,
+        EnableUnion: true
     })
     return res
 }
@@ -105,7 +106,7 @@ export async function deleteGateway(options: IDeleteGatewayOptions) {
 export async function bindGatewayDomain(options: IBindGatewayDomainOptions) {
     const { envId, domain } = options
 
-    const res: any = await tcbService.request('BindCloudBaseGWDomain', {
+    const res: any = await tcbService.request('BindCloudBaseAccessDomain', {
         ServiceId: envId,
         Domain: domain
     })
@@ -118,7 +119,8 @@ export async function queryGatewayDomain(options: IQueryGatewayDomainOptions) {
 
     const res: any = await tcbService.request('DescribeCloudBaseGWService', {
         ServiceId: envId,
-        Domain: domain
+        Domain: domain,
+        EnableUnion: true
     })
     return res
 }

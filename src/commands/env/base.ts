@@ -8,7 +8,9 @@ import { printHorizontalTable, loadingFactory } from '../../utils'
 export class EnvListCommand extends Command {
     get options() {
         return {
-            cmd: 'env:list',
+            cmd: 'env',
+            childCmd: 'list',
+            deprecateCmd: 'env:list',
             options: [],
             desc: '展示云开发环境信息',
             requiredEnvId: false
@@ -55,7 +57,9 @@ export class EnvListCommand extends Command {
 export class EnvRenameCommand extends Command {
     get options() {
         return {
-            cmd: 'env:rename <name>',
+            cmd: 'env',
+            childCmd: 'rename <name>',
+            deprecateCmd: 'env:rename <name>',
             options: [
                 {
                     flags: '-e, --envId <envId>',

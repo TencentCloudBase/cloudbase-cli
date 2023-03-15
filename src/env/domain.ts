@@ -1,4 +1,4 @@
-import { CloudApiService } from '../utils'
+import { CloudApiService } from '../utils/net'
 
 const tcbService = CloudApiService.getInstance('tcb')
 

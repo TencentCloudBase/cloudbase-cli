@@ -8,14 +8,16 @@ import { switchHttpService, getHttpServicePrivilege, switchHttpServiceAuth } fro
 export class ServiceSwitchCommand extends Command {
     get options() {
         return {
-            cmd: 'service:switch',
+            cmd: 'service',
+            childCmd: 'switch',
+            deprecateCmd: 'service:switch',
             options: [
                 {
                     flags: '-e, --envId <envId>',
                     desc: '环境 Id'
                 }
             ],
-            desc: '开启/关闭云接入服务'
+            desc: '开启/关闭HTTP 访问服务'
         }
     }
 
@@ -29,21 +31,21 @@ export class ServiceSwitchCommand extends Command {
 
         loading.stop()
 
-        const { enable } = await prompt({
+        const { enable } = await prompt<any>({
             type: 'select',
             name: 'enable',
-            message: `开启/关闭云接入服务（当前状态：${status}）`,
+            message: `开启/关闭HTTP 访问服务（当前状态：${status}）`,
             choices: ['开启', '关闭']
         })
 
         try {
-            loading.start(`HTTP Service 服务${enable}中`)
+            loading.start(`HTTP 访问服务${enable}中`)
 
             await switchHttpService({
                 envId,
                 enable: enable === '开启'
             })
-            loading.succeed(`HTTP Service 服务${enable}成功！`)
+            loading.succeed(`HTTP 访问服务${enable}成功！`)
         } catch (e) {
             loading.stop()
             throw e
@@ -55,14 +57,20 @@ export class ServiceSwitchCommand extends Command {
 export class ServiceAuthSwitch extends Command {
     get options() {
         return {
-            cmd: 'service:auth:switch',
+            cmd: 'service',
+            childCmd: {
+                cmd: 'auth',
+                desc: 'HTTP 访问服务访问鉴权管理'
+            },
+            childSubCmd: 'switch',
+            deprecateCmd: 'service:auth:switch',
             options: [
                 {
                     flags: '-e, --envId <envId>',
                     desc: '环境 Id'
                 }
             ],
-            desc: '开启/关闭云接入服务访问鉴权'
+            desc: '开启/关闭HTTP 访问服务访问鉴权'
         }
     }
 
@@ -76,21 +84,21 @@ export class ServiceAuthSwitch extends Command {
 
         loading.stop()
 
-        const { enable } = await prompt({
+        const { enable } = await prompt<any>({
             type: 'select',
             name: 'enable',
-            message: `开启/关闭云接入服务访问鉴权（当前状态：${status}）`,
+            message: `开启/关闭HTTP 访问服务访问鉴权（当前状态：${status}）`,
             choices: ['开启', '关闭']
         })
 
         try {
-            loading.start(`HTTP Service 服务访问鉴权${enable}中`)
+            loading.start(`HTTP 访问服务访问鉴权${enable}中`)
 
             await switchHttpServiceAuth({
                 envId,
                 enable: enable === '开启'
             })
-            loading.succeed(`HTTP Service 服务访问鉴权${enable}成功！`)
+            loading.succeed(`HTTP 访问服务访问鉴权${enable}成功！`)
         } catch (e) {
             loading.stop()
             throw e

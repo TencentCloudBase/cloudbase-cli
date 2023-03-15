@@ -3,20 +3,15 @@ import { CloudBaseError } from '../../error'
 import { listFunction } from '../../function'
 import { printHorizontalTable, loadingFactory } from '../../utils'
 import { InjectParams, EnvId, ArgsOptions } from '../../decorators'
-
-const StatusMap = {
-    Active: '部署完成',
-    Creating: '创建中',
-    CreateFailed: '创建失败',
-    Updating: '更新中',
-    UpdateFailed: '更新失败'
-}
+import { StatusMap } from '../../constant'
 
 @ICommand()
 export class ListFunction extends Command {
     get options() {
         return {
-            cmd: 'functions:list',
+            cmd: 'fn',
+            childCmd: 'list',
+            deprecateCmd: 'functions:list',
             options: [
                 {
                     flags: '-e, --envId <envId>',

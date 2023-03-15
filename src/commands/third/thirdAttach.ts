@@ -6,7 +6,9 @@ import { InjectParams, ArgsOptions } from '../../decorators'
 export class DeleteThirdAttach extends Command {
     get options() {
         return {
-            cmd: 'third:deleteThirdAttach',
+            cmd: 'third',
+            childCmd: 'deleteThirdAttach',
+            deprecateCmd: 'third:deleteThirdAttach',
             options: [
                 {
                     flags: '--source <source>',

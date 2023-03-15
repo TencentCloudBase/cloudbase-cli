@@ -1,28 +1,16 @@
 import path from 'path'
-import CloudBase from '@cloudbase/manager-node'
-import { StorageService } from '@cloudbase/manager-node/types/storage'
 import {
     CloudApiService,
     firstLetterToLowerCase,
     isDirectory,
-    checkAndGetCredential,
-    getProxy,
     genClickableLink,
-    checkReadable
+    checkReadable,
+    getStorageService,
+    logger
 } from './utils'
 import { CloudBaseError } from './error'
-
-async function getStorageService(envId: string): Promise<StorageService> {
-    const { secretId, secretKey, token } = await checkAndGetCredential(true)
-    const app = new CloudBase({
-        secretId,
-        secretKey,
-        token,
-        envId,
-        proxy: getProxy()
-    })
-    return app.storage
-}
+import inquirer from 'inquirer'
+import { EnvType } from './constant'
 
 interface IBaseOptions {
     envId: string
@@ -62,18 +50,44 @@ export async function getHostingInfo(options: IBaseOptions) {
     return data
 }
 
-async function checkHostingStatus(envId: string) {
-    const hostings = await getHostingInfo({ envId })
+export async function initHosting(options: IBaseOptions) {
+    const { envId } = options
+    const envInfo = await getEnvInfoByEnvId({ envId })
+    if (envInfo.EnvType === EnvType.BAAS) {
+        // 开通静态托管
+        const { confirm } = await inquirer.prompt({
+            type: 'confirm',
+            name: 'confirm',
+            message: '您还未开通静态托管，是否立即开通？'
+        })
+        if (confirm) {
+            const res = await subscribeHosting({ envId })
+            if (!res.code) {
+                logger.success('开通静态托管成功！资源正在初始化中，请稍候3~5分钟再试...')
+                return
+            } else {
+                throw new CloudBaseError(`开通静态托管失败\n request id: ${res.requestId}`)
+            }
+        } else return
 
-    const link = genClickableLink('https://console.cloud.tencent.com/tcb')
-
-    if (!hostings.data || !hostings.data.length) {
+    } else {
+        const link = genClickableLink('https://console.cloud.tencent.com/tcb')
         throw new CloudBaseError(
             `您还没有开启静态网站服务，请先到云开发控制台开启静态网站服务！\n👉 ${link}`,
             {
                 code: 'INVALID_OPERATION'
             }
         )
+    }
+}
+
+
+export async function checkHostingStatus(envId: string) {
+    const hostings = await getHostingInfo({ envId })
+
+    if (!hostings.data || !hostings.data.length) {
+        await initHosting({ envId })
+        return
     }
 
     const website = hostings.data[0]
@@ -93,7 +107,7 @@ async function checkHostingStatus(envId: string) {
 export async function enableHosting(options: IBaseOptions) {
     const { envId } = options
     const hostings = await getHostingInfo(options)
-    if (hostings.data && hostings.data.length) {
+    if (hostings?.data?.length) {
         const website = hostings.data[0]
         // offline 状态的服务可重新开启
         if (website.status !== 'offline') {
@@ -102,6 +116,28 @@ export async function enableHosting(options: IBaseOptions) {
     }
 
     const res = await tcbService.request('CreateStaticStore', {
+        EnvId: envId
+    })
+    const code = res.Result === 'succ' ? 0 : -1
+    return {
+        code,
+        requestId: res.RequestId
+    }
+}
+
+// 获取指定环境信息
+export async function getEnvInfoByEnvId(options: IBaseOptions) {
+    const { envId } = options
+    const res = await tcbService.request('DescribeEnvs', {
+        EnvId: envId
+    })
+    return res?.EnvList?.filter(item => item.EnvId === envId)[0]
+}
+
+// 开通静态网站托管
+export async function subscribeHosting(options: IBaseOptions) {
+    const { envId } = options
+    const res = await tcbService.request('DescribeStaticStore', {
         EnvId: envId
     })
     const code = res.Result === 'succ' ? 0 : -1

@@ -18,14 +18,6 @@ export async function updateFunctionCode(options: ICreateFunctionOptions) {
         throw new CloudBaseError('CodeSecret 格式错误，格式为 1-160 位大小字母，数字+=/')
     }
 
-    // 校验运行时
-    const validRuntime = ['Nodejs8.9', 'Php7', 'Java8', 'Nodejs10.15']
-    if (func.runtime && !validRuntime.includes(func.runtime)) {
-        throw new CloudBaseError(
-            `${funcName} 非法的运行环境：${func.runtime}，当前支持环境：${validRuntime.join(', ')}`
-        )
-    }
-
     const scfService = await getFunctionService(envId)
 
     try {

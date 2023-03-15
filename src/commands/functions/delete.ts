@@ -10,7 +10,9 @@ import { InjectParams, CmdContext, ArgsParams } from '../../decorators'
 export class DeleteFunction extends Command {
     get options() {
         return {
-            cmd: 'functions:delete [name]',
+            cmd: 'fn',
+            childCmd: 'delete [name]',
+            deprecateCmd: 'functions:delete [name]',
             options: [
                 {
                     flags: '-e, --envId <envId>',

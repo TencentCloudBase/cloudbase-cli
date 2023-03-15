@@ -11,7 +11,13 @@ import { loadingFactory, checkFullAccess, delSync, highlightCommand } from '../.
 export class CodeDownload extends Command {
     get options() {
         return {
-            cmd: 'functions:download <name> [dest]',
+            cmd: 'fn',
+            childCmd: {
+                cmd: 'code',
+                desc: '函数代码管理'
+            },
+            childSubCmd: 'download <name> [dest]',
+            deprecateCmd: 'functions:download <name> [dest]',
             options: [
                 {
                     flags: '-e, --envId <envId>',

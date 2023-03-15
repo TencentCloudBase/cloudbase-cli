@@ -1,7 +1,7 @@
 import { prompt } from 'enquirer'
 import { Command, ICommand } from '../common'
 import { CloudBaseError } from '../../error'
-import { createGateway } from '../../gateway'
+import { createGateway, queryGatewayDomain } from '../../gateway'
 import { listFunction } from '../../function'
 import { assertTruthy } from '../../utils/validator'
 import { loadingFactory, genClickableLink } from '../../utils'
@@ -11,7 +11,9 @@ import { InjectParams, EnvId, ArgsOptions } from '../../decorators'
 export class CreateService extends Command {
     get options() {
         return {
-            cmd: 'service:create',
+            cmd: 'service',
+            childCmd: 'create',
+            deprecateCmd: 'service:create',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -19,14 +21,14 @@ export class CreateService extends Command {
                 },
                 {
                     flags: '-p, --service-path <servicePath>',
-                    desc: 'Service Path，必须以 "/" 开头'
+                    desc: 'HTTP 访问服务路径，如 api'
                 },
                 {
                     flags: '-f, --function <name>',
-                    desc: 'HTTP Service 路径绑定的云函数名称'
+                    desc: 'HTTP 访问服务路径绑定的云函数名称'
                 }
             ],
-            desc: '创建 HTTP Service'
+            desc: '创建 HTTP 访问服务'
         }
     }
 
@@ -49,27 +51,30 @@ export class CreateService extends Command {
                 throw new CloudBaseError('当前环境下不存在可用的云函数，请先创建云函数！')
             }
 
-            let { name } = await prompt({
+            let { name } = await prompt<any>({
                 type: 'select',
                 name: 'name',
-                message: '请选择创建云接入的云函数',
+                message: '请选择创建HTTP 访问服务的云函数',
                 choices: functions.map((item) => item.FunctionName)
             })
 
-            let { path } = await prompt({
+            let { path } = await prompt<any>({
                 type: 'input',
                 name: 'path',
-                message: '请输入云接入路径（以 / 开头）'
+                message: '请输入HTTP 访问服务路径'
             })
 
             functionName = name
             servicePath = path
         }
 
-        assertTruthy(servicePath, '请指定需要创建的云接入路径！')
+        assertTruthy(servicePath, '请指定需要创建的HTTP 访问服务路径！')
 
         // 创建云函数网关
-        loading.start(`[${functionName}] 云接入创建中...`)
+        loading.start(`[${functionName}] HTTP 访问服务创建中...`)
+
+        // 补充 / 符号
+        servicePath = servicePath[0] === '/' ? servicePath : `/${servicePath}`
 
         try {
             // step1: 判断云函数是否存在
@@ -88,8 +93,11 @@ export class CreateService extends Command {
                 path: servicePath,
                 name: functionName
             })
-            const link = genClickableLink(`https://${envId}.service.tcloudbase.com${servicePath}`)
-            loading.succeed(`云接入创建成功！\n点击访问> ${link}`)
+
+            // 查询访问域名
+            const res = await queryGatewayDomain({ envId })
+            const link = genClickableLink(`https://${res.DefaultDomain}${servicePath}`)
+            loading.succeed(`HTTP 访问服务创建成功！\n点击访问> ${link}`)
         } catch (e) {
             loading.stop()
             if (e.code === 'InvalidParameter.APICreated') {

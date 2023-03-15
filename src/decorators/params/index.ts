@@ -1,7 +1,6 @@
 import { createParamDecorator } from './common'
-import { Logger } from './_log'
 import { ParamTypes } from '../constants'
-import { authSupevisor, getArgs } from '../../utils'
+import { authSupevisor, getArgs, Logger } from '../../utils'
 
 const EmptyValue = () => {}
 
@@ -14,7 +13,7 @@ export const Credential = createParamDecorator(ParamTypes.Credential, async () =
 // 日志打印
 export const Log = createParamDecorator(ParamTypes.Log, () => {
     const args = getArgs()
-    const verbose = process.VERBOSE || args['--verbose']
+    const verbose = process.VERBOSE || args.verbose
     const log = new Logger({
         verbose
     })
@@ -34,3 +33,6 @@ export const EnvId = createParamDecorator(ParamTypes.EnvId, EmptyValue)
 
 // 注入环境配置
 export const Config = createParamDecorator(ParamTypes.Config, EmptyValue)
+
+// 是否是私有化
+export const IsPrivateEnv = createParamDecorator(ParamTypes.IsPrivateEnv, EmptyValue)

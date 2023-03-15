@@ -9,7 +9,13 @@ import { getEnvAuthDomains, createEnvDomain, deleteEnvDomain } from '../../env'
 export class ListAuthDoaminCommand extends Command {
     get options() {
         return {
-            cmd: 'env:domain:list',
+            cmd: 'env',
+            childCmd: {
+                cmd: 'domain',
+                desc: '域名管理'
+            },
+            childSubCmd: 'list',
+            deprecateCmd: 'env:domain:list',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -47,7 +53,13 @@ export class ListAuthDoaminCommand extends Command {
 export class CreateAuthDomainCommand extends Command {
     get options() {
         return {
-            cmd: 'env:domain:create <domain>',
+            cmd: 'env',
+            childCmd: {
+                cmd: 'domain',
+                desc: '域名管理'
+            },
+            childSubCmd: 'create <domain>',
+            deprecateCmd: 'env:domain:create <domain>',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -105,7 +117,13 @@ export class CreateAuthDomainCommand extends Command {
 export class DeleteAuthDomainCommand extends Command {
     get options() {
         return {
-            cmd: 'env:domain:delete',
+            cmd: 'env',
+            childCmd: {
+                cmd: 'domain',
+                desc: '域名管理'
+            },
+            childSubCmd: 'delete',
+            deprecateCmd: 'env:domain:delete',
             options: [
                 {
                     flags: '-e, --envId <envId>',

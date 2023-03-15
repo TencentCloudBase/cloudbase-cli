@@ -1,26 +1,37 @@
 import path from 'path'
 import inquirer from 'inquirer'
+import { getRegion } from '@cloudbase/toolbox'
 import { Command, ICommand } from '../common'
 import { CloudBaseError } from '../../error'
 import { createFunction } from '../../function'
 import { queryGateway, createGateway } from '../../gateway'
 import {
+    logger,
     random,
+    isDirectory,
     loadingFactory,
     genClickableLink,
     highlightCommand,
     checkFullAccess,
-    isDirectory
+    AsyncTaskParallelController
 } from '../../utils'
 import { ICreateFunctionOptions } from '../../types'
 import { DefaultFunctionDeployConfig } from '../../constant'
 import { InjectParams, CmdContext, ArgsParams, Log, Logger } from '../../decorators'
 
+const regionIdMap = {
+    'ap-guangzhou': 1,
+    'ap-shanghai': 4,
+    'ap-beijing': 8
+}
+
 @ICommand()
 export class FunctionDeploy extends Command {
     get options() {
         return {
-            cmd: 'functions:deploy [name]',
+            cmd: 'fn',
+            childCmd: 'deploy [name]',
+            deprecateCmd: 'functions:deploy [name]',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -28,7 +39,7 @@ export class FunctionDeploy extends Command {
                 },
                 {
                     flags: '--code-secret <codeSecret>',
-                    desc: '传入此参数将保护代码，格式为 36 位大小字母和数字'
+                    desc: '传入此参数将保护代码，格式为 36 位大小写字母和数字'
                 },
                 {
                     flags: '--force',
@@ -36,7 +47,7 @@ export class FunctionDeploy extends Command {
                 },
                 {
                     flags: '--path <path>',
-                    desc: '自动创建云接入访问路径'
+                    desc: '自动创建HTTP 访问服务访问路径'
                 },
                 {
                     flags: '--all',
@@ -60,11 +71,11 @@ export class FunctionDeploy extends Command {
         const name = params?.[0]
 
         if (access && checkFullAccess(access)) {
-            log.warn('--path 参数已更换为云接入路径，请使用 --dir 指定部署函数的文件夹路径')
+            log.warn('--path 参数已更换为HTTP 访问服务路径，请使用 --dir 指定部署函数的文件夹路径')
         }
 
         if (access && access[0] !== '/') {
-            throw new CloudBaseError('云接入路径必须以 / 开头')
+            throw new CloudBaseError('HTTP 访问服务路径必须以 / 开头')
         }
 
         // 当没有指定函数名称或函数路径时，询问处理否部署全部云函数
@@ -136,7 +147,7 @@ export class FunctionDeploy extends Command {
             const link = genClickableLink(
                 `https://${envId}.service.tcloudbase.com${access || newFunction.path}`
             )
-            console.log(`\n云函数云接入访问链接：${link}`)
+            console.log(`\n云函数HTTP 访问服务访问链接：${link}`)
         }
     }
 
@@ -161,8 +172,8 @@ export class FunctionDeploy extends Command {
         }
 
         // 批量部署云函数
-        const promises = functions.map(async (func) => {
-            const loading = loadingFactory()
+        const loading = loadingFactory()
+        const tasks = functions.map((func) => async () => {
             loading.start('云函数部署中')
             try {
                 await createFunction({
@@ -186,7 +197,21 @@ export class FunctionDeploy extends Command {
             }
         })
 
-        await Promise.all(promises)
+        if (tasks.length > 5) {
+            logger.info('函数数量较多，将使用队列部署')
+        }
+
+        // 控制函数创建并发
+        const asyncTaskController = new AsyncTaskParallelController(5, 50)
+        asyncTaskController.loadTasks(tasks)
+        const results = await asyncTaskController.run()
+
+        // 输出信息
+        const success = results.filter((_) => !_)
+        logger.success(`成功部署 ${success?.length} 个函数`)
+        // 部署失败
+        const err = results.filter((_) => _)
+        err?.length && logger.error(`${err?.length} 个云函数部署失败`)
     }
 
     async handleDeployFail(e: CloudBaseError, options: ICreateFunctionOptions) {
@@ -215,7 +240,7 @@ export class FunctionDeploy extends Command {
                     })
                     loading.succeed(`[${func.name}] 云函数部署成功！`)
                     // await genApiGateway(envId, name)
-                    this.printSuccessTips(envId)
+                    await this.printSuccessTips(envId)
                 } catch (e) {
                     loading.stop()
                     throw e
@@ -228,10 +253,13 @@ export class FunctionDeploy extends Command {
     }
 
     @InjectParams()
-    printSuccessTips(envId: string, @Log() log?: Logger) {
-        const link = genClickableLink(`https://console.cloud.tencent.com/tcb/scf?envId=${envId}`)
+    async printSuccessTips(envId: string, @Log() log?: Logger) {
+        let url = `https://console.cloud.tencent.com/tcb/scf?envId=${envId}`
+        const region = await getRegion()
+        url += `&rid=${regionIdMap[region]}`
+        const link = genClickableLink(url)
         log.breakLine()
-        log.info(`控制台查看函数详情或创建云接入链接 🔗：${link}`)
+        log.info(`控制台查看函数详情或创建HTTP 访问服务链接 🔗：${link}`)
         log.info(`使用 ${highlightCommand('cloudbase functions:list')} 命令查看已部署云函数`)
     }
 
@@ -245,7 +273,7 @@ export class FunctionDeploy extends Command {
         })
         // 未开启，不生成 HTTP 调用了链接
         if (res?.EnableService === false) return
-        loading.start('生成云函数云接入中...')
+        loading.start('生成云函数HTTP 访问服务中...')
 
         let path
         if (res?.APISet?.length > 0) {
@@ -260,6 +288,6 @@ export class FunctionDeploy extends Command {
         }
         loading.stop()
         const link = genClickableLink(`https://${envId}.service.tcloudbase.com${path}`)
-        console.log(`\n云函数云接入链接：${link}`)
+        console.log(`\n云函数HTTP 访问服务链接：${link}`)
     }
 }

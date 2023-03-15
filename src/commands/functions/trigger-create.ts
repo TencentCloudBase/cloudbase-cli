@@ -9,7 +9,10 @@ import { InjectParams, CmdContext, ArgsParams } from '../../decorators'
 export class CreateTrigger extends Command {
     get options() {
         return {
-            cmd: 'functions:trigger:create [functionName]',
+            cmd: 'fn',
+            childCmd: { cmd: 'trigger', desc: '函数触发器操作' },
+            childSubCmd: 'create [functionName]',
+            deprecateCmd: 'functions:trigger:create [functionName]',
             options: [
                 {
                     flags: '-e, --envId <envId>',

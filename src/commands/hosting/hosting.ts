@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import inquirer from 'inquirer'
 import logSymbols from 'log-symbols'
+import { HostingService } from '@cloudbase/manager-node/types/hosting'
 
 import { Command, ICommand } from '../common'
 
@@ -10,7 +11,8 @@ import {
     hostingDeploy,
     hostingDelete,
     hostingList,
-    walkLocalDir
+    walkLocalDir,
+    initHosting
 } from '../../hosting'
 import { CloudBaseError } from '../../error'
 import {
@@ -21,7 +23,8 @@ import {
     formateFileSize,
     createUploadProgressBar,
     genClickableLink,
-    checkFullAccess
+    checkFullAccess,
+    getMangerService
 } from '../../utils'
 
 import { InjectParams, EnvId, ArgsParams, ArgsOptions, Log, Logger } from '../../decorators'
@@ -36,11 +39,18 @@ const HostingStatusMap = {
     destroy_fail: '销毁失败' // eslint-disable-line
 }
 
+async function getHostingService(envId: string): Promise<HostingService> {
+    const { hosting } = await getMangerService(envId)
+    return hosting
+}
+
 @ICommand()
 export class HostingDetail extends Command {
     get options() {
         return {
-            cmd: 'hosting:detail',
+            cmd: 'hosting',
+            childCmd: 'detail',
+            deprecateCmd: 'hosting:detail',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -55,13 +65,11 @@ export class HostingDetail extends Command {
     async execute(@EnvId() envId, @Log() log: Logger) {
         const res = await getHostingInfo({ envId })
 
-        const website = res.data && res.data[0]
+        const website = res?.data?.[0]
 
         if (!website) {
-            const link = genClickableLink('https://console.cloud.tencent.com/tcb')
-            throw new CloudBaseError(
-                `您还没有开启静态网站服务，请先到云开发控制台开启静态网站服务！\n 👉 ${link}`
-            )
+            await initHosting({ envId })
+            return
         }
 
         const link = genClickableLink(`https://${website.cdnDomain}`)
@@ -77,7 +85,9 @@ export class HostingDetail extends Command {
 export class HostingDeploy extends Command {
     get options() {
         return {
-            cmd: 'hosting:deploy [filePath] [cloudPath]',
+            cmd: 'hosting',
+            childCmd: 'deploy [filePath] [cloudPath]',
+            deprecateCmd: 'hosting:deploy [filePath] [cloudPath]',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -108,20 +118,6 @@ export class HostingDeploy extends Command {
             let files = await walkLocalDir(envId, resolveLocalPath)
             files = files.filter((item) => !isDirectory(item))
             totalFiles = files.length
-        }
-
-        if (totalFiles > 1000) {
-            loading.stop()
-            const { confirm } = await inquirer.prompt({
-                type: 'confirm',
-                name: 'confirm',
-                message: '上传文件数量大于 1000，是否继续',
-                default: false
-            })
-
-            if (!confirm) {
-                throw new CloudBaseError('上传中止')
-            }
         }
 
         // 上传进度条
@@ -158,7 +154,7 @@ export class HostingDeploy extends Command {
             envId
         })
 
-        const website = info.data && info.data[0]
+        const website = info?.data?.[0]
 
         const link = genClickableLink(`https://${website.cdnDomain}`)
         log.success(`\n部署完成 👉 ${link}`)
@@ -201,7 +197,9 @@ export class HostingDeploy extends Command {
 export class HostingDeleteFiles extends Command {
     get options() {
         return {
-            cmd: 'hosting:delete [cloudPath]',
+            cmd: 'hosting',
+            childCmd: 'delete [cloudPath]',
+            deprecateCmd: 'hosting:delete [cloudPath]',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -222,7 +220,7 @@ export class HostingDeleteFiles extends Command {
         let isDir = options.dir
 
         // 删除所有文件，危险操作，需要提示
-        if (cloudPath === '') {
+        if (!cloudPath) {
             const { confirm } = await inquirer.prompt({
                 type: 'confirm',
                 name: 'confirm',
@@ -234,6 +232,12 @@ export class HostingDeleteFiles extends Command {
             }
             isDir = true
         }
+
+        // cloudPath 为 / 时，只能删除文件夹
+        if (cloudPath === '/') {
+            isDir = true
+        }
+
         const fileText = isDir ? '文件夹' : '文件'
 
         const loading = loadingFactory()
@@ -241,9 +245,9 @@ export class HostingDeleteFiles extends Command {
 
         try {
             await hostingDelete({
+                envId,
                 isDir,
-                cloudPath,
-                envId
+                cloudPath
             })
             loading.succeed(`删除${fileText}成功！`)
         } catch (e) {
@@ -257,7 +261,9 @@ export class HostingDeleteFiles extends Command {
 export class HostingList extends Command {
     get options() {
         return {
-            cmd: 'hosting:list',
+            cmd: 'hosting',
+            childCmd: 'list',
+            deprecateCmd: 'hosting:list',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -294,5 +300,60 @@ export class HostingList extends Command {
             loading.fail('获取文件列表失败！')
             throw new CloudBaseError(e.message)
         }
+    }
+}
+
+@ICommand()
+export class HostingDownloadCommand extends Command {
+    get options() {
+        return {
+            cmd: 'hosting',
+            childCmd: 'download <cloudPath> [localPath]',
+            options: [
+                {
+                    flags: '-e, --envId <envId>',
+                    desc: '环境 Id'
+                },
+                {
+                    flags: '-d, --dir',
+                    desc: '下载目标是否为文件夹'
+                }
+            ],
+            desc: '下载文件/文件夹，文件夹需指定 --dir 选项'
+        }
+    }
+
+    @InjectParams()
+    async execute(@EnvId() envId, @ArgsOptions() options, @ArgsParams() params) {
+        let cloudPath: string = params?.[0]
+        const localPath = params?.[1] || '.'
+        const hostingService = await getHostingService(envId)
+        const resolveLocalPath = path.resolve(localPath)
+
+        const { dir } = options
+        const fileText = dir ? '文件夹' : '文件'
+
+        const loading = loadingFactory()
+
+        loading.start(`下载${fileText}中`)
+
+        // cloudPath 以 / 开头
+        if (/^\/.+/.test(cloudPath)) {
+            cloudPath = cloudPath.slice(1)
+        }
+
+        if (dir) {
+            await hostingService.downloadDirectory({
+                cloudPath,
+                localPath: resolveLocalPath
+            })
+        } else {
+            await hostingService.downloadFile({
+                cloudPath,
+                localPath: resolveLocalPath
+            })
+        }
+
+        loading.succeed(`下载${fileText}成功！`)
     }
 }

@@ -3,12 +3,14 @@ import { Command, ICommand } from '../../common'
 import { createLayer } from '../../../function'
 import { loadingFactory } from '../../../utils'
 import { InjectParams, EnvId, ArgsOptions, ArgsParams } from '../../../decorators'
+import { layerCommonOptions } from './common'
 
 @ICommand()
 export class CreateFileLayer extends Command {
     get options() {
         return {
-            cmd: 'functions:layer:create <alias>',
+            ...layerCommonOptions('create <alias>'),
+            deprecateCmd: 'functions:layer:create <alias>',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -30,7 +32,7 @@ export class CreateFileLayer extends Command {
 
         const layerName = `${alias}_${envId}`
         const filePath = path.resolve(file)
-        const runtimes = ['Nodejs8.9', 'Php7', 'Java8']
+        const runtimes = ['Nodejs12.16', 'Nodejs8.9', 'Php7', 'Java8']
 
         const loading = loadingFactory()
 

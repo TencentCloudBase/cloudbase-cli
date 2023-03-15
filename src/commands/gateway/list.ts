@@ -9,7 +9,9 @@ import { printHorizontalTable, loadingFactory, formatDate } from '../../utils'
 export class ListServiceCommand extends Command {
     get options() {
         return {
-            cmd: 'service:list',
+            cmd: 'service',
+            childCmd: 'list',
+            deprecateCmd: 'service:list',
             options: [
                 {
                     flags: '-e, --envId <envId>',
@@ -28,7 +30,7 @@ export class ListServiceCommand extends Command {
                     desc: 'Service Id'
                 }
             ],
-            desc: '获取云接入列表'
+            desc: '获取 HTTP 访问服务列表'
         }
     }
 
@@ -37,11 +39,11 @@ export class ListServiceCommand extends Command {
         const { domain: domainName, servicePath, serviceId } = options
 
         if (!envId && !domainName) {
-            throw new CloudBaseError('请指定需要查询的环境 ID 或云接入自定义域名！')
+            throw new CloudBaseError('请指定需要查询的环境 ID 或HTTP 访问服务自定义域名！')
         }
 
         const loading = loadingFactory()
-        loading.start('查询云接入中...')
+        loading.start('查询HTTP 访问服务中...')
 
         try {
             const res = await queryGateway({
@@ -54,15 +56,15 @@ export class ListServiceCommand extends Command {
             loading.stop()
 
             if (res?.APISet?.length === 0) {
-                log.info('HTTP Service 为空')
+                log.info('HTTP 访问服务为空')
                 return
             }
 
-            const head = ['Id', '路径', '函数名称', '创建时间']
+            const head = ['触发路径', '关联资源', '触发类型', '创建时间']
             const tableData = res.APISet.map((item) => [
-                item.APIId,
                 item.Path,
                 item.Name,
+                item.Type === 1 ? '云函数' : '云托管',
                 formatDate(item.CreateTime * 1000, 'yyyy-MM-dd hh:mm:ss')
             ])
             printHorizontalTable(head, tableData)

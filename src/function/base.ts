@@ -10,7 +10,7 @@ import {
 } from '../types'
 import { CloudBaseError } from '../error'
 import { getVpcs, getSubnets } from './vpc'
-import { BaseOptions } from 'vm'
+import { getRegion } from '@cloudbase/toolbox'
 
 export interface IBaseOptions {
     envId: string
@@ -33,12 +33,15 @@ export interface IDetailOptions extends IBaseOptions {
 }
 
 export async function getFunctionService(envId: string) {
+    const region = await getRegion()
     const { secretId, secretKey, token } = await checkAndGetCredential(true)
+
     const app = new CloudBase({
-        secretId,
-        secretKey,
+        region,
         token,
         envId,
+        secretId,
+        secretKey,
         proxy: getProxy()
     })
     return app.functions

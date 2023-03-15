@@ -63,6 +63,14 @@ export class InitCommand extends Command {
 
     @InjectParams()
     async execute(@ArgsOptions() options, @Log() log?: Logger) {
+        console.log(
+            chalk.bold.yellowBright(
+                '\n',
+                '⚠️ 此命令将被废弃，请使用新的命令 => tcb new <appName> [template]'
+            ),
+            '\n'
+        )
+
         // 检查登录
         await this.checkLogin()
 
@@ -121,7 +129,7 @@ export class InitCommand extends Command {
             }
         ]
 
-        let { env } = await prompt({
+        let { env } = await prompt<any>({
             choices,
             type: 'select',
             name: 'env',
@@ -165,7 +173,7 @@ export class InitCommand extends Command {
             if (options.template) {
                 tempateId = options.template
             } else {
-                let { selectTemplateName } = await prompt({
+                let { selectTemplateName } = await prompt<any>({
                     type: 'select',
                     name: 'selectTemplateName',
                     message: '选择云开发模板',
@@ -187,7 +195,7 @@ export class InitCommand extends Command {
             if (options.project) {
                 projectName = options.project
             } else {
-                const { projectName: promptProjectName } = await prompt({
+                const { projectName: promptProjectName } = await prompt<any>({
                     type: 'input',
                     name: 'projectName',
                     message: '请输入项目名称',
@@ -200,7 +208,7 @@ export class InitCommand extends Command {
             // 确定项目权限
             projectPath = path.join(process.cwd(), projectName)
             if (checkFullAccess(projectPath)) {
-                const { cover } = await prompt({
+                const { cover } = await prompt<any>({
                     type: 'confirm',
                     name: 'cover',
                     message: `已存在同名文件夹：${projectName}，是否覆盖？`,
@@ -241,7 +249,11 @@ export class InitCommand extends Command {
         if (!filepath) {
             fs.writeFileSync(
                 path.join(projectPath, 'cloudbaserc.json'),
-                JSON.stringify({ envId: env })
+                JSON.stringify({
+                    envId: env,
+                    version: '2.0',
+                    $schema: 'https://framework-1258016615.tcloudbaseapp.com/schema/latest.json'
+                })
             )
         } else {
             const configContent = fs.readFileSync(filepath).toString()
@@ -261,7 +273,7 @@ export class InitCommand extends Command {
             log.info('你还没有登录，请在控制台中授权登录')
 
             const res = await execWithLoading(() => login(), {
-                startTip: '获取授权中...',
+                startTip: '在浏览器中打开的授权页面进行授权...',
                 successTip: '授权登录成功！'
             })
 
@@ -299,7 +311,7 @@ export class InitCommand extends Command {
                     flush(`${ENV_INIT_TIP}  ${++count}S`)
                 }, 1000)
 
-                return new Promise((resolve) => {
+                return new Promise<void>((resolve) => {
                     const timer = setInterval(async () => {
                         const env = await getEnvInfo(envId)
                         // 环境初始化中
@@ -333,7 +345,7 @@ export class InitCommand extends Command {
         }
 
         if (!Initialized) {
-            const { jump } = await prompt({
+            const { jump } = await prompt<any>({
                 type: 'confirm',
                 name: 'jump',
                 message:
@@ -361,7 +373,7 @@ export class InitCommand extends Command {
         return false
     }
 
-    async waitForServiceEnable() {
+    async waitForServiceEnable(): Promise<void> {
         return new Promise((resolve) => {
             const timer = setInterval(async () => {
                 const app = await getMangerService()
@@ -400,12 +412,6 @@ export class InitCommand extends Command {
             // 解压缩文件
             await unzipStream(res.body, projectPath)
         })
-    }
-
-    async copyServerTemplate(projectPath: string) {
-        // 模板目录
-        const templatePath = path.resolve(__dirname, '../../templates', 'server/node')
-        fse.copySync(templatePath, projectPath)
     }
 
     // 项目初始化成功后打印提示语
