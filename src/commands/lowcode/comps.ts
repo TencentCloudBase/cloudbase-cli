@@ -90,8 +90,8 @@ export class LowCodeCreateComps extends Command {
             'ListUserCompositeGroups',
             isPrivateEnv
                 ? {
-                      privateUin: privateSettings.privateUin
-                  }
+                    privateUin: privateSettings.privateUin
+                }
                 : undefined
         )
         const comps = res?.data
@@ -161,7 +161,9 @@ export class LowCodeBuildComps extends Command {
     }
 }
 
-@ICommand()
+@ICommand({
+    supportPrivate: true
+})
 export class LowCodeDebugComps extends Command {
     get options() {
         return {
