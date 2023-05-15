@@ -327,3 +327,5 @@ if (require.main === module) {
 process.on('unhandledRejection', (err) => {
     console.log('unhandledRejection', err)
 })
+
+exports.main = main
