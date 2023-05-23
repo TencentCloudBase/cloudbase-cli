@@ -184,12 +184,12 @@ async function main() {
             if (errMsg.includes('Environment') && errMsg.includes('not found')) {
                 // 检查是否已经指定了 -r 或 --region 参数，如未指定则尝试获取地域信息
                 const regionSpecified = processArgv.indexOf('-r') !== -1 || processArgv.indexOf('--region') !== -1
-                const region = yargsParsedResult?.r || yargsParsedResult?.region
+                const region = yargsParsedResult.r || yargsParsedResult.region
                 const multiRegionErrMsg = `\n此环境可能不属于当前账号，或为非${regionSupportedMap[region] || '上海'}地域环境，如需切换地域请追加参数（例：-r gz），请检查环境归属，参考多地域使用方法：https://docs.cloudbase.net/cli-v1/region.html`
                 if (!regionSpecified) {
 
                     // 从 -e 参数、--envId 参数和配置文件中获取环境 id
-                    const envId = yargsParsedResult?.e || yargsParsedResult?.envId || config?.envId
+                    const envId = yargsParsedResult.e || yargsParsedResult.envId || config.envId
 
                     // 调用 API 接口尝试查询环境信息
                     const predictRegion = await tryTellEnvRegion(envId)
@@ -246,8 +246,8 @@ async function main() {
     async function tryTellEnvRegion(envId) {
         // 依次调用不同地域的 API 接口查询环境信息
         const fetchedRegion = await Promise.all(regionSupported.map(async region => {
-            const res = await fetchEnvInfoWithRegion(envId, region)
-            if (res?.EnvList?.length !== 0 && res?.EnvList.find(item => item.EnvId === envId)) {
+            const { EnvList = [] } = await fetchEnvInfoWithRegion(envId, region)
+            if (EnvList.length !== 0 && EnvList.find(item => item.EnvId === envId)) {
                 return res.EnvList[0].Region
             }
             return ''
@@ -264,14 +264,14 @@ async function main() {
 
     // 在指定地域调用 API 接口查询环境信息
     async function fetchEnvInfoWithRegion(envId, region) {
-        let commonCredential
+        let commonCredential = {}
         const commonOpts = {
             service: 'tcb',
             version: '2019-09-24',
             proxy: getProxy(),
             timeout: 15000,
             getCredential: async () => {
-                if (commonCredential?.secretId && !isTokenExpired(commonCredential)) {
+                if (commonCredential.secretId && !isTokenExpired(commonCredential)) {
                     return commonCredential
                 }
                 const credential = await getCredentialWithoutCheck()
