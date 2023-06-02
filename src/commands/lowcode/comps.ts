@@ -113,7 +113,7 @@ export class LowCodeCreateComps extends Command {
             const comp = comps.rows.find((row) => row.groupName === compsName)
             if (!comp) {
                 throw new CloudBaseError(
-                    `云端不存在组件库 ${compsName}，请到低码控制台新建该组件库！`
+                    `云端不存在组件库 ${compsName}，请在微搭控制台-应用菜单中，打开任意一个应用的编辑器，点击素材-组件库管理模块，并创建组件库`
                 )
             }
         }
