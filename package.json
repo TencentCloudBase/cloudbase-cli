@@ -4,7 +4,7 @@
     "description": "cli tool for cloudbase",
     "main": "lib/index.js",
     "scripts": {
-        "build": "rimraf lib types && tsc",
+        "build": "rimraf lib types && tsc --resolveJsonModule",
         "watch": "rimraf lib types && tsc -w",
         "dev": "rimraf lib types && tsc -w",
         "eslint": "eslint \"./**/*.ts\"",
@@ -32,7 +32,7 @@
     "dependencies": {
         "@cloudbase/cloud-api": "^0.5.5",
         "@cloudbase/framework-core": "^1.9.6",
-        "@cloudbase/lowcode-cli": "^0.18.7",
+        "@cloudbase/lowcode-cli": "0.18.10-alpha.1",
         "@cloudbase/manager-node": "4.0.1",
         "@cloudbase/toolbox": "^0.7.5",
         "@sentry/node": "^5.10.2",
