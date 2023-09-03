@@ -198,6 +198,10 @@ export class LowCodeDeployApp extends Command {
                 {
                     flags: '--src <src>',
                     desc: '部署目录'
+                },
+                {
+                    flags: '--sync-cloud',
+                    desc: '是否同步云端部署记录'
                 }
             ],
             desc: '发布应用',
