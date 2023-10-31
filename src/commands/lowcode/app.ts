@@ -35,6 +35,10 @@ export class LowCodeWatch extends Command {
                 {
                     flags: '--force-install',
                     desc: '是否忽略安装依赖包'
+                },
+                {
+                    flags: '-p, --path <localProjectPath>',
+                    desc: '本地开发的本地项目路径'
                 }
             ],
             desc: '开启微搭低代码的本地构建模式',
@@ -50,7 +54,8 @@ export class LowCodeWatch extends Command {
             await res.watchApp({
                 watchPort: 8288,
                 wxDevtoolPath: options?.wxDevtoolPath,
-                forceInstall: options?.forceInstall
+                forceInstall: options?.forceInstall,
+                projectPath: options?.path    
             })
         })
     }

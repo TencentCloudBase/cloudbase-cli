@@ -9,6 +9,7 @@ const logSymbols = require('log-symbols')
 const didYouMean = require('didyoumean')
 const updateNotifier = require('update-notifier')
 const frameworkPkg = require('@cloudbase/framework-core/package.json')
+const wedaPkg = require('@cloudbase/lowcode-cli/package.json')
 const { CloudApiService } = require('@cloudbase/cloud-api')
 const { getCredentialWithoutCheck } = require('@cloudbase/toolbox')
 const { Confirm } = require('enquirer')
@@ -64,6 +65,7 @@ async function main() {
     // 输出版本信息
     console.log(chalk.gray(`CloudBase CLI ${pkg.version}`))
     console.log(chalk.gray(`CloudBase Framework ${frameworkPkg.version}`))
+    console.log(chalk.gray(`Weda ${wedaPkg.version}`))
 
 
     const yargsParsedResult = yargsParser(process.argv.slice(2));
@@ -109,7 +111,7 @@ async function main() {
     // -v 时输出的版本信息，设置时避免影响其他命令使用 -v
     if (isCommandEmpty) {
         program.version(
-            `\nCLI: ${pkg.version}\nFramework: ${frameworkPkg.version}`,
+            `\nCLI: ${pkg.version}\nFramework: ${frameworkPkg.version}\nWeda: ${wedaPkg.version}`,
             '-v, --version',
             '输出当前 CloudBase CLI 版本'
         )
