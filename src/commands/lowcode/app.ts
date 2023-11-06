@@ -56,7 +56,7 @@ export class LowCodeWatch extends Command {
                 wxDevtoolPath: options?.wxDevtoolPath,
                 forceInstall: options?.forceInstall,
                 projectPath: options?.path    
-            })
+            } as any)
         })
     }
 }
