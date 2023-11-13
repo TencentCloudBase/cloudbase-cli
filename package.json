@@ -1,6 +1,6 @@
 {
     "name": "@cloudbase/cli",
-    "version": "2.3.2",
+    "version": "2.3.3",
     "description": "cli tool for cloudbase",
     "main": "lib/index.js",
     "scripts": {
@@ -33,7 +33,7 @@
         "@cloudbase/cloud-api": "^0.5.5",
         "@cloudbase/framework-core": "^1.9.6",
         "@cloudbase/lowcode-cli": "^0.20.0",
-        "@cloudbase/manager-node": "4.2.5",
+        "@cloudbase/manager-node": "4.2.6",
         "@cloudbase/toolbox": "^0.7.5",
         "@sentry/node": "^5.10.2",
         "address": "^1.1.2",
