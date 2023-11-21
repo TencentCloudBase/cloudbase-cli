@@ -5,6 +5,7 @@ const scfService = new CloudApiService('scf')
 export interface ILayerListOptions {
     offset: number
     limit: number
+    searchSrc?: string
 }
 
 export interface IVersionListOptions {
@@ -13,11 +14,12 @@ export interface IVersionListOptions {
 
 // 列出文件层
 export async function listLayers(options: ILayerListOptions): Promise<any> {
-    const { offset, limit } = options
+    const { offset, limit, searchSrc } = options
 
     const res = await scfService.request('ListLayers', {
         Offset: offset,
-        Limit: limit
+        Limit: limit,
+        SearchSrc: searchSrc
     })
     return res?.Layers || []
 }
