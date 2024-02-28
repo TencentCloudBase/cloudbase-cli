@@ -1,6 +1,6 @@
 {
     "name": "@cloudbase/cli",
-    "version": "2.3.10",
+    "version": "2.3.11",
     "description": "cli tool for cloudbase",
     "main": "lib/index.js",
     "scripts": {
@@ -12,7 +12,8 @@
         "tsc": "tsc",
         "pkg": "pkg ./bin/cloudbase.js --out-path ./pkg",
         "postinstall": "node ./post-install.js || exit 0",
-        "prepublishOnly": "npm run build"
+        "prepublishOnly": "npm run build",
+        "debug": "bin/tcb.js lowcode watch"
     },
     "repository": {
         "type": "git",
@@ -32,7 +33,7 @@
     "dependencies": {
         "@cloudbase/cloud-api": "^0.5.5",
         "@cloudbase/framework-core": "^1.9.7",
-        "@cloudbase/lowcode-cli": "^0.20.3",
+        "@cloudbase/lowcode-cli": "^0.20.5",
         "@cloudbase/manager-node": "4.2.8",
         "@cloudbase/toolbox": "^0.7.5",
         "@sentry/node": "^5.10.2",
