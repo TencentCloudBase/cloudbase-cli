@@ -55,7 +55,7 @@ export class LowCodeWatch extends Command {
                 watchPort: 8288,
                 wxDevtoolPath: options?.wxDevtoolPath,
                 forceInstall: options?.forceInstall,
-                projectPath: options?.path    
+                projectPath: options?.path
             } as any)
         })
     }
@@ -91,6 +91,47 @@ export class LowCodeBuildApp extends Command {
         const config = getCmdConfig(ctx.config, this.options)
         const mergesOptions = getMergedOptions(config, options)
         await lowcodeCli.buildApp(
+            {
+                envId: ctx.envId || ctx.config.envId,
+                projectPath: process.cwd(),
+                logger: log,
+                privateSettings: getPrivateSettings(ctx.config, this.options.cmd)
+            },
+            mergesOptions
+        )
+    }
+}
+
+@ICommand({ supportPrivate: true })
+export class LowCodePreviewApp extends Command {
+    get options() {
+        return {
+            cmd: 'lowcode',
+            childCmd: 'preview:app',
+            options: [
+                {
+                    flags: '--wx-devtool-path <your-wx-dev-tool-path>',
+                    desc: '指定微信开发者工具的安装路径'
+                },
+                {
+                    flags: '--platform <mp|web>',
+                    desc: '构建平台'
+                }
+            ],
+            desc: '预览应用',
+            requiredEnvId: false
+        }
+    }
+
+    @InjectParams()
+    async execute(
+        @CmdContext() ctx: ICommandContext,
+        @Log() log: Logger,
+        @ArgsOptions() options: any
+    ) {
+        const config = getCmdConfig(ctx.config, this.options)
+        const mergesOptions = getMergedOptions(config, options)
+        await lowcodeCli.previewApp(
             {
                 envId: ctx.envId || ctx.config.envId,
                 projectPath: process.cwd(),
