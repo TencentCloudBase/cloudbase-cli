@@ -24,6 +24,10 @@ interface ICommandOption {
     hideHelp?: boolean
 }
 
+interface ICommandArgument {
+    flags: string
+}
+
 export interface ICommandOptions {
     // 废弃的命令
     deprecateCmd?: string
@@ -37,6 +41,8 @@ export interface ICommandOptions {
               desc: string
           }
     childSubCmd?: string
+    // 命令参数
+    args?: ICommandArgument[]
     // 命令选项
     options: ICommandOption[]
     // 命令描述
@@ -75,7 +81,7 @@ export function ICommand(
 export async function registerCommands() {
     const args = yargsParser(process.argv.slice(2))
     const config = await getCloudBaseConfig(args.configFile)
-    const isPrivate = getPrivateSettings(config, args?._?.[0]?.toString() )
+    const isPrivate = getPrivateSettings(config, args?._?.[0]?.toString())
     registrableCommands.forEach(({ Command, decoratorOptions }) => {
         if (isPrivate) {
             // 私有化的
@@ -170,7 +176,14 @@ export abstract class Command extends EventEmitter {
     }
 
     private createProgram(instance: Commander, deprecate: boolean, newCmd?: string) {
-        const { cmd, desc, options, requiredEnvId = true, withoutAuth = false } = this.options
+        const {
+            cmd,
+            desc,
+            options,
+            args = [],
+            requiredEnvId = true,
+            withoutAuth = false
+        } = this.options
         instance.storeOptionsAsProperties(false)
         options.forEach((option) => {
             const { hideHelp } = option
@@ -180,6 +193,10 @@ export abstract class Command extends EventEmitter {
                 instance.option(option.flags, option.desc)
             }
         })
+
+        // Add command arguments
+        const argsStr = args.map((argItem) => argItem.flags).join(' ')
+        if (argsStr) instance.arguments(argsStr)
 
         instance.description(desc)
 
