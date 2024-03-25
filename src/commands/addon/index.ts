@@ -2,54 +2,6 @@ import { CloudApiService } from '@cloudbase/cloud-api'
 import { ArgsOptions, CmdContext, InjectParams } from '../../decorators'
 import { authSupevisor, getPrivateSettings } from '../../utils'
 import { Command, ICommand, ICommandOptions } from '../common'
-
-function getOptions({
-    childCmd,
-    options,
-    desc,
-    requiredEnvId,
-    hasNameArg
-}: Pick<ICommandOptions, 'childCmd' | 'options' | 'desc' | 'requiredEnvId'> & {
-    /**
-     * 是否需要提供插件/资源名称的参数
-     */
-    hasNameArg: boolean
-}): ICommandOptions {
-    return {
-        cmd: 'addon',
-        childCmd,
-        options,
-        args: hasNameArg
-            ? [{ flags: '[resource]' }, { flags: '[name]' }]
-            : [{ flags: '[resource]' }],
-        desc,
-        requiredEnvId
-    }
-}
-
-function getParams(ctxParams, hasNameArg: boolean) {
-    const params = ctxParams.filter((param) => typeof param === 'string')
-    let name, resource
-
-    if (hasNameArg) {
-        if (params.length === 1) {
-            name = params[0]
-        } else if (params.length === 2) {
-            resource = params[0]
-            name = params[1]
-        }
-    } else {
-        if (params.length === 1) {
-            resource = params[0]
-        }
-    }
-
-    return {
-        name,
-        resource
-    }
-}
-
 @ICommand({
     supportPrivate: true
 })
@@ -117,4 +69,51 @@ async function getTcbServiceInstance(ctx: any): Promise<CloudApiService> {
 
     const tcbService = CloudApiService.getInstance({ service: 'tcb', credential })
     return tcbService
+}
+
+function getOptions({
+    childCmd,
+    options,
+    desc,
+    requiredEnvId,
+    hasNameArg
+}: Pick<ICommandOptions, 'childCmd' | 'options' | 'desc' | 'requiredEnvId'> & {
+    /**
+     * 是否需要提供插件/资源名称的参数
+     */
+    hasNameArg: boolean
+}): ICommandOptions {
+    return {
+        cmd: 'addon',
+        childCmd,
+        options,
+        args: hasNameArg
+            ? [{ flags: '[resource]' }, { flags: '[name]' }]
+            : [{ flags: '[resource]' }],
+        desc,
+        requiredEnvId
+    }
+}
+
+function getParams(ctxParams, hasNameArg: boolean) {
+    const params = ctxParams.filter((param) => typeof param === 'string')
+    let name, resource
+
+    if (hasNameArg) {
+        if (params.length === 1) {
+            name = params[0]
+        } else if (params.length === 2) {
+            resource = params[0]
+            name = params[1]
+        }
+    } else {
+        if (params.length === 1) {
+            resource = params[0]
+        }
+    }
+
+    return {
+        name,
+        resource
+    }
 }
