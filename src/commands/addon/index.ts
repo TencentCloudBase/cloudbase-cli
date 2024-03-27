@@ -1,4 +1,5 @@
 import { CloudApiService } from '@cloudbase/cloud-api'
+import { getProxy } from '@cloudbase/toolbox'
 import { ArgsOptions, CmdContext, InjectParams } from '../../decorators'
 import { authSupevisor, getPrivateSettings } from '../../utils'
 import { Command, ICommand, ICommandOptions } from '../common'
@@ -13,6 +14,10 @@ export class AddonPull extends Command {
                 {
                     flags: '--envId <envId>',
                     desc: '环境 ID'
+                },
+                {
+                    flags: '--all',
+                    desc: '拉取所有插件/资源 (当前只支持 block 资源，可以通过 tcb addon pull block --all 拉取所有资源)'
                 }
             ],
             desc: '拉取插件代码',
@@ -23,11 +28,11 @@ export class AddonPull extends Command {
 
     @InjectParams()
     async execute(@CmdContext() ctx, @ArgsOptions() options) {
-        const tcbService = await getTcbServiceInstance(ctx)
-        const { name, resource } = getParams(ctx.params, true)
+        const cloudService = await getCloudServiceInstance(ctx)
+        const { name, resource } = getParams(ctx.params, options.all ? false : true)
 
         import('@cloudbase/addon-cli').then(async (res) => {
-            await res.pull({ name, resource, envId: ctx.envId, tcbService })
+            await res.pull({ name, resource, envId: ctx.envId, cloudService })
         })
     }
 }
@@ -48,16 +53,18 @@ export class AddonPush extends Command {
 
     @InjectParams()
     async execute(@CmdContext() ctx, @ArgsOptions() options) {
-        const tcbService = await getTcbServiceInstance(ctx)
+        const cloudService = await getCloudServiceInstance(ctx)
         const { resource } = getParams(ctx.params, false)
 
         import('@cloudbase/addon-cli').then(async (res) => {
-            await res.push({ tcbService, envId: ctx.envId, resource })
+            await res.push({ cloudService, envId: ctx.envId, resource })
         })
     }
 }
 
-async function getTcbServiceInstance(ctx: any): Promise<CloudApiService> {
+async function getCloudServiceInstance(
+    ctx: any
+): Promise<{ lowcode: CloudApiService; tcb: CloudApiService }> {
     let credential
     if (ctx.hasPrivateSettings) {
         process.env.IS_PRIVATE = 'true'
@@ -67,8 +74,15 @@ async function getTcbServiceInstance(ctx: any): Promise<CloudApiService> {
         credential = await authSupevisor.getLoginState()
     }
 
-    const tcbService = CloudApiService.getInstance({ service: 'tcb', credential })
-    return tcbService
+    return {
+        lowcode: CloudApiService.getInstance({
+            service: 'lowcode',
+            proxy: getProxy(),
+            credential,
+            version: '2021-01-08'
+        }),
+        tcb: CloudApiService.getInstance({ service: 'tcb', proxy: getProxy(), credential })
+    }
 }
 
 function getOptions({
