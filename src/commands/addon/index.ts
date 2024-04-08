@@ -14,13 +14,9 @@ export class AddonPull extends Command {
                 {
                     flags: '--envId <envId>',
                     desc: '环境 ID'
-                },
-                {
-                    flags: '--all',
-                    desc: '拉取所有插件/资源 (当前只支持 block 资源，可以通过 tcb addon pull block --all 拉取所有资源)'
                 }
             ],
-            desc: '拉取插件代码',
+            desc: '拉取插件/资源代码',
             requiredEnvId: true,
             hasNameArg: true
         })
@@ -29,7 +25,8 @@ export class AddonPull extends Command {
     @InjectParams()
     async execute(@CmdContext() ctx, @ArgsOptions() options) {
         const cloudService = await getCloudServiceInstance(ctx)
-        const { name, resource } = getParams(ctx.params, options.all ? false : true)
+        const { resource } = options
+        const { name } = getParams(ctx.params)
 
         import('@cloudbase/addon-cli').then(async (res) => {
             await res.pull({ name, resource, envId: ctx.envId, cloudService })
@@ -54,7 +51,7 @@ export class AddonPush extends Command {
     @InjectParams()
     async execute(@CmdContext() ctx, @ArgsOptions() options) {
         const cloudService = await getCloudServiceInstance(ctx)
-        const { resource } = getParams(ctx.params, false)
+        const { resource } = options
 
         import('@cloudbase/addon-cli').then(async (res) => {
             await res.push({ cloudService, envId: ctx.envId, resource })
@@ -100,34 +97,22 @@ function getOptions({
     return {
         cmd: 'addon',
         childCmd,
-        options,
-        args: hasNameArg
-            ? [{ flags: '[resource]' }, { flags: '[name]' }]
-            : [{ flags: '[resource]' }],
+        options: [
+            {
+                flags: '--resource <resource>',
+                desc: '资源名称。当想操作指定资源而非插件时使用。当前支持 block / app / automation'
+            },
+            ...options
+        ],
+        args: hasNameArg ? [{ flags: '[name]' }] : [],
         desc,
         requiredEnvId
     }
 }
 
-function getParams(ctxParams, hasNameArg: boolean) {
+function getParams(ctxParams) {
     const params = ctxParams.filter((param) => typeof param === 'string')
-    let name, resource
-
-    if (hasNameArg) {
-        if (params.length === 1) {
-            name = params[0]
-        } else if (params.length === 2) {
-            resource = params[0]
-            name = params[1]
-        }
-    } else {
-        if (params.length === 1) {
-            resource = params[0]
-        }
-    }
-
     return {
-        name,
-        resource
+        name: params[0]
     }
 }
