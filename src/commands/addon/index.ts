@@ -41,7 +41,7 @@ export class AddonPush extends Command {
     get options() {
         return getOptions({
             childCmd: 'push',
-            desc: '推送插件代码',
+            desc: '推送插件/资源代码',
             options: [],
             requiredEnvId: true,
             hasNameArg: false
@@ -100,7 +100,7 @@ function getOptions({
         options: [
             {
                 flags: '--resource <resource>',
-                desc: '资源名称。当想操作指定资源而非插件时使用。当前支持 block / app / automation'
+                desc: '资源名称。当想操作指定资源而非插件时使用。当前支持 automation'
             },
             ...options
         ],
