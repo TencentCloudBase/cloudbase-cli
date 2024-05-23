@@ -18,7 +18,8 @@ export class AddonPull extends Command {
             ],
             desc: '拉取插件/资源代码',
             requiredEnvId: true,
-            hasNameArg: true
+            hasNameArg: true,
+            resourceSupportList: ['automation', 'block']
         })
     }
 
@@ -44,7 +45,8 @@ export class AddonPush extends Command {
             desc: '推送插件/资源代码',
             options: [],
             requiredEnvId: true,
-            hasNameArg: false
+            hasNameArg: false,
+            resourceSupportList: ['automation', 'block']
         })
     }
 
@@ -55,6 +57,42 @@ export class AddonPush extends Command {
 
         import('@cloudbase/addon-cli').then(async (res) => {
             await res.push({ cloudService, envId: ctx.envId, resource })
+        })
+    }
+}
+
+@ICommand({
+    supportPrivate: true
+})
+export class AddonDevSync extends Command {
+    get options() {
+        return getOptions({
+            childCmd: 'dev:sync',
+            desc: '本地开发方式：与浏览器编辑器的应用双向同步',
+            options: [
+                {
+                    flags: '--envId <envId>',
+                    desc: '环境 ID'
+                },
+                {
+                    flags: '--path <path>',
+                    desc: '本地应用代码路径'
+                }
+            ],
+            requiredEnvId: true,
+            hasNameArg: true,
+            resourceSupportList: ['app']
+        })
+    }
+
+    @InjectParams()
+    async execute(@CmdContext() ctx, @ArgsOptions() options) {
+        const cloudService = await getCloudServiceInstance(ctx)
+        const { resource, path = '.' } = options
+        const { name } = getParams(ctx.params)
+
+        import('@cloudbase/addon-cli').then(async (res) => {
+            await res.devSync({ name, cloudService, envId: ctx.envId, resource, path })
         })
     }
 }
@@ -87,12 +125,17 @@ function getOptions({
     options,
     desc,
     requiredEnvId,
-    hasNameArg
+    hasNameArg,
+    resourceSupportList
 }: Pick<ICommandOptions, 'childCmd' | 'options' | 'desc' | 'requiredEnvId'> & {
     /**
      * 是否需要提供插件/资源名称的参数
      */
     hasNameArg: boolean
+    /**
+     * 资源选项的描述
+     */
+    resourceSupportList?: string[]
 }): ICommandOptions {
     return {
         cmd: 'addon',
@@ -100,7 +143,9 @@ function getOptions({
         options: [
             {
                 flags: '--resource <resource>',
-                desc: '资源名称。当想操作指定资源而非插件时使用。当前支持 automation / block'
+                desc:
+                    '资源名称。当想操作指定资源而非插件时使用。当前支持 ' +
+                    resourceSupportList.join(' / ')
             },
             ...options
         ],
