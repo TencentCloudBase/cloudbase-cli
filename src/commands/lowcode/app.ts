@@ -4,6 +4,10 @@ import { InjectParams, Log, Logger, CmdContext, ArgsOptions } from '../../decora
 import { getLowcodeCli, getCmdConfig, getMergedOptions } from './utils'
 import { ICommandContext } from '../../types'
 import { authSupevisor, getPrivateSettings } from '../../utils'
+import { CloudApiService } from '@cloudbase/cloud-api'
+import { getProxy } from '@cloudbase/toolbox'
+import fs from 'fs-extra'
+import { generateDataModelDTS } from '../../utils/dts'
 
 // use dynamic import for lowcode-cli to reduce setup time
 type LowcodeCli = typeof import('@cloudbase/lowcode-cli')
@@ -240,5 +244,110 @@ export class LowCodeDeployApp extends Command {
                 projectPath: src || restMergedOptions.projectPath
             }
         )
+    }
+}
+
+/**
+ * TODO: 数据模型类型同步命令，DEMO 时期，暂时放这里
+ */
+@ICommand({ supportPrivate: true })
+export class ModelTypeSync extends Command {
+    get options() {
+        return {
+            cmd: 'model',
+            childCmd: 'sync-dts',
+            options: [
+                {
+                    flags: '--envId <envId>',
+                    desc: '环境 ID'
+                }
+            ],
+            desc: '同步数据模型类型定义文件',
+            requiredEnvId: true
+        }
+    }
+
+    @InjectParams()
+    async execute(
+        @CmdContext() ctx: ICommandContext,
+        @Log() log: Logger,
+        @ArgsOptions() options: any
+    ) {
+        log.info('同步中...')
+
+        /**
+         * 生成 cloudbaserc.json 文件（如果不存在的情况）
+         */
+        if (!(await fs.pathExists('cloudbaserc.json'))) {
+            await fs.writeFile(
+                'cloudbaserc.json',
+                JSON.stringify(
+                    {
+                        version: '2.0',
+                        envId: ctx.envId
+                    },
+                    null,
+                    2
+                ),
+                'utf8'
+            )
+        }
+
+        /**
+         * 获取数据模型列表
+         * 接口文档: https://capi.woa.com/apidoc?product=lowcode&version=2021-01-08
+         */
+        const cloudService = await getCloudServiceInstance(ctx)
+        const datasourceList = await cloudService.lowcode.request('DescribeDataSourceList', {
+            EnvId: ctx.envId,
+            PageIndex: 1,
+            PageSize: 1000,
+            DbInstanceType: 'FLEXDB', // 当前指数据模型
+            QuerySystemModel: true, // 查询系统模型
+            QueryConnector: 0 // 0 表示数据模型
+        })
+        // 下一行代码为调试阶段使用
+        // const rows = datasourceList.Data.Rows.filter((item: any) => item.Name.startsWith('dx_'))
+        // const rows = datasourceList.Data.Rows.filter(
+        //     (item: any) => item.Name.toLowerCase() === 'Awtsjd_Gxngcnm'.toLowerCase()
+        // )
+        const rows = datasourceList.Data.Rows
+        // console.log(JSON.stringify(rows, null, 2))
+
+        /**
+         * 生成数据模型类型定义文件
+         */
+        const dataModelList = rows.map((item) => ({
+            name: item.Name,
+            schema: JSON.parse(item.Schema),
+            title: item.Title
+        }))
+        const dts = await generateDataModelDTS(dataModelList)
+        const dtsFileName = 'cloud-models.d.ts'
+        await fs.writeFile(dtsFileName, dts)
+        log.success('同步数据模型类型定义文件成功。文件名称：' + dtsFileName)
+    }
+}
+
+async function getCloudServiceInstance(
+    ctx: any
+): Promise<{ lowcode: CloudApiService; tcb: CloudApiService }> {
+    let credential
+    if (ctx.hasPrivateSettings) {
+        process.env.IS_PRIVATE = 'true'
+        const privateSettings = getPrivateSettings(ctx.config, this.options.cmd)
+        credential = privateSettings.credential
+    } else {
+        credential = await authSupevisor.getLoginState()
+    }
+
+    return {
+        lowcode: CloudApiService.getInstance({
+            service: 'lowcode',
+            proxy: getProxy(),
+            credential,
+            version: '2021-01-08'
+        }),
+        tcb: CloudApiService.getInstance({ service: 'tcb', proxy: getProxy(), credential })
     }
 }
