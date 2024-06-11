@@ -18,7 +18,6 @@ describe('generateDataModelDTS', () => {
     test('新关联关系 one-one 或 many-one', async () => {
         const dataModelList = getDataModelMockList({ relation: 'one-one' })
         const result = await generateDataModelDTS(dataModelList as any)
-        console.log(result)
         expect(formatDTS(result)).toEqual(getMockDTS({relation: 'one-one'}))
     })
 
@@ -58,19 +57,27 @@ describe('generateDataModelDTS', () => {
         },]
         const result = await generateDataModelDTS(dataModelList as any)
         expect(formatDTS(result)).toEqual(formatDTS(`
-            import { type DataModelMethods } from "@cloudbase/wx-cloud-client-sdk";
+            import { DataModelMethods } from "@cloudbase/wx-cloud-client-sdk";
             interface IModalDxCommentWxp8Smw {
                 post?: IModalDxPost_160Wrcv;
                 post1?: IModalDxPost_160Wrcv;
             }
             
+            interface IModels {
+    
+                /**
+                * 数据模型：评论
+                */ 
+                dx_comment_wxp8smw: DataModelMethods<IModalDxCommentWxp8Smw>;    
+            }
+            
             declare module "@cloudbase/wx-cloud-client-sdk" {
-                interface OrmClient {
-                
-                    /**
-                    * 数据模型：评论
-                    */ 
-                    dx_comment_wxp8smw: DataModelMethods<IModalDxCommentWxp8Smw>;
+                interface OrmClient extends IModels {}
+            }
+            
+            declare global {
+                interface WxCloud {
+                    models: IModels;
                 }
             }
         `))
@@ -84,16 +91,25 @@ describe('generateDataModelDTS', () => {
             },
         ]
         const result = await generateDataModelDTS(dataModelList as any)
+        console.log(result)
         expect(formatDTS(result)).toEqual(formatDTS(`
-            import { type DataModelMethods } from "@cloudbase/wx-cloud-client-sdk";
+            import { DataModelMethods } from "@cloudbase/wx-cloud-client-sdk";
             interface IModalDxCommentWxp8Smw {}
+            interface IModels {
+    
+                /**
+                * 数据模型：评论
+                */ 
+                dx_comment_wxp8smw: DataModelMethods<IModalDxCommentWxp8Smw>;    
+            }
+            
             declare module "@cloudbase/wx-cloud-client-sdk" {
-                interface OrmClient {
-                
-                    /**
-                    * 数据模型：评论
-                    */ 
-                    dx_comment_wxp8smw: DataModelMethods<IModalDxCommentWxp8Smw>;
+                interface OrmClient extends IModels {}
+            }
+            
+            declare global {
+                interface WxCloud {
+                    models: IModels;
                 }
             }
         `))

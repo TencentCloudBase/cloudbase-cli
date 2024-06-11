@@ -24,19 +24,28 @@ export async function generateDataModelDTS(
     )
 
     const result = `
-import { type DataModelMethods } from "@cloudbase/wx-cloud-client-sdk";
+import { DataModelMethods } from "@cloudbase/wx-cloud-client-sdk";
 ${dtsList.map((item) => item.dts).join('\n')}
+
+interface IModels {
+${dtsList
+    .map((item: any) => {
+        return `
+    /**
+    * 数据模型：${item.title}
+    */ 
+    ${item.name}: DataModelMethods<${getModelInterfaceName(item.name)}>;`
+    })
+    .join('\n')}    
+}
+
 declare module "@cloudbase/wx-cloud-client-sdk" {
-    interface OrmClient {
-    ${dtsList
-        .map((item: any) => {
-            return `
-        /**
-        * 数据模型：${item.title}
-        */ 
-        ${item.name}: DataModelMethods<${getModelInterfaceName(item.name)}>;`
-        })
-        .join('\n')}
+    interface OrmClient extends IModels {}
+}
+
+declare global {
+    interface WxCloud {
+        models: IModels;
     }
 }`
 

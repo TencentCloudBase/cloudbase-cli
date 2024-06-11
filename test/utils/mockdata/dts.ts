@@ -348,7 +348,7 @@ export function getMockDTS(params: {relation: ''| 'related' | 'father-son' | 'on
     let result = ''
 
     const compiled = template(`
-    import { type DataModelMethods } from "@cloudbase/wx-cloud-client-sdk";
+    import { DataModelMethods } from "@cloudbase/wx-cloud-client-sdk";
     interface IModalDxCommentWxp8Smw {
       <%= commentDts %>
     }
@@ -370,19 +370,27 @@ export function getMockDTS(params: {relation: ''| 'related' | 'father-son' | 'on
        */
       slug?: string;
     }
+
+    interface IModels {
     
-    declare module "@cloudbase/wx-cloud-client-sdk" {
-        interface OrmClient {
-        
         /**
         * 数据模型：评论
         */ 
         dx_comment_wxp8smw: DataModelMethods<IModalDxCommentWxp8Smw>;
-        
+    
         /**
         * 数据模型：dx_post
         */ 
-        dx_post_160wrcv: DataModelMethods<IModalDxPost_160Wrcv>;
+        dx_post_160wrcv: DataModelMethods<IModalDxPost_160Wrcv>;    
+    }
+    
+    declare module "@cloudbase/wx-cloud-client-sdk" {
+        interface OrmClient extends IModels {}
+    }
+    
+    declare global {
+        interface WxCloud {
+            models: IModels;
         }
     }`)
 
