@@ -1,4 +1,4 @@
-import _ from 'lodash'
+import _, { set } from 'lodash'
 import { Command, ICommand } from '../common'
 import { InjectParams, Log, Logger, CmdContext, ArgsOptions } from '../../decorators'
 import { getLowcodeCli, getCmdConfig, getMergedOptions } from './utils'
@@ -291,6 +291,29 @@ export class ModelTypeSync extends Command {
                 ),
                 'utf8'
             )
+        }
+
+        /**
+         * 生成 tsconfig.json 文件（如果不存在的情况）
+         */
+        if (!(await fs.pathExists('tsconfig.json'))) {
+            await fs.writeFile(
+                'tsconfig.json',
+                JSON.stringify(
+                    {
+                        compilerOptions: {
+                            allowJs: true
+                        }
+                    },
+                    null,
+                    2
+                ),
+                'utf8'
+            )
+        } else {
+            const config = await fs.readJson('tsconfig.json', 'utf8')
+            set(config, 'compilerOptions.allowJs', true)
+            await fs.writeFile('tsconfig.json', JSON.stringify(config, null, 2), 'utf8')
         }
 
         /**
