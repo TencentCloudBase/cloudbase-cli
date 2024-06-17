@@ -172,7 +172,14 @@ export abstract class Command extends EventEmitter {
     }
 
     private createProgram(instance: Commander, deprecate: boolean, newCmd?: string) {
-        const { cmd, desc, options, requiredEnvId = true, withoutAuth = false, autoRunLogin = false } = this.options
+        const {
+            cmd,
+            desc,
+            options,
+            requiredEnvId = true,
+            withoutAuth = false,
+            autoRunLogin = false
+        } = this.options
         instance.storeOptionsAsProperties(false)
         options.forEach((option) => {
             const { hideHelp } = option
@@ -207,9 +214,15 @@ export abstract class Command extends EventEmitter {
             // 校验登陆态
             if (!withoutAuth && !loginState) {
                 if (autoRunLogin) {
-                    program.parse(['node', 'tcb', 'login'])
+                    console.log(
+                        chalk.bold.yellowBright(
+                            '无有效身份信息，将自动为您打开授权页面。授权成功后请再重新执行命令'
+                        )
+                    )
+                    await program.parseAsync(['node', 'tcb', 'login'])
+                } else {
+                    throw new CloudBaseError('无有效身份信息，请使用 cloudbase login 登录')
                 }
-                throw new CloudBaseError('无有效身份信息，请使用 cloudbase login 登录')
             }
 
             if (!envId && requiredEnvId) {
