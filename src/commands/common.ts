@@ -45,6 +45,8 @@ export interface ICommandOptions {
     requiredEnvId?: boolean
     // 多数命令都需要登陆，不需要登陆的命令需要特别声明
     withoutAuth?: boolean
+    // 当需要登录时而用户未登录，自动运行 tcb login
+    autoRunLogin?: boolean
 }
 
 type CommandConstructor = new () => Command
@@ -75,7 +77,7 @@ export function ICommand(
 export async function registerCommands() {
     const args = yargsParser(process.argv.slice(2))
     const config = await getCloudBaseConfig(args.configFile)
-    const isPrivate = getPrivateSettings(config, args?._?.[0]?.toString() )
+    const isPrivate = getPrivateSettings(config, args?._?.[0]?.toString())
     registrableCommands.forEach(({ Command, decoratorOptions }) => {
         if (isPrivate) {
             // 私有化的
@@ -170,7 +172,7 @@ export abstract class Command extends EventEmitter {
     }
 
     private createProgram(instance: Commander, deprecate: boolean, newCmd?: string) {
-        const { cmd, desc, options, requiredEnvId = true, withoutAuth = false } = this.options
+        const { cmd, desc, options, requiredEnvId = true, withoutAuth = false, autoRunLogin = false } = this.options
         instance.storeOptionsAsProperties(false)
         options.forEach((option) => {
             const { hideHelp } = option
@@ -204,6 +206,9 @@ export abstract class Command extends EventEmitter {
 
             // 校验登陆态
             if (!withoutAuth && !loginState) {
+                if (autoRunLogin) {
+                    program.parse(['node', 'tcb', 'login'])
+                }
                 throw new CloudBaseError('无有效身份信息，请使用 cloudbase login 登录')
             }
 

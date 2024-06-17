@@ -265,7 +265,8 @@ export class ModelTypeSync extends Command {
                 }
             ],
             desc: '同步数据模型类型定义文件',
-            requiredEnvId: true
+            requiredEnvId: true,
+            autoRunLogin: true
         }
     }
 
