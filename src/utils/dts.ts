@@ -34,7 +34,7 @@ ${dtsList
     /**
     * 数据模型：${item.title}
     */ 
-    ${item.name}: DataModelMethods<${getModelInterfaceName(item.name)}>;`
+    ${_toValidFieldName(item.name)}: DataModelMethods<${getModelInterfaceName(item.name)}>;`
     })
     .join('\n')}    
 }
@@ -143,6 +143,18 @@ declare global {
             console.error('_compile error:', e)
             return ''
         }
+    }
+
+    function _toValidFieldName(name: string) {
+        // 替换无效字符为下划线
+        let result = name.replace(/[^a-zA-Z0-9_$]/g, '_')
+
+        // 确保变量名不以数字开头
+        if (/^[0-9]/.test(result)) {
+            result = '_' + result
+        }
+
+        return result
     }
 
     function getModelInterfaceName(name: string) {

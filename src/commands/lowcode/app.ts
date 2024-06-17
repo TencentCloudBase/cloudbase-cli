@@ -5,8 +5,10 @@ import { getLowcodeCli, getCmdConfig, getMergedOptions } from './utils'
 import { ICommandContext } from '../../types'
 import { authSupevisor, getPrivateSettings } from '../../utils'
 import { CloudApiService } from '@cloudbase/cloud-api'
-import { getProxy } from '@cloudbase/toolbox'
+import { fetch, getProxy } from '@cloudbase/toolbox'
 import fs from 'fs-extra'
+import os from 'os'
+import path from 'path'
 import { generateDataModelDTS } from '../../utils/dts'
 
 // use dynamic import for lowcode-cli to reduce setup time
@@ -325,7 +327,6 @@ export class ModelTypeSync extends Command {
             EnvId: ctx.envId,
             PageIndex: 1,
             PageSize: 1000,
-            DbInstanceType: 'FLEXDB', // 当前指数据模型
             QuerySystemModel: true, // 查询系统模型
             QueryConnector: 0 // 0 表示数据模型
         })
@@ -335,7 +336,6 @@ export class ModelTypeSync extends Command {
         //     (item: any) => item.Name.toLowerCase() === 'Awtsjd_Gxngcnm'.toLowerCase()
         // )
         const rows = datasourceList.Data.Rows
-        // console.log(JSON.stringify(rows, null, 2))
 
         /**
          * 生成数据模型类型定义文件
@@ -349,6 +349,128 @@ export class ModelTypeSync extends Command {
         const dtsFileName = 'cloud-models.d.ts'
         await fs.writeFile(dtsFileName, dts)
         log.success('同步数据模型类型定义文件成功。文件名称：' + dtsFileName)
+    }
+}
+
+@ICommand({ supportPrivate: true })
+export class TemplateSync extends Command {
+    get options() {
+        return {
+            cmd: 'template',
+            childCmd: 'sync',
+            options: [
+                {
+                    flags: '--envId <envId>',
+                    desc: '环境 ID'
+                }
+            ],
+            desc: '同步官方模板应用内容',
+            requiredEnvId: true
+        }
+    }
+
+    @InjectParams()
+    async execute(
+        @CmdContext() ctx: ICommandContext,
+        @Log() log: Logger,
+        @ArgsOptions() options: any
+    ) {
+        log.info('同步中...')
+
+        const envId = 'lowcode-5g5llxbq5bc9299e'
+        const fileDir = path.resolve(os.tmpdir(), 'templates')
+        await fs.ensureDir(fileDir)
+        await fs.rmdir(fileDir, { recursive: true })
+        await fs.ensureDir(fileDir)
+
+        /**
+         * 获取数据模型列表
+         * 接口文档: https://capi.woa.com/apidoc?product=lowcode&version=2021-01-08
+         */
+        const cloudService = await getCloudServiceInstance(ctx)
+
+        let total = Infinity
+        let currentTotal = 0
+        const limit = 50
+
+        const files = []
+        let count = 1
+        while (currentTotal < total) {
+            const solutionListResult = await cloudService.lowcode.request('DescribeSolutionList', {
+                Limit: limit,
+                Offset: currentTotal,
+                KeyWords: '',
+                EnvId: envId,
+                TypeList: ['SELFBUILD', 'TPLEXPORT']
+            })
+
+            // TODO: 调试只用一个
+            // const solutionList = [solutionListResult.SolutionInfoList[0]]
+            const solutionList = solutionListResult.SolutionInfoList
+
+            const handledSolutionList = await Promise.all(
+                solutionList.map(async (item) => {
+                    const solution = await cloudService.lowcode.request('DescribeSolution', {
+                        EnvId: envId,
+                        SolutionId: item.SolutionId
+                    })
+                    if (solution.SolutionAppInfos.length > 0) {
+                        const appIds: string[] = solution.SolutionAppInfos.map((item) => item.AppId)
+
+                        const apps = await Promise.all(
+                            appIds.map(async (appId) => {
+                                try {
+                                    // 获取最后一条历史记录
+                                    let result = await cloudService.lowcode.request(
+                                        'DescribeHistoryListByAppId',
+                                        {
+                                            WeAppId: appId,
+                                            PageNum: 1,
+                                            PageSize: 1
+                                        }
+                                    )
+                                    // 获取下载链接
+                                    result = await cloudService.lowcode.request(
+                                        'DescribeAppHistoryPreSignUrl',
+                                        {
+                                            HisIds: [result?.Data?.List?.[0]?.Id],
+                                            HttpMethod: 'get',
+                                            WeAppsId: appId
+                                        }
+                                    )
+                                    // 获取应用内容
+                                    result = await fetch(result?.Data?.[0]?.UploadUrl)
+
+                                    return { appId, content: result }
+                                } catch (e) {
+                                    return { appId, error: e.message }
+                                }
+                            })
+                        )
+
+                        return {
+                            name: item.Name,
+                            solutionId: item.SolutionId,
+                            version: item.Version,
+                            apps
+                        }
+                    } else {
+                        return null
+                    }
+                })
+            )
+
+            const filePath = path.resolve(fileDir, `templates_${count}.json`)
+            await fs.writeFile(filePath, JSON.stringify(handledSolutionList, null, 2), 'utf8')
+            files.push(filePath)
+
+            total = solutionListResult.TotalCount
+            currentTotal += limit
+            count += 1
+        }
+
+        log.success(`同步官方模板应用内容已完成. 文件路径:`)
+        log.success(files.join('\n'))
     }
 }
 
