@@ -361,6 +361,10 @@ export class TemplateSync extends Command {
             childCmd: 'sync',
             options: [
                 {
+                    flags: '--source <source>',
+                    desc: '来源: 1-野鹤 2-自建模板'
+                },
+                {
                     flags: '--envId <envId>',
                     desc: '环境 ID'
                 }
@@ -378,6 +382,13 @@ export class TemplateSync extends Command {
     ) {
         log.info('同步中...')
 
+        const SourceType = {
+            YEHE: '1',
+            CUSTOM_MODULE: '2'
+        }
+        const source = Object.values(SourceType).includes(options.source)
+            ? options.source
+            : SourceType.YEHE
         const envId = 'lowcode-5g5llxbq5bc9299e'
         const fileDir = path.resolve(os.tmpdir(), 'templates')
         await fs.ensureDir(fileDir)
@@ -389,89 +400,125 @@ export class TemplateSync extends Command {
          * 接口文档: https://capi.woa.com/apidoc?product=lowcode&version=2021-01-08
          */
         const cloudService = await getCloudServiceInstance(ctx)
-
-        let total = Infinity
-        let currentTotal = 0
-        const limit = 50
-
         const files = []
+        const limit = 50
         let count = 1
-        while (currentTotal < total) {
-            const solutionListResult = await cloudService.lowcode.request('DescribeSolutionList', {
-                Limit: limit,
-                Offset: currentTotal,
-                KeyWords: '',
-                EnvId: envId,
-                TypeList: ['SELFBUILD', 'TPLEXPORT']
-            })
 
-            // TODO: 调试只用一个
-            // const solutionList = [solutionListResult.SolutionInfoList[0]]
-            const solutionList = solutionListResult.SolutionInfoList
+        if (source === SourceType.YEHE) {
+            const templates = await fs.readJSON('data.json', 'utf8')
 
-            const handledSolutionList = await Promise.all(
-                solutionList.map(async (item) => {
-                    const solution = await cloudService.lowcode.request('DescribeSolution', {
-                        EnvId: envId,
-                        SolutionId: item.SolutionId
-                    })
-                    if (solution.SolutionAppInfos.length > 0) {
-                        const appIds: string[] = solution.SolutionAppInfos.map((item) => item.AppId)
-
-                        const apps = await Promise.all(
-                            appIds.map(async (appId) => {
-                                try {
-                                    // 获取最后一条历史记录
-                                    let result = await cloudService.lowcode.request(
-                                        'DescribeHistoryListByAppId',
-                                        {
-                                            WeAppId: appId,
-                                            PageNum: 1,
-                                            PageSize: 1
-                                        }
-                                    )
-                                    // 获取下载链接
-                                    result = await cloudService.lowcode.request(
-                                        'DescribeAppHistoryPreSignUrl',
-                                        {
-                                            HisIds: [result?.Data?.List?.[0]?.Id],
-                                            HttpMethod: 'get',
-                                            WeAppsId: appId
-                                        }
-                                    )
-                                    // 获取应用内容
-                                    result = await fetch(result?.Data?.[0]?.UploadUrl)
-
-                                    return { appId, content: result }
-                                } catch (e) {
-                                    return { appId, error: e.message }
-                                }
-                            })
-                        )
-
-                        return {
-                            name: item.Name,
-                            solutionId: item.SolutionId,
-                            version: item.Version,
-                            apps
+            while (templates.length > 0) {
+                const handledSolutionList = await Promise.all(
+                    templates.splice(0, limit).map(async (item) => {
+                        if (item.appIds.length > 0) {
+                            const apps = await getAppsContent(item.appIds)
+                            return {
+                                name: item.templateName,
+                                templateId: item.templateId,
+                                status: item.status,
+                                apps
+                            }
+                        } else {
+                            return null
                         }
-                    } else {
-                        return null
+                    })
+                )
+
+                const filePath = path.resolve(fileDir, `templates_${count}.json`)
+                await fs.writeFile(filePath, JSON.stringify(handledSolutionList, null, 2), 'utf8')
+                files.push(filePath)
+                count += 1
+            }
+        } else if (source === SourceType.CUSTOM_MODULE) {
+            let total = Infinity
+            let currentTotal = 0
+
+            while (currentTotal < total) {
+                const solutionListResult = await cloudService.lowcode.request(
+                    'DescribeSolutionList',
+                    {
+                        Limit: limit,
+                        Offset: currentTotal,
+                        KeyWords: '',
+                        EnvId: envId,
+                        TypeList: ['SELFBUILD', 'TPLEXPORT']
                     }
-                })
-            )
+                )
 
-            const filePath = path.resolve(fileDir, `templates_${count}.json`)
-            await fs.writeFile(filePath, JSON.stringify(handledSolutionList, null, 2), 'utf8')
-            files.push(filePath)
+                // TODO: 调试只用一个
+                // const solutionList = [solutionListResult.SolutionInfoList[0]]
+                const solutionList = solutionListResult.SolutionInfoList
 
-            total = solutionListResult.TotalCount
-            currentTotal += limit
-            count += 1
+                const handledSolutionList = await Promise.all(
+                    solutionList.map(async (item) => {
+                        const solution = await cloudService.lowcode.request('DescribeSolution', {
+                            EnvId: envId,
+                            SolutionId: item.SolutionId
+                        })
+                        if (solution.SolutionAppInfos.length > 0) {
+                            const appIds: string[] = solution.SolutionAppInfos.map(
+                                (item) => item.AppId
+                            )
+
+                            const apps = await getAppsContent(appIds)
+
+                            return {
+                                name: item.Name,
+                                solutionId: item.SolutionId,
+                                version: item.Version,
+                                apps
+                            }
+                        } else {
+                            return null
+                        }
+                    })
+                )
+
+                const filePath = path.resolve(fileDir, `templates_${count}.json`)
+                await fs.writeFile(filePath, JSON.stringify(handledSolutionList, null, 2), 'utf8')
+                files.push(filePath)
+
+                total = solutionListResult.TotalCount
+                currentTotal += limit
+                count += 1
+            }
         }
 
         log.success(`同步官方模板应用内容已完成. 文件路径:`)
         log.success(files.join('\n'))
+
+        async function getAppsContent(appIds: string[]) {
+            return await Promise.all(
+                appIds.map(async (appId) => {
+                    try {
+                        // 获取最后一条历史记录
+                        let result = await cloudService.lowcode.request(
+                            'DescribeHistoryListByAppId',
+                            {
+                                WeAppId: appId,
+                                PageNum: 1,
+                                PageSize: 1
+                            }
+                        )
+                        // 获取下载链接
+                        result = await cloudService.lowcode.request(
+                            'DescribeAppHistoryPreSignUrl',
+                            {
+                                HisIds: [result?.Data?.List?.[0]?.Id],
+                                HttpMethod: 'get',
+                                WeAppsId: appId
+                            }
+                        )
+                        // 获取应用内容
+                        result = await fetch(result?.Data?.[0]?.UploadUrl)
+
+                        return { appId, content: result }
+                    } catch (e) {
+                        return { appId, error: e.message }
+                    }
+                })
+            )
+        }
     }
 }
 
