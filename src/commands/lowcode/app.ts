@@ -1,4 +1,4 @@
-import _, { set } from 'lodash'
+import { set } from 'lodash'
 import { Command, ICommand } from '../common'
 import { InjectParams, Log, Logger, CmdContext, ArgsOptions } from '../../decorators'
 import { getLowcodeCli, getCmdConfig, getMergedOptions } from './utils'
@@ -10,6 +10,7 @@ import fs from 'fs-extra'
 import os from 'os'
 import path from 'path'
 import { generateDataModelDTS } from '../../utils/dts'
+import { calsToCode } from '@cloudbase/cals'
 
 // use dynamic import for lowcode-cli to reduce setup time
 type LowcodeCli = typeof import('@cloudbase/lowcode-cli')
@@ -363,14 +364,10 @@ export class TemplateSync extends Command {
                 {
                     flags: '--source <source>',
                     desc: '来源: 1-野鹤 2-自建模板'
-                },
-                {
-                    flags: '--envId <envId>',
-                    desc: '环境 ID'
                 }
             ],
             desc: '同步官方模板应用内容',
-            requiredEnvId: true
+            requiredEnvId: false
         }
     }
 
@@ -390,23 +387,21 @@ export class TemplateSync extends Command {
             ? options.source
             : SourceType.YEHE
         const envId = 'lowcode-5g5llxbq5bc9299e'
-        const fileDir = path.resolve(os.tmpdir(), 'templates')
-        await fs.ensureDir(fileDir)
-        await fs.rmdir(fileDir, { recursive: true })
-        await fs.ensureDir(fileDir)
-
-        /**
-         * 获取数据模型列表
-         * 接口文档: https://capi.woa.com/apidoc?product=lowcode&version=2021-01-08
-         */
         const cloudService = await getCloudServiceInstance(ctx)
         const files = []
         const limit = 50
         let count = 1
 
-        if (source === SourceType.YEHE) {
-            const templates = await fs.readJSON('data.json', 'utf8')
+        const fileDir = path.resolve(os.tmpdir(), 'templates')
+        await fs.ensureDir(fileDir)
+        await fs.rmdir(fileDir, { recursive: true })
+        await fs.ensureDir(fileDir)
 
+        if (source === SourceType.YEHE) {
+            // 以野鹤为准来获取模板相关的应用
+
+            const templates = await fs.readJSON('data.json', 'utf8')
+            console.log('模板总数：', templates.length)
             while (templates.length > 0) {
                 const handledSolutionList = await Promise.all(
                     templates.splice(0, limit).map(async (item) => {
@@ -430,6 +425,8 @@ export class TemplateSync extends Command {
                 count += 1
             }
         } else if (source === SourceType.CUSTOM_MODULE) {
+            // 以自定义模板为准来获取模板相关的应用
+
             let total = Infinity
             let currentTotal = 0
 
@@ -487,32 +484,180 @@ export class TemplateSync extends Command {
         log.success(`同步官方模板应用内容已完成. 文件路径:`)
         log.success(files.join('\n'))
 
+        /**
+         * 在 https://git.woa.com/QBase/lcap/app-template 本地仓库（main 分支最新代码），获取 apps 下各个应用的目录名
+         */
+        const appIdNameMap = {} // 示例数据：{'app-t1pjwra6': 'ai_bot_management'}
+        const appsPath = path.resolve(process.cwd(), 'apps')
+        try {
+            const items = await fs.readdir(appsPath)
+            const directories = []
+
+            for (const item of items) {
+                const itemPath = path.join(appsPath, item)
+                const stats = await fs.stat(itemPath)
+
+                if (stats.isDirectory()) {
+                    directories.push(item)
+                    const appConfig = await fs.readJSON(
+                        path.resolve(itemPath, 'src', 'app-config.json')
+                    )
+                    const appId = appConfig.id
+                    appIdNameMap[appId] = item
+                }
+            }
+        } catch (error) {
+            console.error('Error reading directory:', error)
+        }
+
+        for (let fileUrl of files) {
+            const items = await fs.readJSON(fileUrl)
+            for (let item of items) {
+                if (!item) continue
+                let done = false
+                if (item?.apps?.length > 0) {
+                    try {
+                        await Promise.all(
+                            item?.apps.map(async (app) => {
+                                if (app?.error) {
+                                    return null
+                                } else {
+                                    /**
+                                     * 为每个应用生成一个目录名
+                                     */
+                                    if (appIdNameMap[app.appId]) {
+                                        app.name = appIdNameMap[app.appId]
+                                    } else {
+                                        const result = await fetch(
+                                            'http://localhost:1234/v1/chat/completions',
+                                            {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json'
+                                                },
+                                                body: JSON.stringify({
+                                                    model: 'TheBloke/Mistral-7B-Instruct-v0.2-GGUF',
+                                                    messages: [
+                                                        {
+                                                            role: 'system',
+                                                            content:
+                                                                '你是一个目录命名专家。目录名只包括小写字母，数字和下划线, 不能包含其它符号。\n正确的示例: community_deals_platform\n错误的示例: restaurant_company_website'
+                                                        },
+                                                        {
+                                                            role: 'user',
+                                                            content: `请为“${app?.content?.label}”起一个目录名。请始终只返回一个目录名，其它不用返回`
+                                                        }
+                                                    ],
+                                                    temperature: 1,
+                                                    stream: false
+                                                }),
+                                                timeout: 30 * 60 * 1000
+                                            }
+                                        )
+                                        app.name = result.choices[0].message.content
+                                            .replace(/[\s\\]+/g, '')
+                                            .replace(/-/g, '_')
+                                    }
+
+                                    /**
+                                     * 写入本地代码
+                                     */
+                                    if (app.content) {
+                                        const calsAppData = app.content
+                                        calsAppData.id = app.appId
+                                        const { clientId, originHistoryId, mpAppId, uin } =
+                                            app.extra
+                                        calsAppData.extra.clientId = clientId
+                                        calsAppData.extra.originHistoryId = `${originHistoryId}`
+                                        calsAppData.extra.mpAppId = mpAppId
+                                        calsAppData.extra.envId = envId
+                                        calsAppData.extra.uin = uin
+                                        // 以下使用与模板开发账号一致的固定数据
+                                        calsAppData.extra.domain =
+                                            'lowcode-5g5llxbq5bc9299e-1300677802.tcloudbaseapp.com'
+                                        calsAppData.extra.resourceAppId = ''
+                                        calsAppData.extra.endpointType = ''
+                                        const codeItems = calsToCode(app.content, 'v0')
+                                        await Promise.all(
+                                            codeItems.map(async (codeItem) => {
+                                                const codePath = path.resolve(
+                                                    appsPath,
+                                                    app.name,
+                                                    codeItem.path
+                                                )
+                                                await fs.ensureFile(codePath)
+                                                await fs.writeFile(
+                                                    codePath,
+                                                    codeItem.code || '',
+                                                    'utf8'
+                                                )
+                                            })
+                                        )
+                                        console.log(
+                                            '写入成功:',
+                                            app.appId,
+                                            app?.content?.label,
+                                            app.name
+                                        )
+                                    } else {
+                                        console.error('写入异常:', app.appId, app.error)
+                                    }
+                                }
+                            })
+                        )
+                    } catch (e) {
+                        console.error('异常:', item.templateId, e.message)
+                    }
+                    done = true
+                } else {
+                    done = true
+                }
+                if (done) {
+                    if (source === SourceType.YEHE) {
+                        // 删除 data.json 对应的值，避免重复执行
+                        let templates = await fs.readJSON('data.json', 'utf8')
+                        templates = templates.filter(
+                            (tItem) => tItem.templateId !== item.templateId
+                        )
+                        await fs.writeFile('data.json', JSON.stringify(templates, null, 2), 'utf8')
+                    }
+                }
+            }
+            await fs.writeFile(fileUrl, JSON.stringify(items, null, 2), 'utf8')
+        }
+
         async function getAppsContent(appIds: string[]) {
             return await Promise.all(
                 appIds.map(async (appId) => {
                     try {
-                        // 获取最后一条历史记录
-                        let result = await cloudService.lowcode.request(
-                            'DescribeHistoryListByAppId',
-                            {
-                                WeAppId: appId,
-                                PageNum: 1,
-                                PageSize: 1
-                            }
-                        )
+                        // 获取应用详细数据
+                        let result = await cloudService.lowcode.request('DescribeAppDetail', {
+                            WeAppId: appId
+                        })
+                        const { Title, LatestHistory, OwnerInfo, MpAppId, ClientId } = result.Data
+                        const label = Title
+                        const historyId = JSON.parse(LatestHistory)?.id
+                        const extra = {
+                            originHistoryId: historyId,
+                            uin: OwnerInfo.Uin,
+                            mpAppId: MpAppId,
+                            clientId: ClientId
+                        }
                         // 获取下载链接
+
                         result = await cloudService.lowcode.request(
                             'DescribeAppHistoryPreSignUrl',
                             {
-                                HisIds: [result?.Data?.List?.[0]?.Id],
+                                HisIds: [historyId],
                                 HttpMethod: 'get',
                                 WeAppsId: appId
                             }
                         )
                         // 获取应用内容
                         result = await fetch(result?.Data?.[0]?.UploadUrl)
+                        result.label = label
 
-                        return { appId, content: result }
+                        return { appId, content: result, extra }
                     } catch (e) {
                         return { appId, error: e.message }
                     }
