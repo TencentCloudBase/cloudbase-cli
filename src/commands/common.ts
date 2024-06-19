@@ -5,7 +5,7 @@ import { program, Command as Commander, Option } from 'commander'
 import yargsParser from 'yargs-parser'
 import { CloudBaseError } from '../error'
 import { ICommandContext } from '../types'
-import type { Credential } from '@cloudbase/toolbox'
+import { Credential, execWithLoading } from '@cloudbase/toolbox'
 import {
     usageStore,
     collectUsage,
@@ -15,6 +15,7 @@ import {
     authSupevisor,
     getPrivateSettings
 } from '../utils'
+import { login } from '../auth'
 
 type PrivateCredential = Pick<Credential, 'secretId' | 'secretKey'>
 
@@ -214,12 +215,11 @@ export abstract class Command extends EventEmitter {
             // 校验登陆态
             if (!withoutAuth && !loginState) {
                 if (autoRunLogin) {
-                    console.log(
-                        chalk.bold.yellowBright(
-                            '无有效身份信息，将自动为您打开授权页面。授权成功后请再重新执行命令'
-                        )
-                    )
-                    await program.parseAsync(['node', 'tcb', 'login'])
+                    console.log(chalk.bold.yellowBright('无有效身份信息，将自动为您打开授权页面。'))
+                    await execWithLoading(() => login(), {
+                        startTip: '请在浏览器中打开的授权页面进行授权...',
+                        successTip: '授权登录成功！'
+                    })
                 } else {
                     throw new CloudBaseError('无有效身份信息，请使用 cloudbase login 登录')
                 }
