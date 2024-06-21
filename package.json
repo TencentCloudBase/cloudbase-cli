@@ -1,6 +1,6 @@
 {
     "name": "@cloudbase/cli",
-    "version": "2.3.12",
+    "version": "2.4.1",
     "description": "cli tool for cloudbase",
     "main": "lib/index.js",
     "scripts": {
@@ -8,7 +8,7 @@
         "watch": "rimraf lib types && tsc -w",
         "dev": "rimraf lib types && tsc -w",
         "eslint": "eslint \"./**/*.ts\"",
-        "test": "jest --runInBand --forceExit --detectOpenHandles --coverage --verbose --testTimeout=10000",
+        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --forceExit --detectOpenHandles --coverage --verbose --testTimeout=10000",
         "tsc": "tsc",
         "pkg": "pkg ./bin/cloudbase.js --out-path ./pkg",
         "postinstall": "node ./post-install.js || exit 0",
@@ -48,6 +48,7 @@
         "fs-extra": "^8.1.0",
         "https-proxy-agent": "^5.0.1",
         "inquirer": "^6.5.0",
+        "json-schema-to-typescript": "^14.0.5",
         "lodash": "^4.17.21",
         "log-symbols": "^3.0.0",
         "lowdb": "^1.0.0",
@@ -69,6 +70,7 @@
         "yargs-parser": "^21.0.1"
     },
     "devDependencies": {
+        "@types/fs-extra": "^11.0.4",
         "@types/jest": "^27",
         "@types/koa__router": "^8.0.11",
         "@types/lodash": "^4.14.182",
