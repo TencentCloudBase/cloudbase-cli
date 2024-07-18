@@ -58,5 +58,13 @@ export async function getModel(options: { envId: string, name: string }): Promis
             throw e
         }
     }
+}
 
+// 发布模型
+export async function publishModel(options: { envId: string, ids: string[] }): Promise<any> {
+    const { envId, ids } = options
+    return ((await lowCodeService.request('BatchPublishDataSources', {
+        EnvId: envId,
+        DataSourceIds: ids
+    })) as any).Data
 }

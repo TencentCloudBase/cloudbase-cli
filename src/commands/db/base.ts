@@ -2,7 +2,7 @@ import path from 'path'
 import { Command, ICommand } from '../common'
 import { CloudBaseError } from '../../error'
 import { set } from 'lodash'
-import { listModels, getModel, updateModel, createModel } from '../../db'
+import { listModels, getModel, updateModel, createModel, publishModel } from '../../db'
 import { listEnvs } from '../../env'
 import { InjectParams, EnvId, ArgsParams, ArgsOptions, Log, Logger } from '../../decorators'
 import { printHorizontalTable, loadingFactory } from '../../utils'
@@ -277,6 +277,7 @@ export class DbPushCommand extends Command {
                 envId,
                 name: modelName
             })
+            const ids = []
             if (existModel) {
                 const confirm = await inquirer.prompt([
                     {
@@ -296,6 +297,7 @@ export class DbPushCommand extends Command {
                     title: existModel.Title,
                     schema: model
                 })
+                ids.push(existModel.Id)
                 log.success(`更新数据模型 ${modelName} 成功，点击查看 https://tcb.cloud.tencent.com/cloud-admin/#/management/data-model/${existModel.Id}`)
             } else {
                 // 如果不存在，确认是否创建
@@ -316,8 +318,25 @@ export class DbPushCommand extends Command {
                     title: model.title || modelName,
                     schema: model
                 })
-                console.log(createModelRes)
+                ids.push(createModelRes.Id)
                 log.success(`创建数据模型 ${modelName} 成功, 点击查看 https://tcb.cloud.tencent.com/cloud-admin/#/management/data-model/${createModelRes.Id}}`)
+            }
+
+
+            // 确认是否发布
+            const confirmPublish = await inquirer.prompt([
+                {
+                    type: 'confirm',
+                    name: 'confirm',
+                    message: `数据模型已经导入成功，是否发布？`
+                }
+
+            ])
+            if (confirmPublish.confirm) {
+                const publishRes = await publishModel({
+                    envId,
+                    ids
+                })
             }
 
             // const models = await selectModel(envId)
