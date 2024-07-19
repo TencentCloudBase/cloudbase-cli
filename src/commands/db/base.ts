@@ -5,7 +5,7 @@ import { set } from 'lodash'
 import { listModels, getModel, updateModel, createModel, publishModel } from '../../db'
 import { listEnvs } from '../../env'
 import { InjectParams, EnvId, ArgsParams, ArgsOptions, Log, Logger } from '../../decorators'
-import { printHorizontalTable, loadingFactory } from '../../utils'
+import { printHorizontalTable, loadingFactory, genClickableLink } from '../../utils'
 import inquirer from 'inquirer'
 import chalk from 'chalk'
 import fs from 'fs-extra'
@@ -177,11 +177,16 @@ export class DbPullCommand extends Command {
             name
         })
 
-        const dataModelList = data.map((item) => ({
-            name: item.Name,
-            schema: JSON.parse(item.Schema),
-            title: item.Title
-        }))
+        const dataModelList = data.map((item) => {
+            const schema = JSON.parse(item.Schema)
+            schema.title = item.Title
+            return {
+                name: item.Name,
+                schema,
+                title: item.Title
+            }
+
+        })
 
         if (!dir) {
             dir = 'database-schemas'
@@ -269,6 +274,7 @@ export class DbPushCommand extends Command {
         // 不存在则会创建
         // 存在的则会更新
         // 都存在一个 confirm 的动作
+        const ids = []
         for (const modelName of name) {
             log.info(`开始检查数据模型 ${modelName}`)
             const modelPath = path.join(process.cwd(), dir, `${modelName}.json`)
@@ -277,7 +283,7 @@ export class DbPushCommand extends Command {
                 envId,
                 name: modelName
             })
-            const ids = []
+
             if (existModel) {
                 const confirm = await inquirer.prompt([
                     {
@@ -294,11 +300,12 @@ export class DbPushCommand extends Command {
                 await updateModel({
                     envId,
                     id: existModel.Id,
-                    title: existModel.Title,
+                    title: model.title || existModel.Title,
                     schema: model
                 })
                 ids.push(existModel.Id)
-                log.success(`更新数据模型 ${modelName} 成功，点击查看 https://tcb.cloud.tencent.com/cloud-admin/#/management/data-model/${existModel.Id}`)
+                const link = genClickableLink(`https://tcb.cloud.tencent.com/cloud-admin/#/management/data-model/${existModel.Id}}`)
+                log.success(`更新数据模型 ${modelName} 成功，点击查看 ${link}`)
             } else {
                 // 如果不存在，确认是否创建
                 const confirm = await inquirer.prompt([
@@ -319,30 +326,28 @@ export class DbPushCommand extends Command {
                     schema: model
                 })
                 ids.push(createModelRes.Id)
-                log.success(`创建数据模型 ${modelName} 成功, 点击查看 https://tcb.cloud.tencent.com/cloud-admin/#/management/data-model/${createModelRes.Id}}`)
+                const link = genClickableLink(`https://tcb.cloud.tencent.com/cloud-admin/#/management/data-model/${createModelRes.Id}}`)
+                log.success(`创建数据模型 ${modelName} 成功, 点击查看 ${link}`)
             }
 
 
-            // 确认是否发布
-            const confirmPublish = await inquirer.prompt([
-                {
-                    type: 'confirm',
-                    name: 'confirm',
-                    message: `数据模型已经导入成功，是否发布？`
-                }
 
-            ])
-            if (confirmPublish.confirm) {
-                const publishRes = await publishModel({
-                    envId,
-                    ids
-                })
+        }
+
+        // 确认是否发布
+        const confirmPublish = await inquirer.prompt([
+            {
+                type: 'confirm',
+                name: 'confirm',
+                message: `数据模型已经导入成功，是否发布？`
             }
 
-            // const models = await selectModel(envId)
-
-            // const modelNames = models.map(item => item.Name)
-            // const notExistModels = name.filter(item => !modelNames.includes(item))
+        ])
+        if (confirmPublish.confirm) {
+            const publishRes = await publishModel({
+                envId,
+                ids
+            })
         }
     }
 

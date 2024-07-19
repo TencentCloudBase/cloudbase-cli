@@ -27,7 +27,7 @@ export async function createModel({ envId, name, title, schema }: { envId: strin
         Title: title,
         Name: name,
         Type: 'database',
-        // TableNameRule: "only_name",
+        TableNameRule: "only_name",
         Schema: JSON.stringify(schema)
     }) as any).Data)
 }
