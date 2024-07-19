@@ -5,7 +5,7 @@ import { program, Command as Commander, Option } from 'commander'
 import yargsParser from 'yargs-parser'
 import { CloudBaseError } from '../error'
 import { ICommandContext } from '../types'
-import type { Credential } from '@cloudbase/toolbox'
+import { Credential, execWithLoading } from '@cloudbase/toolbox'
 import {
     usageStore,
     collectUsage,
@@ -15,6 +15,7 @@ import {
     authSupevisor,
     getPrivateSettings
 } from '../utils'
+import { login } from '../auth'
 
 type PrivateCredential = Pick<Credential, 'secretId' | 'secretKey'>
 
@@ -45,6 +46,8 @@ export interface ICommandOptions {
     requiredEnvId?: boolean
     // 多数命令都需要登陆，不需要登陆的命令需要特别声明
     withoutAuth?: boolean
+    // 当需要登录时而用户未登录，自动运行 tcb login
+    autoRunLogin?: boolean
 }
 
 type CommandConstructor = new () => Command
@@ -75,7 +78,7 @@ export function ICommand(
 export async function registerCommands() {
     const args = yargsParser(process.argv.slice(2))
     const config = await getCloudBaseConfig(args.configFile)
-    const isPrivate = getPrivateSettings(config, args?._?.[0]?.toString() )
+    const isPrivate = getPrivateSettings(config, args?._?.[0]?.toString())
     registrableCommands.forEach(({ Command, decoratorOptions }) => {
         if (isPrivate) {
             // 私有化的
@@ -170,7 +173,14 @@ export abstract class Command extends EventEmitter {
     }
 
     private createProgram(instance: Commander, deprecate: boolean, newCmd?: string) {
-        const { cmd, desc, options, requiredEnvId = true, withoutAuth = false } = this.options
+        const {
+            cmd,
+            desc,
+            options,
+            requiredEnvId = true,
+            withoutAuth = false,
+            autoRunLogin = false
+        } = this.options
         instance.storeOptionsAsProperties(false)
         options.forEach((option) => {
             const { hideHelp } = option
@@ -204,7 +214,15 @@ export abstract class Command extends EventEmitter {
 
             // 校验登陆态
             if (!withoutAuth && !loginState) {
-                throw new CloudBaseError('无有效身份信息，请使用 cloudbase login 登录')
+                if (autoRunLogin) {
+                    console.log(chalk.bold.yellowBright('无有效身份信息，将自动为您打开授权页面。'))
+                    await execWithLoading(() => login(), {
+                        startTip: '请在浏览器中打开的授权页面进行授权...',
+                        successTip: '授权登录成功！'
+                    })
+                } else {
+                    throw new CloudBaseError('无有效身份信息，请使用 cloudbase login 登录')
+                }
             }
 
             if (!envId && requiredEnvId) {

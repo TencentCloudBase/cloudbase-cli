@@ -1,9 +1,10 @@
 import path from 'path'
 import { Command, ICommand } from '../../common'
-import { createLayer } from '../../../function'
+import { createLayer, listLayers } from '../../../function'
 import { loadingFactory } from '../../../utils'
 import { InjectParams, EnvId, ArgsOptions, ArgsParams } from '../../../decorators'
 import { layerCommonOptions } from './common'
+import { CloudBaseError } from '@cloudbase/toolbox'
 
 @ICommand()
 export class CreateFileLayer extends Command {
@@ -31,6 +32,17 @@ export class CreateFileLayer extends Command {
         const { file } = options
 
         const layerName = `${alias}_${envId}`
+
+        const layers: any[] = await listLayers({
+            offset: 0,
+            limit: 200
+        })
+        if (layers.find(({ LayerName }) => LayerName === layerName)) {
+            throw new CloudBaseError(
+                `层名称 ${layerName} 已被您的当前环境或其他环境占用，请换用别的名称`
+            )
+        }
+
         const filePath = path.resolve(file)
         const runtimes = ['Nodejs12.16', 'Nodejs8.9', 'Php7', 'Java8']
 
@@ -39,6 +51,7 @@ export class CreateFileLayer extends Command {
         loading.start('文件层创建中...')
 
         await createLayer({
+            envId,
             layerName,
             runtimes,
             contentPath: filePath

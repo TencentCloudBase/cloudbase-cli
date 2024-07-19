@@ -35,17 +35,13 @@ export class DownloadFileLayer extends Command {
         const loading = loadingFactory()
         loading.start('数据加载中...')
 
-        let layers: any[] = await listLayers({
+        const layers: any[] = await listLayers({
             offset: 0,
-            limit: 200
+            limit: 200,
+            searchSrc: `TCB_${envId}`
         })
 
         loading.stop()
-
-        // 只能下载当前环境的文件层
-        layers = layers
-            .filter((item) => item.LayerName.includes(`_${envId}`))
-            .map((item) => item.LayerName)
 
         if (!layers.length) {
             throw new CloudBaseError('当前环境没有可用的文件层，请先创建文件层！')
@@ -55,7 +51,7 @@ export class DownloadFileLayer extends Command {
             type: 'select',
             name: 'layer',
             message: '选择文件层名称',
-            choices: layers
+            choices: layers.map((item) => item.LayerName)
         })
 
         let versions = await listLayerVersions({

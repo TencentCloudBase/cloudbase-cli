@@ -59,7 +59,8 @@ export class AttachFileLayer extends Command {
 
         let layers: any[] = await listLayers({
             offset: 0,
-            limit: 200
+            limit: 200,
+            searchSrc: `TCB_${envId}`
         })
 
         loading.stop()

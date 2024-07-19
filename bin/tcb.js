@@ -9,10 +9,12 @@ const logSymbols = require('log-symbols')
 const didYouMean = require('didyoumean')
 const updateNotifier = require('update-notifier')
 const frameworkPkg = require('@cloudbase/framework-core/package.json')
+const wedaPkg = require('@cloudbase/lowcode-cli/package.json')
 const { CloudApiService } = require('@cloudbase/cloud-api')
 const { getCredentialWithoutCheck } = require('@cloudbase/toolbox')
 const { Confirm } = require('enquirer')
 const execa = require('execa')
+const semver = require('semver')
 
 const pkg = require('../package.json')
 const store = require('../lib/utils/store')
@@ -21,15 +23,14 @@ const { getProxy } = require('../lib/utils/net')
 const { getCloudBaseConfig, getPrivateSettings } = require('../lib/utils/config')
 const { registerCommands } = require('../lib')
 
-
 const regionSupported = ['ap-shanghai', 'ap-beijing', 'ap-guangzhou']
 const regionSupportedMap = {
     'ap-shanghai': '上海',
     'ap-beijing': '北京',
     'ap-guangzhou': '广州',
-    'sh': '上海',
-    'bj': '北京',
-    'gz': '广州'
+    sh: '上海',
+    bj: '北京',
+    gz: '广州'
 }
 
 async function main() {
@@ -37,13 +38,36 @@ async function main() {
     const isBeta = pkg.version.indexOf('-') > -1
     process.CLI_VERSION = pkg.version
 
-    const [major, minor] = process.versions.node.split('.').slice(0, 2)
+    const currentMajorVersion = +semver.major(process.version)
 
-    // Node 版本检验提示
-    if (Number(major) < 8 || (Number(major) === 8 && Number(minor) < 6)) {
-        console.log(
+    // 定义最小版本和推荐版本
+    const NODE_MIN_VERSION = 14
+    const NODE_RECOMMENDED_VERSIONS = [16, 18]
+
+    // 检查当前版本是否满足最小版本要求
+    if (NODE_MIN_VERSION > currentMajorVersion) {
+        console.error(
             chalk.bold.red(
-                '您的 Node 版本较低，CloudBase CLI 可能无法正常运行，请升级 Node 到 v8.6.0 以上！\n'
+                `当前 Node.js 版本为 v${currentMajorVersion}。请升级到至少 v${NODE_MIN_VERSION} 版本。`
+            )
+        )
+        console.warn(
+            chalk.bold.yellow(
+                `建议使用 ${NODE_RECOMMENDED_VERSIONS.map((item) => `v${item}`).join(
+                    ' 或 '
+                )} 版本。`
+            )
+        )
+        process.exit(1)
+    }
+
+    // 检查当前版本是否在推荐版本列表中
+    if (!NODE_RECOMMENDED_VERSIONS.some((version) => currentMajorVersion === version)) {
+        console.warn(
+            chalk.bold.yellow(
+                `当前 Node.js 版本为 v${currentMajorVersion}。建议使用 ${NODE_RECOMMENDED_VERSIONS.map(
+                    (item) => `v${item}`
+                ).join(' 或 ')} 版本。`
             )
         )
     }
@@ -64,18 +88,17 @@ async function main() {
     // 输出版本信息
     console.log(chalk.gray(`CloudBase CLI ${pkg.version}`))
     console.log(chalk.gray(`CloudBase Framework ${frameworkPkg.version}`))
+    console.log(chalk.gray(`Weda ${wedaPkg.version}`))
 
-
-    const yargsParsedResult = yargsParser(process.argv.slice(2));
-    const config = await getCloudBaseConfig(yargsParsedResult.configFile);
-    const privateSettings = getPrivateSettings(config);
+    const yargsParsedResult = yargsParser(process.argv.slice(2))
+    const config = await getCloudBaseConfig(yargsParsedResult.configFile)
+    const privateSettings = getPrivateSettings(config)
     if (privateSettings) {
         console.log(chalk.gray(`检测到私有化配置`))
         if (privateSettings.endpoints && privateSettings.endpoints.cliApi) {
             // 初始化 lowcode 服务cliapi入口
-            process.env.CLOUDBASE_LOWCODE_CLOUDAPI_URL = privateSettings.endpoints.cliApi;
+            process.env.CLOUDBASE_LOWCODE_CLOUDAPI_URL = privateSettings.endpoints.cliApi
         }
-
     }
     // 注册命令
     await registerCommands()
@@ -104,12 +127,12 @@ async function main() {
         // HACK: 隐藏自动生成的 help 信息
         program.helpOption(false)
     }
-    const isCommandEmpty = yargsParsedResult._.length === 0;
+    const isCommandEmpty = yargsParsedResult._.length === 0
 
     // -v 时输出的版本信息，设置时避免影响其他命令使用 -v
     if (isCommandEmpty) {
         program.version(
-            `\nCLI: ${pkg.version}\nFramework: ${frameworkPkg.version}`,
+            `\nCLI: ${pkg.version}\nFramework: ${frameworkPkg.version}\nWeda: ${wedaPkg.version}`,
             '-v, --version',
             '输出当前 CloudBase CLI 版本'
         )
@@ -159,7 +182,9 @@ async function main() {
     try {
         program.parse(processArgv)
     } catch (e) {
-        const errMsg = `${logSymbols.error} ${e.message || '参数异常，请检查您是否使用了正确的命令！'}`
+        const errMsg = `${logSymbols.error} ${
+            e.message || '参数异常，请检查您是否使用了正确的命令！'
+        }`
         console.log(errMsg)
     }
 
@@ -183,11 +208,13 @@ async function main() {
             // 多地域错误提示
             if (errMsg.includes('Environment') && errMsg.includes('not found')) {
                 // 检查是否已经指定了 -r 或 --region 参数，如未指定则尝试获取地域信息
-                const regionSpecified = processArgv.indexOf('-r') !== -1 || processArgv.indexOf('--region') !== -1
+                const regionSpecified =
+                    processArgv.indexOf('-r') !== -1 || processArgv.indexOf('--region') !== -1
                 const region = yargsParsedResult.r || yargsParsedResult.region
-                const multiRegionErrMsg = `\n此环境可能不属于当前账号，或为非${regionSupportedMap[region] || '上海'}地域环境，如需切换地域请追加参数（例：-r gz），请检查环境归属，参考多地域使用方法：https://docs.cloudbase.net/cli-v1/region.html`
+                const multiRegionErrMsg = `\n此环境可能不属于当前账号，或为非${
+                    regionSupportedMap[region] || '上海'
+                }地域环境，如需切换地域请追加参数（例：-r gz），请检查环境归属，参考多地域使用方法：https://docs.cloudbase.net/cli-v1/region.html`
                 if (!regionSpecified) {
-
                     // 从 -e 参数、--envId 参数和配置文件中获取环境 id
                     const envId = yargsParsedResult.e || yargsParsedResult.envId || config.envId
 
@@ -213,7 +240,9 @@ async function main() {
                             }
                             // 重新执行命令
                             const newArgvStr = processArgv.slice(2).join(' ')
-                            console.log(`\n${chalk.yellow.bold('正在重新执行命令：')} tcb ${newArgvStr}\n`)
+                            console.log(
+                                `\n${chalk.yellow.bold('正在重新执行命令：')} tcb ${newArgvStr}\n`
+                            )
                             await execa('tcb', processArgv.slice(2), {
                                 stdio: 'inherit'
                             })
@@ -241,20 +270,23 @@ async function main() {
     }
 
     const isTokenExpired = (credential, gap = 120) =>
-        credential.accessTokenExpired && Number(credential.accessTokenExpired) < Date.now() + gap * 1000
+        credential.accessTokenExpired &&
+        Number(credential.accessTokenExpired) < Date.now() + gap * 1000
 
     async function tryTellEnvRegion(envId) {
         // 依次调用不同地域的 API 接口查询环境信息
-        const fetchedRegion = await Promise.all(regionSupported.map(async region => {
-            const { EnvList = [] } = await fetchEnvInfoWithRegion(envId, region)
-            if (EnvList.length !== 0 && EnvList.find(item => item.EnvId === envId)) {
-                return res.EnvList[0].Region
-            }
-            return ''
-        }))
+        const fetchedRegion = await Promise.all(
+            regionSupported.map(async (region) => {
+                const { EnvList = [] } = await fetchEnvInfoWithRegion(envId, region)
+                if (EnvList.length !== 0 && EnvList.find((item) => item.EnvId === envId)) {
+                    return res.EnvList[0].Region
+                }
+                return ''
+            })
+        )
 
         let predictRegion = ''
-        fetchedRegion.forEach(region => {
+        fetchedRegion.forEach((region) => {
             if (region) {
                 predictRegion = region
             }
@@ -291,7 +323,7 @@ async function main() {
             region
         })
         const res = await tcbApi.request(apiName, {
-            EnvId: envId,
+            EnvId: envId
         })
         return res
     }
@@ -314,7 +346,6 @@ async function main() {
     notifier.notify({
         isGlobal: true
     })
-
 }
 
 if (require.main === module) {

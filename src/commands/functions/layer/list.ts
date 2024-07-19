@@ -62,12 +62,12 @@ export class ListFileLayer extends Command {
             })
             data = res?.Layers || []
         } else if (envId) {
-            // 展示所有文件层
+            // 展示环境下的文件层
             data = await listLayers({
                 offset: 0,
-                limit: 200
+                limit: 200,
+                searchSrc: `TCB_${envId}`
             })
-            data = data.filter((item) => item.LayerName.includes(`_${envId}`))
         } else {
             // 展示所有文件层
             data = await listLayers({

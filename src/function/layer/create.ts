@@ -6,6 +6,7 @@ import { CloudApiService, checkFullAccess, isDirectory, delSync } from '../../ut
 const scfService = new CloudApiService('scf')
 
 export interface IFunctionLayerOptions {
+    envId: string
     contentPath?: string
     base64Content?: string
     layerName: string
@@ -15,12 +16,12 @@ export interface IFunctionLayerOptions {
 
 // 创建文件层
 export async function createLayer(options: IFunctionLayerOptions): Promise<void> {
-    const { contentPath = '', layerName, base64Content = '', runtimes = [] } = options
+    const { envId, contentPath = '', layerName, base64Content = '', runtimes = [] } = options
 
     checkFullAccess(contentPath)
 
     const validRuntime = ['Nodejs8.9', 'Php7', 'Java8', 'Nodejs12.16']
-    if (runtimes.some(item => validRuntime.indexOf(item) === -1)) {
+    if (runtimes.some((item) => validRuntime.indexOf(item) === -1)) {
         throw new CloudBaseError(
             `Invalid runtime value. Now only support: ${validRuntime.join(', ')}`
         )
@@ -55,6 +56,7 @@ export async function createLayer(options: IFunctionLayerOptions): Promise<void>
     return scfService.request('PublishLayerVersion', {
         LayerName: layerName,
         CompatibleRuntimes: runtimes,
+        Src: `TCB_${envId}`,
         Content: {
             // 最大支持 20M
             ZipFile: base64
