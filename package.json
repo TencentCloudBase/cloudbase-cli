@@ -33,6 +33,7 @@
     "dependencies": {
         "@cloudbase/cloud-api": "^0.5.5",
         "@cloudbase/framework-core": "^1.9.7",
+        "@cloudbase/functions-framework": "^0.0.1",
         "@cloudbase/lowcode-cli": "^0.21.1",
         "@cloudbase/manager-node": "4.2.8",
         "@cloudbase/toolbox": "^0.7.5",
@@ -54,6 +55,7 @@
         "lowdb": "^1.0.0",
         "make-dir": "^3.0.0",
         "node-fetch": "^2.6.0",
+        "nodemon": "^3.1.4",
         "open": "^7.0.0",
         "ora": "^4.0.2",
         "portfinder": "^1.0.28",
