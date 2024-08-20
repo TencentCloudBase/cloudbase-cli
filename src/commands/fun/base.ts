@@ -1,5 +1,4 @@
-import { runCLI } from '@cloudbase/functions-framework/build/cli'
-import { loadUserFunction } from '@cloudbase/functions-framework/build/function-loader'
+import { runCLI, loadUserFunction } from '@cloudbase/functions-framework'
 import fs from 'fs-extra'
 import inquirer from 'inquirer'
 import path from 'path'
@@ -9,6 +8,7 @@ import { CloudApiService, loadingFactory, printHorizontalTable } from '../../uti
 import { Command, ICommand } from '../common'
 import { EnvSource } from '../constants'
 import { selectEnv } from '../utils'
+import nodemon from 'nodemon'
 
 const scfService = CloudApiService.getInstance('tcb')
 
@@ -31,7 +31,7 @@ export class FunListCommand extends Command {
     }
 
     @InjectParams()
-    async execute(@EnvId() envId, @Log() log: Logger, @ArgsOptions() options) {
+    async execute(@EnvId() envId, @Log() log: Logger) {
         const loading = loadingFactory()
 
         if (!envId) {
@@ -143,14 +143,19 @@ export class FunDeployCommand extends Command {
 
         const loading = loadingFactory()
 
-        const fetchSvrRes: any = await scfService.request('DescribeCloudBaseRunServers', {
+        const fetchSvrRes: any = await scfService.request('DescribeCloudBaseRunServer', {
             EnvId: envId,
             ServerName: serviceName,
             Limit: 20,
             Offset: 0
         })
+        if (fetchSvrRes.ServerName && fetchSvrRes.Tag !== 'function') {
+            // 存在服务但不是函数式托管服务
+            log.error(`${serviceName} 服务已存在，但不是一个函数式托管服务，请使用另外的服务名称`)
+            return
+        }
 
-        if (fetchSvrRes.TotalCount === 0) {
+        if (!fetchSvrRes.ServerName) {
             /**
              * 1. 判断服务是否存在，不存在则先创建服务
              */
@@ -338,8 +343,52 @@ export class FunRunCommand extends Command {
     }
 
     @InjectParams()
-    async execute(@ArgsOptions() params, @Log() logger: Logger) {
-        runCLI()
+    async execute(@Log() logger: Logger) {
+        const args = process.argv.slice(2)
+        const watchFlag = ['--watch', '-w']
+        const defaultIgnoreFiles = ['logs/*.*']
+
+        if (watchFlag.some((flag) => args.includes(flag))) {
+            debugger
+            const cmd = args.filter((arg) => !watchFlag.includes(arg)).join(' ')
+            nodemon({
+                script: '',
+                exec: `${process.argv[1]} ${cmd}`,
+                watchOptions: {
+                    usePolling: true, // should be enabled
+                    ignorePermissionErrors: true,
+                    ignored: defaultIgnoreFiles.join(','), // ignored must not be empty string
+                    persistent: true,
+                    interval: 500
+                }
+            })
+                .on('start', () => {
+                    logger.info(
+                        'Initializing server in watch mode. Changes in source files will trigger a restart.'
+                    )
+                })
+                .on('quit', (e) => {
+                    logger.info(`Nodemon quit with code ${e}.`)
+                    process.exit(0)
+                })
+                .on('restart', (e) => {
+                    logger.info(
+                        `Server restarted due to changed files: ${e?.matched?.result?.join(', ')}`
+                    )
+                })
+                .on('log', (e) => {
+                    logger.info(`[nodemon ${e.type}] ${e.message}`)
+                })
+                .on('crash', () => {
+                    logger.error(`Server crashed.`)
+                    process.exit(1)
+                })
+                .on('exit', (e) => {
+                    logger.info(`Server exited with code ${e}.`)
+                })
+        } else {
+            runCLI()
+        }
     }
 }
 
