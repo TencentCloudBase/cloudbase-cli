@@ -90,7 +90,7 @@ export class FunDeployCommand extends Command {
                 },
                 {
                     flags: '--source <source>',
-                    desc: '目标函数文件路径。默认为当前路径'
+                    desc: '目标函数文件所在目录路径。默认为当前路径'
                 },
                 {
                     flags: '--target <target>',
@@ -114,7 +114,9 @@ export class FunDeployCommand extends Command {
         const loadResult = await loadUserFunction(source, target)
         if (!loadResult?.userFunction) {
             if (loadResult.reason.includes('is not a loadable module')) {
-                log.error(`${source} 不是一个有效的函数式托管代码目录`)
+                log.error(
+                    `${source} 不是一个有效的函数式托管代码目录，可以通过 --source <source> 指定代码目录路径`
+                )
             } else if (loadResult?.reason.includes('is not defined in the provided module')) {
                 log.error(
                     `主文件并未导出目标函数 ${target}，请导出 ${target} 目标函数或者通过 --target <target> 指定目标函数`
@@ -270,7 +272,7 @@ export class FunRunCommand extends Command {
             options: [
                 {
                     flags: '--source <source>',
-                    desc: '目标函数文件路径，默认为 index.js, index.cjs 或 index.mjs'
+                    desc: '目标函数文件所在目录路径，默认为当前路径'
                 },
                 {
                     flags: '--port <port>',
