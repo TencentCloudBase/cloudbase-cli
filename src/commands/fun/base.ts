@@ -46,7 +46,7 @@ export class FunListCommand extends Command {
             let serverListRes: any = await scfService
                 .request('DescribeCloudBaseRunServers', {
                     EnvId: envId,
-                    Limit: 10,
+                    Limit: 100,
                     Offset: 0
                 })
                 .finally(() => loading.stop())
@@ -146,7 +146,7 @@ export class FunDeployCommand extends Command {
         const fetchSvrRes: any = await scfService.request('DescribeCloudBaseRunServer', {
             EnvId: envId,
             ServerName: serviceName,
-            Limit: 20,
+            Limit: 1,
             Offset: 0
         })
         if (fetchSvrRes.ServerName && fetchSvrRes.Tag !== 'function') {
