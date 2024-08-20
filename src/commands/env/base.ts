@@ -3,6 +3,7 @@ import { CloudBaseError } from '../../error'
 import { listEnvs, updateEnvInfo } from '../../env'
 import { InjectParams, EnvId, ArgsParams, Log, Logger } from '../../decorators'
 import { printHorizontalTable, loadingFactory } from '../../utils'
+import { EnvSource } from '../constants'
 
 @ICommand()
 export class EnvListCommand extends Command {
@@ -39,7 +40,7 @@ export class EnvListCommand extends Command {
             item.Alias,
             item.EnvId,
             item.PackageName || '按量计费',
-            item.Source === 'miniapp' ? '小程序' : '云开发',
+            item.Source === EnvSource.MINIAPP ? '小程序' : '云开发',
             item.CreateTime,
             item.Status === 'NORMAL' ? '正常' : '不可用'
         ])
