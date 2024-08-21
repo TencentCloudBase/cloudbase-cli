@@ -93,10 +93,6 @@ export class FunDeployCommand extends Command {
                 {
                     flags: '--source <source>',
                     desc: '目标函数文件所在目录路径。默认为当前路径'
-                },
-                {
-                    flags: '--target <target>',
-                    desc: '目标函数名称，默认为 main'
                 }
             ],
             requiredEnvId: false,
@@ -107,11 +103,12 @@ export class FunDeployCommand extends Command {
 
     @InjectParams()
     async execute(@EnvId() envId, @Log() log: Logger, @ArgsOptions() options) {
-        let { serviceName, appId, source, target = 'main' } = options
+        let { serviceName, appId, source } = options
 
         /**
          * 校验代码路径
          */
+        const target = 'main' // 这是函数式托管规定的目标函数
         source = path.resolve(source || process.cwd())
         const loadResult = await loadUserFunction(source, target)
         if (!loadResult?.userFunction) {
@@ -120,9 +117,7 @@ export class FunDeployCommand extends Command {
                     `${source} 不是一个有效的函数式托管代码目录，可以通过 --source <source> 指定代码目录路径`
                 )
             } else if (loadResult?.reason.includes('is not defined in the provided module')) {
-                log.error(
-                    `主文件并未导出目标函数 ${target}，请导出 ${target} 目标函数或者通过 --target <target> 指定目标函数`
-                )
+                log.error(`主文件并未导出目标函数 ${target}，请导出 ${target} 目标函数`)
             } else {
                 log.error(loadResult?.reason)
             }
@@ -283,44 +278,8 @@ export class FunRunCommand extends Command {
                     desc: '监听的端口，默认为 3000'
                 },
                 {
-                    flags: '--target <target>',
-                    desc: '目标函数名称，默认为 main'
-                },
-                {
-                    flags: '--signatureType <signatureType>',
-                    desc: '函数格式，默认为 event，当前仅支持 event'
-                },
-                {
-                    flags: '--gracefulShutdown <gracefulShutdown>',
-                    desc: '是否启用服务的优雅停止，默认为 true'
-                },
-                {
-                    flags: 'KILL_TIMEOUT <timeout>',
-                    desc: '优雅停止时，等待请求处理完成的超时时间，默认为 5000 毫秒'
-                },
-                {
-                    flags: '--timeout <timeout>',
-                    desc: 'Node.js Server 超时时间，默认为 0，见 https://nodejs.org/api/http.html#servertimeout'
-                },
-                {
-                    flags: '--keepAliveTimeout <keepAliveTimeout>',
-                    desc: 'Node.js Server keep-alive 超时时间，默认为 65000 毫秒，见 https://nodejs.org/api/http.html#server-keepalivetimeout'
-                },
-                {
-                    flags: '--captureStack <captureStack>',
-                    desc: '请求出错时，是否返回错误堆栈，默认为 NODE_ENV 不为 production 时开启'
-                },
-                {
-                    flags: '--concurrencyLimit <concurrencyLimit>',
-                    desc: '并发请求数限制，默认为 0，0 为不限制'
-                },
-                {
-                    flags: '--noExit <noExit>',
-                    desc: '是否禁用 process.exit() 避免进程意外退出，默认为 false'
-                },
-                {
-                    flags: '--logHeaderBody <logHeaderBody>',
-                    desc: '是否在请求日志中记录请求头、请求体、响应头、响应体，默认为 false，如记录，将会限制 body 大小为 2KB'
+                    flags: '-w, --watch',
+                    desc: '是否启用热重启模式，如启用，将会在文件变更时自动重启服务，默认为 false'
                 },
                 {
                     flags: '--dry-run',
@@ -329,18 +288,6 @@ export class FunRunCommand extends Command {
                 {
                     flags: '--logDirname <logDirname>',
                     desc: '日志文件目录，默认为 ./logs'
-                },
-                {
-                    flags: '--maxLogFileSize <maxLogFileSize>',
-                    desc: '单个日志文件最大字节数，默认为 128MB'
-                },
-                {
-                    flags: '--maxLogFiles <maxLogFiles>',
-                    desc: '最多同时存在的日志文件数量，默认为 4'
-                },
-                {
-                    flags: '-w, --watch',
-                    desc: '是否启用热重启模式，如启用，将会在文件变更时自动重启服务，默认为 false'
                 }
             ],
             requiredEnvId: false,
