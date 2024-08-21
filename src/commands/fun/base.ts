@@ -36,6 +36,8 @@ export class FunListCommand extends Command {
 
         if (!envId) {
             envId = await _selectEnv()
+        } else {
+            log.info(`当前环境 Id：${envId}`)
         }
 
         /**
@@ -129,6 +131,8 @@ export class FunDeployCommand extends Command {
 
         if (!envId) {
             envId = await _selectEnv()
+        } else {
+            log.info(`当前环境 Id：${envId}`)
         }
         if (!serviceName) {
             let pkgName = ''
