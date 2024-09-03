@@ -93,6 +93,10 @@ export class FunDeployCommand extends Command {
                 {
                     flags: '--source <source>',
                     desc: '目标函数文件所在目录路径。默认为当前路径'
+                },
+                {
+                    flags: '--includeNodeModules',
+                    desc: '包含本地 node_modules 目录，默认为 false 不包含'
                 }
             ],
             requiredEnvId: false,
@@ -103,7 +107,7 @@ export class FunDeployCommand extends Command {
 
     @InjectParams()
     async execute(@EnvId() envId, @Log() log: Logger, @ArgsOptions() options) {
-        let { serviceName, appId, source } = options
+        let { serviceName, appId, source, includeNodeModules = false } = options
 
         /**
          * 校验代码路径
@@ -215,7 +219,8 @@ export class FunDeployCommand extends Command {
             const { PackageName, PackageVersion } = await packageDeploy({
                 envId,
                 serviceName,
-                filePath: source
+                filePath: source,
+                fileToIgnore: includeNodeModules ? [] : ['node_modules/**/*']
             })
             packageName = PackageName
             packageVersion = PackageVersion
