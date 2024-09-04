@@ -49,13 +49,14 @@ export class FunListCommand extends Command {
                 .request('DescribeCloudBaseRunServers', {
                     EnvId: envId,
                     Limit: 100,
-                    Offset: 0
+                    Offset: 0,
+                    Filter: {
+                        Tag: 'function'
+                    }
                 })
                 .finally(() => loading.stop())
 
-            const serverList = serverListRes.CloudBaseRunServerSet?.filter(
-                (item) => item.Tag === 'function'
-            )
+            const serverList = serverListRes.CloudBaseRunServerSet
 
             const head = ['服务名称', '状态', '创建时间', '更新时间']
             const tableData = serverList.map((serverItem) => [
@@ -154,7 +155,7 @@ export class FunDeployCommand extends Command {
             Limit: 1,
             Offset: 0
         })
-        if (fetchSvrRes.ServerName && fetchSvrRes.Tag !== 'function') {
+        if (fetchSvrRes.ServerName && !_hasTag(fetchSvrRes.Tags, 'function')) {
             // 存在服务但不是函数式托管服务
             log.error(`${serviceName} 服务已存在，但不是一个函数式托管服务，请使用另外的服务名称`)
             return
@@ -382,4 +383,10 @@ async function _inputAppId(defaultVal: string = '') {
     ]
     const answers = await inquirer.prompt(questions)
     return answers['appId']
+}
+
+function _hasTag(tagsStr: string, target: string) {
+    const tags = tagsStr.split(',')
+    const tag_list = tags.map((item) => item.split(':')[0])
+    return tag_list.includes(target)
 }
