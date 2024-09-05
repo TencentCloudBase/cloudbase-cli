@@ -220,7 +220,9 @@ export class FunDeployCommand extends Command {
                 envId,
                 serviceName,
                 filePath: source,
-                fileToIgnore: includeNodeModules ? [] : ['node_modules', 'node_modules/**/*']
+                fileToIgnore: ['logs', 'logs/**/*'].concat(
+                    includeNodeModules ? [] : ['node_modules', 'node_modules/**/*']
+                )
             })
             packageName = PackageName
             packageVersion = PackageVersion
