@@ -1,4 +1,4 @@
-import { runCLI, loadUserFunction } from '@cloudbase/functions-framework'
+import { loadFunctions, loadFunctionsConfig, runCLI } from '@cloudbase/functions-framework'
 import fs from 'fs-extra'
 import inquirer from 'inquirer'
 import path from 'path'
@@ -97,6 +97,10 @@ export class FunDeployCommand extends Command {
                 {
                     flags: '--includeNodeModules',
                     desc: '包含本地 node_modules 目录，默认为 false 不包含'
+                },
+                {
+                    flags: '--functionsConfigFile <functionsConfigFile>',
+                    desc: '多函数定义配置文件，默认为 ./cloudbase-functions.json'
                 }
             ],
             requiredEnvId: false,
@@ -114,18 +118,45 @@ export class FunDeployCommand extends Command {
          */
         const target = 'main' // 这是函数式托管规定的目标函数
         source = path.resolve(source || process.cwd())
-        const loadResult = await loadUserFunction(source, target)
-        if (!loadResult?.userFunction) {
-            if (loadResult.reason.includes('is not a loadable module')) {
-                log.error(
-                    `${source} 不是一个有效的函数式托管代码目录，可以通过 --source <source> 指定代码目录路径`
-                )
-            } else if (loadResult?.reason.includes('is not defined in the provided module')) {
-                log.error(`主文件并未导出目标函数 ${target}，请导出 ${target} 目标函数`)
-            } else {
-                log.error(loadResult?.reason)
+        const functionsConfigFile = options.functionsConfigFile || 'cloudbase-functions.json'
+        let multiFunctionsConfig = null
+        if (functionsConfigFile && await fs.exists(path.resolve(source, functionsConfigFile))) {
+            try {
+                debugger;
+                multiFunctionsConfig = loadFunctionsConfig(functionsConfigFile)
+            } catch (err) {
+                log.error(`多函数定义配置文件 ${functionsConfigFile} 配置文件有误，请检查`)
+                log.error(err)
+                return
             }
-            return
+        }
+        const loadResult = await loadFunctions({
+            target,
+            sourceLocation: source,
+            multiFunctionsConfig
+        } as any)
+        if (Array.isArray(loadResult)) {
+            for (const loadItem of loadResult) {
+                if (!loadItem?.userFunction) {
+                    log.error(
+                        `加载函数 ${loadItem?.name} 失败: "${loadItem?.reason}"`
+                    )
+                    return
+                }
+            }
+        } else {
+            if (!loadResult?.userFunction) {
+                if (loadResult.reason.includes('is not a loadable module')) {
+                    log.error(
+                        `${source} 不是一个有效的函数式托管代码目录，可以通过 --source <source> 指定代码目录路径`
+                    )
+                } else if (loadResult?.reason.includes('is not defined in the provided module')) {
+                    log.error(`主文件并未导出目标函数 ${target}，请导出 ${target} 目标函数`)
+                } else {
+                    log.error(loadResult?.reason)
+                }
+                return
+            }
         }
 
         if (!envId) {
@@ -295,6 +326,10 @@ export class FunRunCommand extends Command {
                 {
                     flags: '--logDirname <logDirname>',
                     desc: '日志文件目录，默认为 ./logs'
+                },
+                {
+                    flags: '--functionsConfigFile <functionsConfigFile>',
+                    desc: '多函数定义配置文件，默认为 ./cloudbase-functions.json'
                 }
             ],
             requiredEnvId: false,
