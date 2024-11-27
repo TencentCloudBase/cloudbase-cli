@@ -27,7 +27,7 @@ export class IaCInit extends Command {
     @InjectParams()
     async execute(@CmdContext() ctx, @ArgsOptions() options, @Log() log: Logger) {
         let { resource, name, cwd = '.' } = options
-
+        
         await IAC.resource.init(
             getAPIParams({
                 cwd,
@@ -290,12 +290,12 @@ export class IaCApply extends Command {
                 needEnvId: true,
                 extraData: { appId, comment },
                 specResourceLogic: async function (resource, config) {
-                    if (resource === ResourceType.App) {
-                        if (!config.appId) {
-                            const appIdRes = await showAppIdUI()
-                            Object.assign(config, { appId: appIdRes })
-                        }
-                    }
+                    // if (resource === ResourceType.App) {
+                    //     if (!config.appId) {
+                    //         const appIdRes = await showAppIdUI()
+                    //         Object.assign(config, { appId: appIdRes })
+                    //     }
+                    // }
                 }
             })
         )
