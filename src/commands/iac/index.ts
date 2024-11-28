@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-parameter-properties */
 import { IDatabaseDataSourceDbType } from '@cloudbase/cals'
 import { IAC } from '@cloudbase/iac-core'
 import { IFunctionRuntime, ResourceType } from '@cloudbase/iac-core/lib/src/type'
@@ -97,7 +98,19 @@ export class IaCInit extends Command {
                                 })
                                 Object.assign(config, descriptionSizeRes)
                             }
+
                             break
+                        case ResourceType.WebApp:
+                            {
+                                const templateRes = await inquirer.prompt({
+                                    type: 'list',
+                                    name: 'template',
+                                    message: '请选择模版',
+                                    default: 'static',
+                                    choices: IAC.WebApp.getAvailableTemplates()
+                                })
+                                Object.assign(config, templateRes)
+                            }
                     }
                 }
             })
@@ -240,7 +253,20 @@ export class IaCDev extends Command {
                 resource,
                 log,
                 needEnvId: false,
-                extraData: { data, dataPath, context, contextPath, platform }
+                extraData: { data, dataPath, context, contextPath, platform },
+                async specResourceLogic(resource, config) {
+                    if (resource === ResourceType.WebApp) {
+                        if (!config.distPath) {
+                            const distPathRes = await inquirer.prompt({
+                                type: 'input',
+                                name: 'distPath',
+                                message: '请输入 distPath',
+                                default: 'dist'
+                            })
+                            Object.assign(config, distPathRes)
+                        }
+                    }
+                },
             })
         )
     }
@@ -294,6 +320,18 @@ export class IaCApply extends Command {
                         if (!config.appId) {
                             const appIdRes = await showAppIdUI()
                             Object.assign(config, { appId: appIdRes })
+                        }
+                    }
+
+                    if (resource === ResourceType.WebApp) {
+                        if (!config.distPath) {
+                            const distPathRes = await inquirer.prompt({
+                                type: 'input',
+                                name: 'distPath',
+                                message: '请输入 distPath',
+                                default: 'dist'
+                            })
+                            Object.assign(config, distPathRes)
                         }
                     }
                 }
@@ -445,9 +483,9 @@ function getOptions({
             },
             needEnvIdOption
                 ? {
-                      flags: '--envId <envId>',
-                      desc: '环境 Id'
-                  }
+                    flags: '--envId <envId>',
+                    desc: '环境 Id'
+                }
                 : null,
             ...options
         ]),
