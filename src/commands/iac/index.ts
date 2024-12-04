@@ -1,14 +1,138 @@
 import { IDatabaseDataSourceDbType } from '@cloudbase/cals'
 import { IAC } from '@cloudbase/iac-core'
-import { IFunctionRuntime, ResourceType } from '@cloudbase/iac-core/lib/src/type'
-import { loadingFactory } from '@cloudbase/toolbox'
+import { IFunctionRuntime, ResourceAction, ResourceType } from '@cloudbase/iac-core/lib/src/type'
 import inquirer from 'inquirer'
 import { assignWith, compact, isUndefined } from 'lodash'
+import path from 'path'
 import { ArgsOptions, CmdContext, InjectParams, Log, Logger } from '../../decorators'
 import { authSupevisor, getPrivateSettings } from '../../utils'
 import { Command, ICommand, ICommandOptions } from '../common'
 
-const loading = loadingFactory()
+@ICommand({
+    supportPrivate: true
+})
+export class IaCInitRepo extends Command {
+    get options() {
+        return {
+            cmd: 'repo',
+            childCmd: 'init',
+            options: compact([
+                {
+                    flags: '--name <name>',
+                    desc: '项目名称'
+                },
+                {
+                    flags: '--cwd <cwd>',
+                    desc: '项目路径'
+                },
+                {
+                    flags: '--envId <envId>',
+                    desc: '环境 Id。如有提供，会自动同步环境配置（如 Git 模式的配置数据）'
+                }
+            ]),
+            desc: '初始化云开发资源仓库项目 - 大仓 Monorepo 模式',
+            requiredEnvId: false,
+            autoRunLogin: true
+        }
+    }
+
+    @InjectParams()
+    async execute(@CmdContext() ctx, @ArgsOptions() options, @Log() log: Logger) {
+        let { envId, name, cwd = '.' } = options
+
+        const targetDir = path.resolve(cwd)
+        const params = { name, cwd, envId }
+
+        await IAC.init({
+            getCredential: () => {
+                return getCredential(ctx)
+            }
+        })
+
+        log.info(`【cwd】: ${targetDir}`)
+
+        if (!name) {
+            const nameRes = await inquirer.prompt({
+                type: 'input',
+                name: 'name',
+                message: `仓库名称（如有提供，将在【cwd】路径创建文件夹；如没提供，则将【cwd】路径初始化为资源仓库）`
+            })
+            if (nameRes) {
+                params.name = nameRes.name
+            }
+        }
+        if (!envId) {
+            const envIdRes = await inquirer.prompt({
+                type: 'input',
+                name: 'envId',
+                message: '环境 Id（如有提供，将自动同步环境配置）'
+            })
+            if (envIdRes) {
+                params.envId = envIdRes.envId
+            }
+        }
+
+        await IAC.tools.initRepo(params, (message) => trackCallback(message, log))
+    }
+}
+
+@ICommand({
+    supportPrivate: true
+})
+export class IaCPullRepoConfig extends Command {
+    get options() {
+        return {
+            cmd: 'repo',
+            childCmd: 'pull-config',
+            options: compact([
+                {
+                    flags: '--cwd <cwd>',
+                    desc: '项目路径'
+                },
+                {
+                    flags: '--envId <envId>',
+                    desc: '环境 Id。如有提供，会自动同步环境配置（如 Git 模式的配置数据）'
+                }
+            ]),
+            desc: '拉取大仓在指定环境下的配置（当前只支持拉取 Git 模式的配置）',
+            requiredEnvId: false,
+            autoRunLogin: true
+        }
+    }
+
+    @InjectParams()
+    async execute(@CmdContext() ctx, @ArgsOptions() options, @Log() log: Logger) {
+        let { envId, name, cwd = '.' } = options
+
+        const targetDir = path.resolve(cwd)
+        const params = { name, cwd, envId }
+
+        await IAC.init({
+            getCredential: () => {
+                return getCredential(ctx)
+            }
+        })
+
+        log.info(`当前路径: ${targetDir}`)
+
+        if (!envId) {
+            const envIdRes = await inquirer.prompt({
+                type: 'input',
+                name: 'envId',
+                message: '环境 Id',
+                validate: function (input) {
+                    if (input.trim() === '') {
+                        return '请提供环境 Id'
+                    }
+                    return true
+                }
+            })
+            params.envId = envIdRes.envId
+        }
+
+        await IAC.tools.pullRepoConfig(params, (message) => trackCallback(message, log))
+    }
+}
 
 @ICommand({
     supportPrivate: true
@@ -27,12 +151,13 @@ export class IaCInit extends Command {
     @InjectParams()
     async execute(@CmdContext() ctx, @ArgsOptions() options, @Log() log: Logger) {
         let { resource, name, cwd = '.' } = options
-        
+
         await IAC.resource.init(
             getAPIParams({
                 cwd,
                 name,
                 resource,
+                action: ResourceAction.Init,
                 log,
                 needEnvId: false,
                 specResourceLogic: async function (resource, config) {
@@ -113,10 +238,6 @@ export class IaCPull extends Command {
         return getOptions({
             childCmd: 'pull',
             options: [
-                {
-                    flags: '--appId <appId>',
-                    desc: '应用 ID（仅当 resource=App 时有效）'
-                }
             ],
             desc: '拉取资源项目代码',
             needEnvIdOption: true,
@@ -127,7 +248,6 @@ export class IaCPull extends Command {
     @InjectParams()
     async execute(@CmdContext() ctx, @ArgsOptions() options, @Log() log: Logger) {
         let { resource, name, envId, cwd = '.' } = options
-        const { appId } = options
 
         await IAC.init({
             getCredential: () => {
@@ -140,18 +260,10 @@ export class IaCPull extends Command {
                 cwd,
                 name,
                 resource,
+                action: ResourceAction.Pull,
                 envId,
                 log,
-                needEnvId: true,
-                extraData: { appId },
-                specResourceLogic: async function (resource, config) {
-                    if (resource === ResourceType.App) {
-                        if (!config.appId) {
-                            const appIdRes = await showAppIdUI()
-                            Object.assign(config, { appId: appIdRes })
-                        }
-                    }
-                }
+                needEnvId: true
             })
         )
     }
@@ -179,6 +291,7 @@ export class IaCBuild extends Command {
             getAPIParams({
                 cwd,
                 name,
+                action: ResourceAction.Build,
                 resource,
                 log,
                 needEnvId: false
@@ -238,6 +351,7 @@ export class IaCDev extends Command {
                 cwd,
                 name,
                 resource,
+                action: ResourceAction.Dev,
                 log,
                 needEnvId: false,
                 extraData: { data, dataPath, context, contextPath, platform }
@@ -255,10 +369,6 @@ export class IaCApply extends Command {
             childCmd: 'apply',
             options: [
                 {
-                    flags: '--appId <appId>',
-                    desc: '应用 ID（仅当 resource=App 时有效）'
-                },
-                {
                     flags: '--comment <comment>',
                     desc: '提交信息（仅当 resource=App 时有效）'
                 }
@@ -272,7 +382,7 @@ export class IaCApply extends Command {
     @InjectParams()
     async execute(@CmdContext() ctx, @ArgsOptions() options, @Log() log: Logger) {
         let { resource, name, envId, cwd = '.' } = options
-        const { appId, comment } = options
+        const { comment } = options
 
         await IAC.init({
             getCredential: () => {
@@ -285,18 +395,11 @@ export class IaCApply extends Command {
                 cwd,
                 name,
                 resource,
+                action: ResourceAction.Apply,
                 envId,
                 log,
                 needEnvId: true,
-                extraData: { appId, comment },
-                specResourceLogic: async function (resource, config) {
-                    // if (resource === ResourceType.App) {
-                    //     if (!config.appId) {
-                    //         const appIdRes = await showAppIdUI()
-                    //         Object.assign(config, { appId: appIdRes })
-                    //     }
-                    // }
-                }
+                extraData: { comment }
             })
         )
     }
@@ -310,10 +413,6 @@ export class IaCDestory extends Command {
         return getOptions({
             childCmd: 'destory',
             options: [
-                {
-                    flags: '--appId <appId>',
-                    desc: '应用 ID（仅当 resource=App 时有效）'
-                }
             ],
             desc: '删除资源',
             needEnvIdOption: true,
@@ -324,7 +423,6 @@ export class IaCDestory extends Command {
     @InjectParams()
     async execute(@CmdContext() ctx, @ArgsOptions() options, @Log() log: Logger) {
         let { resource, name, envId, cwd = '.' } = options
-        const { appId } = options
 
         await IAC.init({
             getCredential: () => {
@@ -337,18 +435,10 @@ export class IaCDestory extends Command {
                 cwd,
                 name,
                 resource,
+                action: ResourceAction.Destory,
                 envId,
                 log,
-                needEnvId: true,
-                extraData: { appId },
-                specResourceLogic: async function (resource, config) {
-                    if (resource === ResourceType.App) {
-                        if (!config.appId) {
-                            const appIdRes = await showAppIdUI()
-                            Object.assign(config, { appId: appIdRes })
-                        }
-                    }
-                }
+                needEnvId: true
             })
         )
     }
@@ -362,10 +452,6 @@ export class IaCState extends Command {
         return getOptions({
             childCmd: 'state',
             options: [
-                {
-                    flags: '--appId <appId>',
-                    desc: '应用 ID（仅当 resource=App 时有效）'
-                }
             ],
             desc: '查询资源信息',
             needEnvIdOption: true,
@@ -376,7 +462,6 @@ export class IaCState extends Command {
     @InjectParams()
     async execute(@CmdContext() ctx, @ArgsOptions() options, @Log() log: Logger) {
         const { resource, name, cwd = '.', envId } = options
-        const { appId } = options
 
         await IAC.init({
             getCredential: () => {
@@ -389,18 +474,10 @@ export class IaCState extends Command {
                 cwd,
                 name,
                 resource,
+                action: ResourceAction.State,
                 envId,
                 log,
-                needEnvId: true,
-                extraData: { appId },
-                specResourceLogic: async function (resource, config) {
-                    if (resource === ResourceType.App) {
-                        if (!config.appId) {
-                            const appIdRes = await showAppIdUI()
-                            Object.assign(config, { appId: appIdRes })
-                        }
-                    }
-                }
+                needEnvId: true
             })
         )
 
@@ -428,7 +505,7 @@ function getOptions({
     needEnvIdOption?: boolean
 }): ICommandOptions {
     return {
-        cmd: 'iac',
+        cmd: 'res',
         childCmd,
         options: compact([
             {
@@ -457,13 +534,16 @@ function getOptions({
     }
 }
 
-async function getResource(resource: ResourceType) {
+async function getResource(resource: ResourceType, action: ResourceAction) {
     if (!resource) {
         const res = await inquirer.prompt({
             type: 'list',
             name: 'resource',
             message: '请选择资源类型',
-            choices: IAC.actionSupportedResourceTypes.init
+            choices: IAC.tools.getResourceList(action).map((item) => ({
+                name: `${item.value} - ${item.name}`,
+                value: item.value
+            }))
         })
         resource = res.resource
     }
@@ -471,16 +551,21 @@ async function getResource(resource: ResourceType) {
 }
 
 function trackCallback(message, log: Logger) {
-    if (message.status === 'progress') {
-        loading.start(message.details)
-    } else if (message.status === 'done') {
-        loading.succeed(message.details)
+    // if (message.status === 'progress') {
+    //     loading.start(message.details)
+    // } else if (message.status === 'done') {
+    //     loading.succeed(message.details)
+    // } else {
+    //     if (message.type === 'error') {
+    //         loading.fail(message.details)
+    //     } else {
+    //         log.info(message.details)
+    //     }
+    // }
+    if (message.type === 'error') {
+        log.error(message.details)
     } else {
-        if (message.type === 'error') {
-            loading.fail(message.details)
-        } else {
-            log.info(message.details)
-        }
+        log.info(message.details)
     }
 }
 
@@ -500,6 +585,7 @@ function getAPIParams(config: {
     cwd: string
     name: string
     resource: ResourceType
+    action: ResourceAction
     needEnvId: boolean
     log: Logger
     envId?: string
@@ -509,6 +595,7 @@ function getAPIParams(config: {
     const {
         cwd,
         resource,
+        action,
         name,
         envId,
         log,
@@ -519,7 +606,7 @@ function getAPIParams(config: {
     return {
         cwd,
         getResource: () => {
-            return getResource(resource)
+            return getResource(resource, action)
         },
         getConfig: async function (resource, envObj) {
             const config: any = assignWith(
@@ -581,19 +668,4 @@ async function showEnvIdUI() {
         }
     })
     return res.envId
-}
-
-async function showAppIdUI() {
-    const res = await inquirer.prompt({
-        type: 'input',
-        name: 'appId',
-        message: '应用 ID',
-        validate: function (input) {
-            if (input.trim() === '') {
-                return '应用 ID不能为空'
-            }
-            return true
-        }
-    })
-    return res.appId
 }
