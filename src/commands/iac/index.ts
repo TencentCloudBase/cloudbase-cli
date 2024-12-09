@@ -20,11 +20,11 @@ export class IaCInitRepo extends Command {
             options: compact([
                 {
                     flags: '--name <name>',
-                    desc: '项目名称'
+                    desc: '仓库名称'
                 },
                 {
                     flags: '--cwd <cwd>',
-                    desc: '项目路径'
+                    desc: '仓库路径'
                 },
                 {
                     flags: '--envId <envId>',
@@ -88,7 +88,7 @@ export class IaCPullRepoConfig extends Command {
             options: compact([
                 {
                     flags: '--cwd <cwd>',
-                    desc: '项目路径'
+                    desc: '仓库路径'
                 },
                 {
                     flags: '--envId <envId>',
@@ -114,7 +114,7 @@ export class IaCPullRepoConfig extends Command {
             }
         })
 
-        log.info(`当前路径: ${targetDir}`)
+        log.info(`[当前路径] ${targetDir}`)
 
         if (!envId) {
             const envIdRes = await inquirer.prompt({
@@ -225,18 +225,17 @@ export class IaCInit extends Command {
                             }
 
                             break
-                        case ResourceType.WebApp:
-                            {
-                                const templateRes = await inquirer.prompt({
-                                    type: 'list',
-                                    name: 'template',
-                                    message: '请选择模版',
-                                    default: 'static',
-                                    // @ts-ignore
-                                    choices: IAC.WebApp.getAvailableTemplates()
-                                })
-                                Object.assign(config, templateRes)
-                            }
+                        case ResourceType.WebApp: {
+                            const templateRes = await inquirer.prompt({
+                                type: 'list',
+                                name: 'template',
+                                message: '请选择模版',
+                                default: 'static',
+                                // @ts-ignore
+                                choices: IAC.WebApp.getAvailableTemplates()
+                            })
+                            Object.assign(config, templateRes)
+                        }
                     }
                 }
             })
@@ -251,8 +250,7 @@ export class IaCPull extends Command {
     get options() {
         return getOptions({
             childCmd: 'pull',
-            options: [
-            ],
+            options: [],
             desc: '拉取资源项目代码',
             needEnvIdOption: true,
             resourceSupportList: IAC.actionSupportedResourceTypes.pull
@@ -344,7 +342,7 @@ export class IaCDev extends Command {
                 }
             ],
             desc: '本地开发资源项目代码',
-            needEnvIdOption: false,
+            needEnvIdOption: true,
             resourceSupportList: IAC.actionSupportedResourceTypes.dev
         })
     }
@@ -381,7 +379,7 @@ export class IaCDev extends Command {
                             Object.assign(config, distPathRes)
                         }
                     }
-                },
+                }
             })
         )
     }
@@ -452,8 +450,7 @@ export class IaCDestory extends Command {
     get options() {
         return getOptions({
             childCmd: 'destory',
-            options: [
-            ],
+            options: [],
             desc: '删除资源',
             needEnvIdOption: true,
             resourceSupportList: IAC.actionSupportedResourceTypes.destory
@@ -491,8 +488,7 @@ export class IaCState extends Command {
     get options() {
         return getOptions({
             childCmd: 'state',
-            options: [
-            ],
+            options: [],
             desc: '查询资源信息',
             needEnvIdOption: true,
             resourceSupportList: IAC.actionSupportedResourceTypes.state
@@ -521,7 +517,9 @@ export class IaCState extends Command {
             })
         )
 
-        log.info(JSON.stringify(data, null, 2))
+        if (data) {
+            log.info(JSON.stringify(data, null, 2))
+        }
     }
 }
 
@@ -554,17 +552,17 @@ function getOptions({
             },
             {
                 flags: '--name <name>',
-                desc: '资源名称'
+                desc: '资源标识'
             },
             {
                 flags: '--cwd <cwd>',
-                desc: '项目路径'
+                desc: '仓库路径'
             },
             needEnvIdOption
                 ? {
-                    flags: '--envId <envId>',
-                    desc: '环境 Id'
-                }
+                      flags: '--envId <envId>',
+                      desc: '环境 Id'
+                  }
                 : null,
             ...options
         ]),
@@ -602,6 +600,7 @@ function trackCallback(message, log: Logger) {
     //         log.info(message.details)
     //     }
     // }
+    debugger
     if (message.type === 'error') {
         log.error(message.details)
     } else {
@@ -684,10 +683,10 @@ async function showNameUI() {
     const res = await inquirer.prompt({
         type: 'input',
         name: 'name',
-        message: '请输入资源标识',
+        message: '请输入资源标识(或资源文件夹名)',
         validate: function (input) {
             if (input.trim() === '') {
-                return '资源名称不能为空'
+                return '资源标识不能为空'
             }
             return true
         }
