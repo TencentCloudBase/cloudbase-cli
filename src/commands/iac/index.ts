@@ -4,10 +4,14 @@ import { IAC } from '@cloudbase/iac-core'
 import { IFunctionRuntime, ResourceAction, ResourceType } from '@cloudbase/iac-core/lib/src/type'
 import inquirer from 'inquirer'
 import { assignWith, compact, isUndefined } from 'lodash'
+import inquirerAutocomplete from 'inquirer-autocomplete-prompt'
 import path from 'path'
 import { ArgsOptions, CmdContext, InjectParams, Log, Logger } from '../../decorators'
 import { authSupevisor, getPrivateSettings } from '../../utils'
 import { Command, ICommand, ICommandOptions } from '../common'
+import { pathExists, readdir, statSync } from 'fs-extra'
+
+inquirer.registerPrompt('autocomplete', inquirerAutocomplete)
 
 @ICommand({
     supportPrivate: true
@@ -28,7 +32,7 @@ export class IaCInitRepo extends Command {
                 },
                 {
                     flags: '--envId <envId>',
-                    desc: '环境 Id。如有提供，会自动同步环境配置（如 Git 模式的配置数据）'
+                    desc: '环境 ID。如有提供，会自动同步环境配置（如 Git 模式的配置数据）'
                 }
             ]),
             desc: '初始化云开发资源仓库项目 - 大仓 Monorepo 模式',
@@ -45,8 +49,9 @@ export class IaCInitRepo extends Command {
         const params = { name, cwd, envId }
 
         await IAC.init({
+            cwd,
             getCredential: () => {
-                return getCredential(ctx)
+                return getCredential(ctx, options)
             }
         })
 
@@ -56,21 +61,18 @@ export class IaCInitRepo extends Command {
             const nameRes = await inquirer.prompt({
                 type: 'input',
                 name: 'name',
-                message: `仓库名称（如有提供，将在【cwd】路径创建文件夹；如没提供，则将【cwd】路径初始化为资源仓库）`
+                message:
+                    '仓库名称（如有提供，将在【cwd】路径创建文件夹；如没提供，则将【cwd】路径初始化为资源仓库）'
             })
             if (nameRes) {
                 params.name = nameRes.name
             }
         }
         if (!envId) {
-            const envIdRes = await inquirer.prompt({
-                type: 'input',
-                name: 'envId',
-                message: '环境 Id（如有提供，将自动同步环境配置）'
+            params.envId = await showEnvIdUI({
+                required: false,
+                message: '环境 ID（如有提供，将自动同步环境配置，不选择则跳过）'
             })
-            if (envIdRes) {
-                params.envId = envIdRes.envId
-            }
         }
 
         await IAC.tools.initRepo(params, (message) => trackCallback(message, log))
@@ -92,7 +94,7 @@ export class IaCPullRepoConfig extends Command {
                 },
                 {
                     flags: '--envId <envId>',
-                    desc: '环境 Id。如有提供，会自动同步环境配置（如 Git 模式的配置数据）'
+                    desc: '环境 ID。如有提供，会自动同步环境配置（如 Git 模式的配置数据）'
                 }
             ]),
             desc: '拉取大仓在指定环境下的配置（当前只支持拉取 Git 模式的配置）',
@@ -109,26 +111,16 @@ export class IaCPullRepoConfig extends Command {
         const params = { name, cwd, envId }
 
         await IAC.init({
+            cwd,
             getCredential: () => {
-                return getCredential(ctx)
+                return getCredential(ctx, options)
             }
         })
 
         log.info(`[当前路径] ${targetDir}`)
 
-        if (!envId) {
-            const envIdRes = await inquirer.prompt({
-                type: 'input',
-                name: 'envId',
-                message: '环境 Id',
-                validate: function (input) {
-                    if (input.trim() === '') {
-                        return '请提供环境 Id'
-                    }
-                    return true
-                }
-            })
-            params.envId = envIdRes.envId
+        if (!envId && !process.env.ENV_ID) {
+            params.envId = await showEnvIdUI()
         }
 
         await IAC.tools.pullRepoConfig(params, (message) => trackCallback(message, log))
@@ -166,12 +158,20 @@ export class IaCInit extends Command {
                         case ResourceType.SCF:
                             {
                                 const runtimeRes = await inquirer.prompt({
-                                    type: 'list',
+                                    type: 'autocomplete',
                                     name: 'runtime',
                                     message: '请选择运行环境',
                                     default: IFunctionRuntime.Nodejs18_15,
-                                    choices: Object.values(IFunctionRuntime)
-                                })
+                                    source: async function (answersSoFar: any, input = '') {
+                                        const choices = Object.values(IFunctionRuntime)
+                                        const filtered = choices.filter((choice) =>
+                                            choice
+                                                .toLowerCase()
+                                                .includes(input?.toLowerCase() || '')
+                                        )
+                                        return filtered
+                                    }
+                                } as any)
                                 Object.assign(config, runtimeRes)
                                 const memorySizeRes = await inquirer.prompt({
                                     type: 'number',
@@ -262,8 +262,9 @@ export class IaCPull extends Command {
         let { resource, name, envId, cwd = '.' } = options
 
         await IAC.init({
+            cwd,
             getCredential: () => {
-                return getCredential(ctx)
+                return getCredential(ctx, options)
             }
         })
 
@@ -353,8 +354,9 @@ export class IaCDev extends Command {
         const { data, dataPath, context, contextPath, platform } = options
 
         await IAC.init({
+            cwd,
             getCredential: () => {
-                return getCredential(ctx)
+                return getCredential(ctx, options)
             }
         })
 
@@ -410,8 +412,9 @@ export class IaCApply extends Command {
         const { comment } = options
 
         await IAC.init({
+            cwd,
             getCredential: () => {
-                return getCredential(ctx)
+                return getCredential(ctx, options)
             }
         })
 
@@ -462,8 +465,9 @@ export class IaCDestory extends Command {
         let { resource, name, envId, cwd = '.' } = options
 
         await IAC.init({
+            cwd,
             getCredential: () => {
-                return getCredential(ctx)
+                return getCredential(ctx, options)
             }
         })
 
@@ -500,8 +504,9 @@ export class IaCState extends Command {
         const { resource, name, cwd = '.', envId } = options
 
         await IAC.init({
+            cwd,
             getCredential: () => {
-                return getCredential(ctx)
+                return getCredential(ctx, options)
             }
         })
 
@@ -561,7 +566,7 @@ function getOptions({
             needEnvIdOption
                 ? {
                       flags: '--envId <envId>',
-                      desc: '环境 Id'
+                      desc: '环境 ID'
                   }
                 : null,
             ...options
@@ -573,7 +578,8 @@ function getOptions({
 }
 
 async function getResource(resource: ResourceType, action: ResourceAction) {
-    if (!resource) {
+    let selectedResource = resource
+    if (!selectedResource) {
         const res = await inquirer.prompt({
             type: 'list',
             name: 'resource',
@@ -583,24 +589,12 @@ async function getResource(resource: ResourceType, action: ResourceAction) {
                 value: item.value
             }))
         })
-        resource = res.resource
+        selectedResource = res.resource
     }
-    return resource
+    return selectedResource
 }
 
 function trackCallback(message, log: Logger) {
-    // if (message.status === 'progress') {
-    //     loading.start(message.details)
-    // } else if (message.status === 'done') {
-    //     loading.succeed(message.details)
-    // } else {
-    //     if (message.type === 'error') {
-    //         loading.fail(message.details)
-    //     } else {
-    //         log.info(message.details)
-    //     }
-    // }
-    debugger
     if (message.type === 'error') {
         log.error(message.details)
     } else {
@@ -608,12 +602,12 @@ function trackCallback(message, log: Logger) {
     }
 }
 
-async function getCredential(ctx: any) {
+async function getCredential(ctx: any, options: any) {
     let credential
     if (ctx.hasPrivateSettings) {
         process.env.IS_PRIVATE = 'true'
-        const privateSettings = getPrivateSettings(ctx.config, this.options.cmd)
-        credential = privateSettings.credential
+        const privateSettings = getPrivateSettings(ctx.config, options.cmd)
+        credential = privateSettings?.credential
     } else {
         credential = await authSupevisor.getLoginState()
     }
@@ -647,7 +641,7 @@ function getAPIParams(config: {
         getResource: () => {
             return getResource(resource, action)
         },
-        getConfig: async function (resource, envObj) {
+        getConfig: async function (resource, envObj, otherInfo) {
             const config: any = assignWith(
                 envObj,
                 { name, envId },
@@ -656,9 +650,10 @@ function getAPIParams(config: {
                     return isUndefined(objValue) ? srcValue : objValue
                 }
             )
+            const { resourceGroupDir } = otherInfo
 
             if (!config.name) {
-                const nameRes = await showNameUI()
+                const nameRes = await showNameUI(resourceGroupDir)
                 Object.assign(config, { name: nameRes })
             }
 
@@ -679,32 +674,70 @@ function getAPIParams(config: {
     }
 }
 
-async function showNameUI() {
-    const res = await inquirer.prompt({
-        type: 'input',
-        name: 'name',
-        message: '请输入资源标识(或资源文件夹名)',
-        validate: function (input) {
-            if (input.trim() === '') {
-                return '资源标识不能为空'
+async function showNameUI(resourceGroupDir: string) {
+    let res: any
+    if (!(await pathExists(resourceGroupDir))) {
+        res = await inquirer.prompt({
+            type: 'input',
+            name: 'name',
+            message: '请输入资源标识',
+            validate: function (input) {
+                if (input.trim() === '') {
+                    return '资源标识不能为空'
+                }
+                return true
             }
-            return true
-        }
-    })
+        })
+    } else {
+        res = await inquirer.prompt({
+            type: 'autocomplete',
+            name: 'name',
+            message: '请输入资源标识(或资源文件夹名)',
+            source: async function (answersSoFar: any, input = '') {
+                const choices = await readdir(resourceGroupDir).then((files) =>
+                    files.filter((file) =>
+                        statSync(path.join(resourceGroupDir, file)).isDirectory()
+                    )
+                )
+                const filtered = choices.filter((choice) =>
+                    choice.toLowerCase().includes(input.toLowerCase())
+                )
+                // 如果有输入值，将其添加到选项列表的最前面
+                return input ? [input, ...filtered] : filtered
+            },
+            validate: function (input) {
+                if (input.value.trim() === '') {
+                    return '资源标识不能为空'
+                }
+                return true
+            }
+        } as any)
+    }
+
     return res.name
 }
 
-async function showEnvIdUI() {
+async function showEnvIdUI(options?: { required?: boolean; message?: string }) {
+    const { required = true, message = '环境 ID' } = options || {}
+    const envList = await IAC.tools.getEnvList()
     const res = await inquirer.prompt({
-        type: 'input',
+        type: 'autocomplete',
         name: 'envId',
-        message: '环境 ID',
-        validate: function (input) {
-            if (input.trim() === '') {
-                return '环境 ID不能为空'
-            }
-            return true
-        }
-    })
-    return res.envId
+        message,
+        source: async function (answersSoFar: any, input = '') {
+            const filtered = envList.filter((envId) =>
+                envId.toLowerCase().includes(input?.toLowerCase() || '')
+            )
+            return required ? filtered : compact([input ? undefined : '不提供', ...filtered])
+        },
+        validate: required
+            ? function (input) {
+                  if (input.value.trim() === '') {
+                      return '环境 ID 不能为空'
+                  }
+                  return true
+              }
+            : undefined
+    } as any)
+    return res.envId === '不提供' ? null : res.envId
 }
