@@ -692,7 +692,7 @@ async function showNameUI(resourceGroupDir: string) {
         res = await inquirer.prompt({
             type: 'autocomplete',
             name: 'name',
-            message: '请输入资源标识(或资源文件夹名)',
+            message: '请选择或直接输入资源标识',
             source: async function (answersSoFar: any, input = '') {
                 const choices = await readdir(resourceGroupDir).then((files) =>
                     files.filter((file) =>
