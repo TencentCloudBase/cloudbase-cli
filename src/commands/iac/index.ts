@@ -235,6 +235,15 @@ export class IaCInit extends Command {
                                 choices: IAC.WebApp.getAvailableTemplates()
                             })
                             Object.assign(config, templateRes)
+
+                            const nameRes = await inquirer.prompt({
+                                type: 'input',
+                                name: 'name',
+                                message: '应用名称',
+                                default: config.name
+                            })
+                            Object.assign(config, nameRes)
+
                         }
                     }
                 }
@@ -565,9 +574,9 @@ function getOptions({
             },
             needEnvIdOption
                 ? {
-                      flags: '--envId <envId>',
-                      desc: '环境 ID'
-                  }
+                    flags: '--envId <envId>',
+                    desc: '环境 ID'
+                }
                 : null,
             ...options
         ]),
@@ -732,11 +741,11 @@ async function showEnvIdUI(options?: { required?: boolean; message?: string }) {
         },
         validate: required
             ? function (input) {
-                  if (input.value.trim() === '') {
-                      return '环境 ID 不能为空'
-                  }
-                  return true
-              }
+                if (input.value.trim() === '') {
+                    return '环境 ID 不能为空'
+                }
+                return true
+            }
             : undefined
     } as any)
     return res.envId === '不提供' ? null : res.envId
