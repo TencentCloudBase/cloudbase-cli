@@ -152,7 +152,6 @@ export class IaCInit extends Command {
                 resource,
                 action: ResourceAction.Init,
                 log,
-                needEnvId: false,
                 specResourceLogic: async function (resource, config) {
                     switch (resource) {
                         case ResourceType.SCF:
@@ -275,8 +274,7 @@ export class IaCPull extends Command {
                 resource,
                 action: ResourceAction.Pull,
                 envId,
-                log,
-                needEnvId: true
+                log
             })
         )
     }
@@ -306,8 +304,7 @@ export class IaCBuild extends Command {
                 name,
                 action: ResourceAction.Build,
                 resource,
-                log,
-                needEnvId: false
+                log
             })
         )
     }
@@ -367,7 +364,6 @@ export class IaCDev extends Command {
                 resource,
                 action: ResourceAction.Dev,
                 log,
-                needEnvId: false,
                 extraData: { data, dataPath, context, contextPath, platform },
                 async specResourceLogic(resource, config) {
                     if (resource === ResourceType.WebApp) {
@@ -426,7 +422,6 @@ export class IaCApply extends Command {
                 action: ResourceAction.Apply,
                 envId,
                 log,
-                needEnvId: true,
                 extraData: { comment },
                 specResourceLogic: async function (resource, config) {
                     if (resource === ResourceType.WebApp) {
@@ -478,8 +473,7 @@ export class IaCDestory extends Command {
                 resource,
                 action: ResourceAction.Destory,
                 envId,
-                log,
-                needEnvId: true
+                log
             })
         )
     }
@@ -517,8 +511,7 @@ export class IaCState extends Command {
                 resource,
                 action: ResourceAction.State,
                 envId,
-                log,
-                needEnvId: true
+                log
             })
         )
 
@@ -577,21 +570,17 @@ function getOptions({
     }
 }
 
-async function getResource(resource: ResourceType, action: ResourceAction) {
-    let selectedResource = resource
-    if (!selectedResource) {
-        const res = await inquirer.prompt({
-            type: 'list',
-            name: 'resource',
-            message: '请选择资源类型',
-            choices: IAC.tools.getResourceList(action).map((item) => ({
-                name: `${item.value} - ${item.name}`,
-                value: item.value
-            }))
-        })
-        selectedResource = res.resource
-    }
-    return selectedResource
+async function getResource(action: ResourceAction) {
+    const res = await inquirer.prompt({
+        type: 'list',
+        name: 'resource',
+        message: '请选择资源类型',
+        choices: IAC.tools.getResourceList(action).map((item) => ({
+            name: `${item.value} - ${item.name}`,
+            value: item.value
+        }))
+    })
+    return res.resource
 }
 
 function trackCallback(message, log: Logger) {
@@ -619,50 +608,34 @@ function getAPIParams(config: {
     name: string
     resource: ResourceType
     action: ResourceAction
-    needEnvId: boolean
     log: Logger
     envId?: string
     extraData?: { [key: string]: any }
     specResourceLogic?: (resource: ResourceType, config: { [key: string]: any }) => Promise<void>
 }) {
-    const {
-        cwd,
-        resource,
-        action,
-        name,
-        envId,
-        log,
-        needEnvId = true,
-        extraData = {},
-        specResourceLogic
-    } = config
+    const { cwd, resource, action, name, envId, log, extraData = {}, specResourceLogic } = config
     return {
         cwd,
-        getResource: () => {
-            return getResource(resource, action)
+        envId,
+        getEnvId: () => {
+            return showEnvIdUI()
         },
-        getConfig: async function (resource, envObj, otherInfo) {
+        name,
+        getName: (nameOptions: string[]) => {
+            return showNameUI(nameOptions)
+        },
+        resourceType: resource,
+        getResourceType: () => {
+            return getResource(action)
+        },
+        getConfig: async function (resource, envObj) {
             const config: any = assignWith(
                 envObj,
-                { name, envId },
                 extraData,
                 function customizer(objValue, srcValue) {
                     return isUndefined(objValue) ? srcValue : objValue
                 }
             )
-            const { resourceGroupDir } = otherInfo
-
-            if (!config.name) {
-                const nameRes = await showNameUI(resourceGroupDir)
-                Object.assign(config, { name: nameRes })
-            }
-
-            if (needEnvId) {
-                if (!config.envId) {
-                    const envIdRes = await showEnvIdUI()
-                    Object.assign(config, { envId: envIdRes })
-                }
-            }
 
             await specResourceLogic?.(resource, config)
 
@@ -674,9 +647,9 @@ function getAPIParams(config: {
     }
 }
 
-async function showNameUI(resourceGroupDir: string) {
+async function showNameUI(nameOptions: string[]) {
     let res: any
-    if (!(await pathExists(resourceGroupDir))) {
+    if (nameOptions.length === 0) {
         res = await inquirer.prompt({
             type: 'input',
             name: 'name',
@@ -692,14 +665,9 @@ async function showNameUI(resourceGroupDir: string) {
         res = await inquirer.prompt({
             type: 'autocomplete',
             name: 'name',
-            message: '请选择或直接输入资源标识',
+            message: '请选择资源标识或直接输入资源目录名',
             source: async function (answersSoFar: any, input = '') {
-                const choices = await readdir(resourceGroupDir).then((files) =>
-                    files.filter((file) =>
-                        statSync(path.join(resourceGroupDir, file)).isDirectory()
-                    )
-                )
-                const filtered = choices.filter((choice) =>
+                const filtered = nameOptions.filter((choice) =>
                     choice.toLowerCase().includes(input.toLowerCase())
                 )
                 // 如果有输入值，将其添加到选项列表的最前面
@@ -725,10 +693,14 @@ async function showEnvIdUI(options?: { required?: boolean; message?: string }) {
         name: 'envId',
         message,
         source: async function (answersSoFar: any, input = '') {
-            const filtered = envList.filter((envId) =>
-                envId.toLowerCase().includes(input?.toLowerCase() || '')
+            const filtered = envList.filter((env) =>
+                env.name.toLowerCase().includes(input?.toLowerCase() || '')
             )
-            return required ? filtered : compact([input ? undefined : '不提供', ...filtered])
+            const choices = filtered.map(env => ({
+                name: env.name,
+                value: env.value
+            }))
+            return required ? choices : compact([input ? undefined : { name: '不提供', value: null }, ...choices])
         },
         validate: required
             ? function (input) {
