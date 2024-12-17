@@ -163,7 +163,7 @@ export class IaCInit extends Command {
                                     default: IFunctionRuntime.Nodejs18_15,
                                     source: async function (answersSoFar: any, input = '') {
                                         const choices = Object.values(IFunctionRuntime)
-                                        const filtered = choices.filter((choice) =>
+                                        const filtered = choices.filter((choice: string) =>
                                             choice
                                                 .toLowerCase()
                                                 .includes(input?.toLowerCase() || '')

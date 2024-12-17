@@ -123,6 +123,10 @@ export class LowCodePreviewApp extends Command {
                 {
                     flags: '--platform <mp|web>',
                     desc: '构建平台'
+                },
+                {
+                    flags: '--only-watch',
+                    desc: '仅监听代码变化'
                 }
             ],
             desc: '预览应用',
