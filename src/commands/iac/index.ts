@@ -242,7 +242,6 @@ export class IaCInit extends Command {
                                 default: config.name
                             })
                             Object.assign(config, nameRes)
-
                         }
                     }
                 }
@@ -327,22 +326,6 @@ export class IaCDev extends Command {
         return getOptions({
             childCmd: 'dev',
             options: [
-                {
-                    flags: '--data <data>',
-                    desc: '要传递给调用函数的序列化 Event 数据（仅当 resource=SCF 时有效）'
-                },
-                {
-                    flags: '--dataPath <dataPath>',
-                    desc: '要传递给调用函数 Event 的 json 文件所在路径（仅当 resource=SCF 时有效）'
-                },
-                {
-                    flags: '--context <context>',
-                    desc: '要传递给调用函数的序列化 Context 数据（仅当 resource=SCF 时有效）'
-                },
-                {
-                    flags: '--contextPath <contextPath>',
-                    desc: '要传递给调用函数 Context 的 json 文件所在路径（仅当 resource=SCF 时有效）'
-                },
                 {
                     flags: '--platform <platform>',
                     desc: '运行平台，可选为 web | mp。默认为 web（仅当 resource=App 时有效）'
@@ -567,9 +550,9 @@ function getOptions({
             },
             needEnvIdOption
                 ? {
-                    flags: '--envId <envId>',
-                    desc: '环境 ID'
-                }
+                      flags: '--envId <envId>',
+                      desc: '环境 ID'
+                  }
                 : null,
             ...options
         ]),
@@ -705,19 +688,21 @@ async function showEnvIdUI(options?: { required?: boolean; message?: string }) {
             const filtered = envList.filter((env) =>
                 env.name.toLowerCase().includes(input?.toLowerCase() || '')
             )
-            const choices = filtered.map(env => ({
+            const choices = filtered.map((env) => ({
                 name: env.name,
                 value: env.value
             }))
-            return required ? choices : compact([input ? undefined : { name: '不提供', value: null }, ...choices])
+            return required
+                ? choices
+                : compact([input ? undefined : { name: '不提供', value: null }, ...choices])
         },
         validate: required
             ? function (input) {
-                if (input.value.trim() === '') {
-                    return '环境 ID 不能为空'
-                }
-                return true
-            }
+                  if (input.value.trim() === '') {
+                      return '环境 ID 不能为空'
+                  }
+                  return true
+              }
             : undefined
     } as any)
     return res.envId === '不提供' ? null : res.envId
