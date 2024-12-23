@@ -3,13 +3,12 @@ import { IDatabaseDataSourceDbType } from '@cloudbase/cals'
 import { IAC } from '@cloudbase/iac-core'
 import { IFunctionRuntime, ResourceAction, ResourceType } from '@cloudbase/iac-core/lib/src/type'
 import inquirer from 'inquirer'
-import { assignWith, compact, isUndefined } from 'lodash'
 import inquirerAutocomplete from 'inquirer-autocomplete-prompt'
+import { assignWith, compact, isUndefined } from 'lodash'
 import path from 'path'
 import { ArgsOptions, CmdContext, InjectParams, Log, Logger } from '../../decorators'
 import { authSupevisor, getPrivateSettings } from '../../utils'
 import { Command, ICommand, ICommandOptions } from '../common'
-import { pathExists, readdir, statSync } from 'fs-extra'
 
 inquirer.registerPrompt('autocomplete', inquirerAutocomplete)
 
@@ -349,7 +348,7 @@ export class IaCDev extends Command {
             }
         })
 
-        await IAC.resource.dev(
+        const devInst = await IAC.resource.dev(
             getAPIParams({
                 cwd,
                 name,
@@ -372,6 +371,18 @@ export class IaCDev extends Command {
                 }
             })
         )
+
+        try {
+            if (Array.isArray(devInst)) {
+                // 批量运行的情况
+                await Promise.all(devInst.map((item) => item?.run))
+            } else {
+                // 单个运行的情况
+                await devInst?.run
+            }
+        } catch (e) {
+            trackCallback({ type: 'error', details: e.message }, log)
+        }
     }
 }
 
