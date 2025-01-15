@@ -150,7 +150,8 @@ export class LowCodeBuildComps extends Command {
                 ...config,
                 context: config.context || process.cwd(),
                 logger: log,
-                privateSettings: getPrivateSettings(ctx.config, this.options.cmd)
+                privateSettings: getPrivateSettings(ctx.config, this.options.cmd),
+                envId: ctx.envId || ctx.config.envId,
             })
             return
         }
@@ -203,7 +204,8 @@ export class LowCodeDebugComps extends Command {
                 debugPort: mergesOptions?.debugPort || 8388,
                 logger: log,
                 wxDevtoolPath: mergesOptions?.wxDevtoolPath,
-                debugBaseUrl: privateSettings?.endpoints?.editor
+                debugBaseUrl: privateSettings?.endpoints?.editor,
+                envId: ctx.envId || ctx.config.envId,
             })
             return
         }
@@ -248,7 +250,8 @@ export class LowCodePublishComps extends Command {
                 context: config.context || process.cwd(),
                 logger: log,
                 privateSettings: getPrivateSettings(ctx.config, this.options.cmd),
-                isAdmin: Boolean(mergesOptions.admin)
+                isAdmin: Boolean(mergesOptions.admin),
+                envId: ctx.envId || ctx.config.envId,
             })
             log.success('组件库 - 已同步到云端，请到低码控制台发布该组件库！')
             return
@@ -319,7 +322,8 @@ export class LowCodePublishVersionComps extends Command {
                 context: config.context || process.cwd(),
                 logger: log,
                 isAdmin: options.admin,
-                privateSettings: getPrivateSettings(ctx.config, this.options.cmd)
+                privateSettings: getPrivateSettings(ctx.config, this.options.cmd),
+                envId: ctx.envId || ctx.config.envId,
             },
             comment,
             tag
