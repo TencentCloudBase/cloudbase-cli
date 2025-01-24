@@ -33,7 +33,7 @@
     "dependencies": {
         "@cloudbase/cloud-api": "^0.5.5",
         "@cloudbase/framework-core": "^1.9.7",
-        "@cloudbase/lowcode-cli": "^0.21.1",
+        "@cloudbase/lowcode-cli": "^0.22.0",
         "@cloudbase/manager-node": "4.2.8",
         "@cloudbase/toolbox": "^0.7.5",
         "@sentry/node": "^5.10.2",
