@@ -4,18 +4,19 @@ export const outputHelpInfo = () => {
     const commands = `
   命令
 
-    login           [options]                  登录腾讯云账号
-    logout                                     登出腾讯云账号
-    env             [cmd]                      环境管理操作
-    fn              [cmd]                      操作函数
-    framework       [cmd]                      云开发 Serverless 应用框架操作
-    hosting         [cmd]                      静态托管资源管理操作
-    new             [appName] [template]       创建新的云开发应用
-    open            [link]                     在浏览器中打开云开发相关连接
-    storage         [cmd]                      云存储资源管理操作
-    service         [cmd]                      HTTP 访问服务管理操作
-    run:deprecated  [cmd]                      云托管环境管理操作 (BAAS 或 RUN 类型环境)
-    run             [cmd]                      云托管环境管理操作 (TCBR 类型环境)`
+    login             [options]                  登录腾讯云账号
+    logout                                       登出腾讯云账号
+    env               [cmd]                      环境管理操作
+    fn                [cmd]                      操作函数
+    framework         [cmd]                      云开发 Serverless 应用框架操作
+    hosting           [cmd]                      静态托管资源管理操作
+    new               [appName] [template]       创建新的云开发应用
+    open              [link]                     在浏览器中打开云开发相关连接
+    storage           [cmd]                      云存储资源管理操作
+    service           [cmd]                      HTTP 访问服务管理操作
+    run:deprecated    [cmd]                      云托管环境管理操作 (BAAS 或 RUN 类型环境)
+    run               [cmd]                      云托管环境管理操作 (TCBR 类型环境)
+    cloudrunfunction  [cmd]                      云函数 2.0 服务管理操作`
 
     const options = `
   选项
