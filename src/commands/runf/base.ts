@@ -24,7 +24,7 @@ const scfService = CloudApiService.getInstance('tcb')
 export class RunfListCommand extends Command {
     get options() {
         return {
-            cmd: 'runf',
+            cmd: 'cloudrunfunction',
             childCmd: 'list',
             options: [
                 {
@@ -83,7 +83,7 @@ export class RunfListCommand extends Command {
 export class RunfDeployCommand extends Command {
     get options() {
         return {
-            cmd: 'runf',
+            cmd: 'cloudrunfunction',
             childCmd: 'deploy',
             options: [
                 {
@@ -293,7 +293,7 @@ export class RunfDeployCommand extends Command {
 export class RunfDownloadCommand extends Command {
     get options() {
         return {
-            cmd: 'runf',
+            cmd: 'cloudrunfunction',
             childCmd: 'download',
             options: [
                 {
@@ -410,7 +410,7 @@ export class RunfDownloadCommand extends Command {
 export class RunfRunCommand extends Command {
     get options() {
         return {
-            cmd: 'runf',
+            cmd: 'cloudrunfunction',
             childCmd: 'run',
             options: [
                 {
