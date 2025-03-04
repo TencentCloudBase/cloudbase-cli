@@ -114,7 +114,6 @@ export class RunfDeployCommand extends Command {
         /**
          * 校验代码路径
          */
-        debugger
         const target = 'main' // 这是函数式托管规定的目标函数
         const functionsConfigFile = path.resolve(
             targetDir,
@@ -220,7 +219,7 @@ export class RunfDeployCommand extends Command {
 
         async function _runDeploy() {
             try {
-                await IAC.FunctionV2.apply(
+                const res = await IAC.FunctionV2.apply(
                     {
                         cwd: targetDir,
                         envId: envId,
@@ -229,6 +228,13 @@ export class RunfDeployCommand extends Command {
                     function (message) {
                         trackCallback(message, log)
                     }
+                )
+                const { envId: _envId, name, resourceType: _resourceType } = res?.data
+                trackCallback(
+                    {
+                        details: `请打开链接查看部署状态: https://tcb.cloud.tencent.com/dev?envId=${_envId}#/platform-run/service/detail?serverName=${name}&tabId=deploy&envId=${_envId}`
+                    },
+                    log
                 )
             } catch (e) {
                 if (e?.action === 'UpdateCloudRunServer' && e?.code === 'ResourceInUse') {
@@ -450,7 +456,6 @@ export class RunfRunCommand extends Command {
         const defaultIgnoreFiles = ['logs/*.*']
 
         if (watchFlag.some((flag) => args.includes(flag))) {
-            debugger
             const cmd = args.filter((arg) => !watchFlag.includes(arg)).join(' ')
             // @ts-ignore
             nodemon({
