@@ -412,7 +412,7 @@ export class RunfDownloadCommand extends Command {
     }
 }
 
-// @ICommand()
+@ICommand()
 export class RunfRunCommand extends Command {
     get options() {
         return {
@@ -442,6 +442,10 @@ export class RunfRunCommand extends Command {
                 {
                     flags: '--functionsConfigFile <functionsConfigFile>',
                     desc: '多函数定义配置文件，默认为 ./cloudbase-functions.json'
+                },
+                {
+                    flags: '--loadAllFunctions',
+                    desc: '是否加载 "functionsRoot" 目录中的所有函数。默认为 false'
                 }
             ],
             requiredEnvId: false,
