@@ -449,7 +449,7 @@ export class RunfRunCommand extends Command {
                 }
             ],
             requiredEnvId: false,
-            desc: '本地运行函数式托管代码'
+            desc: '本地运行云函数 2.0 代码'
         }
     }
 
@@ -512,10 +512,15 @@ async function _inputServiceName(defaultVal: string = '') {
         {
             type: 'input',
             name: 'serviceName',
-            message: '请输入服务名称（只能包含数字、小写字母和-，只能以小写字母开头，最多 20字符）',
+            message:
+                '请输入服务名称（支持大小写字母、数字、-和_，但必须以字母开头、以字母和数字结尾，不支持以lcap、lowcode开头，最长45个字符）',
             default: defaultVal,
             validate: (val: string) => {
-                return /^[a-z][a-z0-9-]{0,19}$/.test(val) ? true : '请输入正确的服务名称'
+                const isValid =
+                    !val.startsWith('lcap') &&
+                    !val.startsWith('lowcode') &&
+                    /^[A-Za-z][\w-_]{0,43}[A-Za-z0-9]$/.test(val)
+                return isValid ? true : '请输入正确的服务名称'
             }
         }
     ]

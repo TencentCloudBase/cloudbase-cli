@@ -41,8 +41,8 @@ async function main() {
     const currentMajorVersion = +semver.major(process.version)
 
     // 定义最小版本和推荐版本
-    const NODE_MIN_VERSION = 14
-    const NODE_RECOMMENDED_VERSIONS = [16, 18]
+    const NODE_MIN_VERSION = 18
+    const NODE_RECOMMENDED_VERSIONS = [18]
 
     // 检查当前版本是否满足最小版本要求
     if (NODE_MIN_VERSION > currentMajorVersion) {
