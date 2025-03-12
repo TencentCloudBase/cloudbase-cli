@@ -421,31 +421,61 @@ export class RunfRunCommand extends Command {
             options: [
                 {
                     flags: '--source <source>',
-                    desc: '目标函数文件所在目录路径，默认为当前路径'
+                    desc: `目标函数文件所在目录路径，默认为当前路径
+                    `
                 },
                 {
                     flags: '--port <port>',
-                    desc: '监听的端口，默认为 3000'
+                    desc: `监听的端口，默认为 3000
+                    `
                 },
                 {
                     flags: '-w, --watch',
-                    desc: '是否启用热重启模式，如启用，将会在文件变更时自动重启服务，默认为 false'
+                    desc: `是否启用热重启模式，如启用，将会在文件变更时自动重启服务，默认为 false
+                    `
                 },
                 {
                     flags: '--dry-run',
-                    desc: '是否不启动服务，只验证代码可以正常加载，默认为 false'
+                    desc: `是否不启动服务，只验证代码可以正常加载，默认为 false
+                    `
                 },
                 {
                     flags: '--logDirname <logDirname>',
-                    desc: '日志文件目录，默认为 ./logs'
+                    desc: `日志文件目录，默认为 ./logs
+                    `
                 },
                 {
                     flags: '--functionsConfigFile <functionsConfigFile>',
-                    desc: '多函数定义配置文件，默认为 ./cloudbase-functions.json'
+                    desc: `多函数定义配置文件，默认为 ./cloudbase-functions.json。
+                                             环境变量: FUNCTIONS_CONFIG_FILE
+                    `
                 },
                 {
                     flags: '--loadAllFunctions',
-                    desc: '是否加载 "functionsRoot" 目录中的所有函数。默认为 false'
+                    desc: `是否加载 "functionsRoot" 目录中的所有函数。默认为 false
+                    `
+                },
+                {
+                    flags: '--enableCors',
+                    desc: `为已配置的源启用跨域资源共享（CORS），默认值为 false
+                                             环境变量: ENABLE_CORS
+                    `
+                },
+                {
+                    flags: '--allowedOrigins <corsOrigin>',
+                    desc: `设置 CORS 允许的源。默认允许 localhost 和 127.0.0.1。
+                                             支持通配符源，例如 ['.example.com']。
+                                             多个源应该用逗号分隔。
+                                             示例：--allowedOrigins .example.com,www.another.com
+                                             环境变量：ALLOWED_ORIGINSS
+                                             `
+                },
+                {
+                    flags: '--extendedContext <extendedContext>',
+                    desc: `用于解析 context.extendedContext 的值。""表示该功能已关闭。默认值为 null
+                                             示例：--extendedContext '{"a":1,"b":2}'
+                                             环境变量：EXTENDED_CONTEXT
+                                             `
                 }
             ],
             requiredEnvId: false,
@@ -512,15 +542,16 @@ async function _inputServiceName(defaultVal: string = '') {
         {
             type: 'input',
             name: 'serviceName',
-            message:
-                '请输入服务名称（支持大小写字母、数字、-和_，但必须以字母开头、以字母和数字结尾，不支持以lcap、lowcode开头，最长45个字符）',
+            message: '请输入服务名称',
             default: defaultVal,
             validate: (val: string) => {
                 const isValid =
                     !val.startsWith('lcap') &&
                     !val.startsWith('lowcode') &&
                     /^[A-Za-z][\w-_]{0,43}[A-Za-z0-9]$/.test(val)
-                return isValid ? true : '请输入正确的服务名称'
+                return isValid
+                    ? true
+                    : '支持大小写字母、数字、-和_，但必须以字母开头、以字母和数字结尾，不支持以lcap、lowcode开头，最长45个字符'
             }
         }
     ]
