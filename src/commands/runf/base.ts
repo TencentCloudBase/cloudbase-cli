@@ -456,7 +456,7 @@ export class RunfRunCommand extends Command {
                     `
                 },
                 {
-                    flags: '--enableCors',
+                    flags: '--enableCors <enableCors>',
                     desc: `为已配置的源启用跨域资源共享（CORS），默认值为 false
                                              环境变量: ENABLE_CORS
                     `
