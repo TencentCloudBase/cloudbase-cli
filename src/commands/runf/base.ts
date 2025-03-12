@@ -462,7 +462,7 @@ export class RunfRunCommand extends Command {
                     `
                 },
                 {
-                    flags: '--allowedOrigins <corsOrigin>',
+                    flags: '--allowedOrigins <allowedOrigins>',
                     desc: `设置 CORS 允许的源。默认允许 localhost 和 127.0.0.1。
                                              支持通配符源，例如 ['.example.com']。
                                              多个源应该用逗号分隔。
