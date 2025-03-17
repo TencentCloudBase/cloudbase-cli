@@ -484,10 +484,22 @@ export class RunfRunCommand extends Command {
     }
 
     @InjectParams()
-    async execute(@Log() logger: Logger) {
+    async execute(@Log() logger: Logger, @CmdContext() ctx, @ArgsOptions() options) {
         const args = process.argv.slice(2)
         const watchFlag = ['--watch', '-w']
         const defaultIgnoreFiles = ['logs/*.*']
+
+        /**
+         * 增加临时访问凭证，用于本地调试
+         */
+        const credential = await getCredential(ctx, options)
+        process.env.EXTENDED_CONTEXT = JSON.stringify({
+            tmpSecret: {
+                secretId: credential.secretId,
+                secretKey: credential.secretKey,
+                token: credential.token
+            }
+        })
 
         if (watchFlag.some((flag) => args.includes(flag))) {
             const cmd = args.filter((arg) => !watchFlag.includes(arg)).join(' ')

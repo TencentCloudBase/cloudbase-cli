@@ -42,7 +42,6 @@ async function main() {
 
     // 定义最小版本和推荐版本
     const NODE_MIN_VERSION = 18
-    const NODE_RECOMMENDED_VERSIONS = [18]
 
     // 检查当前版本是否满足最小版本要求
     if (NODE_MIN_VERSION > currentMajorVersion) {
@@ -51,25 +50,7 @@ async function main() {
                 `当前 Node.js 版本为 v${currentMajorVersion}。请升级到至少 v${NODE_MIN_VERSION} 版本。`
             )
         )
-        console.warn(
-            chalk.bold.yellow(
-                `建议使用 ${NODE_RECOMMENDED_VERSIONS.map((item) => `v${item}`).join(
-                    ' 或 '
-                )} 版本。`
-            )
-        )
         process.exit(1)
-    }
-
-    // 检查当前版本是否在推荐版本列表中
-    if (!NODE_RECOMMENDED_VERSIONS.some((version) => currentMajorVersion === version)) {
-        console.warn(
-            chalk.bold.yellow(
-                `当前 Node.js 版本为 v${currentMajorVersion}。建议使用 ${NODE_RECOMMENDED_VERSIONS.map(
-                    (item) => `v${item}`
-                ).join(' 或 ')} 版本。`
-            )
-        )
     }
 
     // Sentry 错误上报
