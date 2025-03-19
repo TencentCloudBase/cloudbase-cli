@@ -137,21 +137,13 @@ export class RunfDeployCommand extends Command {
         if (Array.isArray(loadResult)) {
             for (const loadItem of loadResult) {
                 if (!loadItem?.userFunction) {
-                    log.error(`加载函数 ${loadItem?.name} 失败: "${loadItem?.reason}"`)
+                    log.error(`验证加载函数 ${loadItem?.name} 失败: "${loadItem?.reason}"`)
                     return
                 }
             }
         } else {
             if (!loadResult?.userFunction) {
-                if (loadResult.reason.includes('is not a loadable module')) {
-                    log.error(
-                        `${targetDir} 不是一个有效的函数式托管代码目录，可以通过 --source <source> 指定代码目录路径`
-                    )
-                } else if (loadResult?.reason.includes('is not defined in the provided module')) {
-                    log.error(`主文件并未导出目标函数 ${target}，请导出 ${target} 目标函数`)
-                } else {
-                    log.error(loadResult?.reason)
-                }
+                log.error(`验证加载云函数失败: ${loadResult?.reason}`)
                 return
             }
         }
