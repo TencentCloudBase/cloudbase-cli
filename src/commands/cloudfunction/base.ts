@@ -354,12 +354,17 @@ export class CloudFunctionRunCommand extends Command {
         const watchFlag = ['--watch', '-w']
         const defaultIgnoreFiles = ['logs/*.*']
 
+         /**
+         * 环境ID
+         */
+         const envConfig: any = camelcaseKeys(await IACUtils.loadEnv(process.cwd()))
+
         /**
          * 增加临时访问凭证，用于本地调试
          */
         const credential = await getCredential(ctx, options)
-        ;(process.env.TCB_ENV = ctx.envId),
-            (process.env.TENCENTCLOUD_SECRETID = credential.secretId)
+        process.env.TCB_ENV = envConfig.envId
+        process.env.TENCENTCLOUD_SECRETID = credential.secretId
         process.env.TENCENTCLOUD_SECRETKEY = credential.secretKey
         process.env.TENCENTCLOUD_SESSIONTOKEN = credential.token
 
