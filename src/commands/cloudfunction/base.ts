@@ -1,4 +1,4 @@
-import { loadFunctions, loadFunctionsConfig, runCLI } from '@cloudbase/functions-framework'
+import { runCLI } from '@cloudbase/functions-framework'
 import fs from 'fs-extra'
 import camelcaseKeys from 'camelcase-keys'
 import { IAC, utils as IACUtils, CloudAPI as _CloudAPI } from '@cloudbase/iac-core'
@@ -21,10 +21,10 @@ const { CloudAPI } = _CloudAPI
 const scfService = CloudApiService.getInstance('tcb')
 
 // @ICommand()
-export class RunfListCommand extends Command {
+export class CloudFunctionListCommand extends Command {
     get options() {
         return {
-            cmd: 'cloudrunfunction',
+            cmd: 'cloudfunction',
             childCmd: 'list',
             options: [
                 {
@@ -80,10 +80,10 @@ export class RunfListCommand extends Command {
 }
 
 @ICommand()
-export class RunfDeployCommand extends Command {
+export class CloudFunctionDeployCommand extends Command {
     get options() {
         return {
-            cmd: 'cloudrunfunction',
+            cmd: 'cloudfunction',
             childCmd: 'deploy',
             options: [
                 {
@@ -101,7 +101,7 @@ export class RunfDeployCommand extends Command {
             ],
             requiredEnvId: false,
             autoRunLogin: true,
-            desc: '部署云函数 2.0 服务'
+            desc: '部署云函数服务'
         }
     }
 
@@ -110,43 +110,6 @@ export class RunfDeployCommand extends Command {
         let { serviceName, source } = options
 
         const targetDir = path.resolve(source || process.cwd())
-
-        /**
-         * 校验代码路径
-         */
-        const target = 'main' // 这是函数式托管规定的目标函数
-        const functionsConfigFile = path.resolve(
-            targetDir,
-            options.functionsConfigFile || 'cloudbase-functions.json'
-        )
-        let multiFunctionsConfig = null
-        if (await fs.exists(functionsConfigFile)) {
-            try {
-                multiFunctionsConfig = loadFunctionsConfig(functionsConfigFile)
-            } catch (err) {
-                log.error(`多函数定义配置文件 ${functionsConfigFile} 配置文件有误，请检查`)
-                log.error(err)
-                return
-            }
-        }
-        const loadResult = await loadFunctions({
-            target,
-            sourceLocation: targetDir,
-            multiFunctionsConfig
-        } as any)
-        if (Array.isArray(loadResult)) {
-            for (const loadItem of loadResult) {
-                if (!loadItem?.userFunction) {
-                    log.error(`验证加载函数 ${loadItem?.name} 失败: "${loadItem?.reason}"`)
-                    return
-                }
-            }
-        } else {
-            if (!loadResult?.userFunction) {
-                log.error(`验证加载云函数失败: ${loadResult?.reason}`)
-                return
-            }
-        }
 
         /**
          * 选择环境
@@ -206,7 +169,7 @@ export class RunfDeployCommand extends Command {
 
         async function _runDeploy() {
             try {
-                const res = await IAC.FunctionV2.apply(
+                const res = await IAC.Function.apply(
                     {
                         cwd: targetDir,
                         envId: envId,
@@ -216,57 +179,19 @@ export class RunfDeployCommand extends Command {
                         trackCallback(message, log)
                     }
                 )
-                const { envId: _envId, name, resourceType: _resourceType } = res?.data
-                trackCallback(
-                    {
-                        details: `请打开链接查看部署状态: https://tcb.cloud.tencent.com/dev?envId=${_envId}#/platform-run/service/detail?serverName=${name}&tabId=deploy&envId=${_envId}`
-                    },
-                    log
-                )
             } catch (e) {
-                if (e?.action === 'UpdateCloudRunServer' && e?.code === 'ResourceInUse') {
-                    inquirer
-                        .prompt([
-                            {
-                                type: 'confirm',
-                                name: 'confirm',
-                                message: `平台当前有部署发布任务正在运行中。确认继续部署，正在执行的部署任务将被取消，并立即部署最新的代码`,
-                                default: true
-                            }
-                        ])
-                        .then(async (answers) => {
-                            if (answers.confirm) {
-                                try {
-                                    // 获取任务信息
-                                    const { task } = await CloudAPI.tcbrServiceRequest(
-                                        'DescribeServerManageTask',
-                                        {
-                                            envId,
-                                            serverName: serviceName,
-                                            taskId: 0
-                                        }
-                                    )
-                                    const id = task?.id
-                                    // 停止任务
-                                    await CloudAPI.tcbrServiceRequest('OperateServerManage', {
-                                        envId,
-                                        operateType: 'cancel',
-                                        serverName: serviceName,
-                                        taskId: id
-                                    })
-                                    // 重新部署
-                                    await _runDeploy()
-                                } catch (e: any) {
-                                    trackCallback(
-                                        {
-                                            type: 'error',
-                                            details: e.message
-                                        },
-                                        log
-                                    )
-                                }
-                            }
-                        })
+                if (
+                    e?.action === 'UpdateFunctionConfiguration' &&
+                    e?.message?.includes('当前函数处于Updating状态，无法进行此操作，请稍后重试')
+                ) {
+                    trackCallback(
+                        {
+                            type: 'error',
+                            details: '当前函数处于更新状态，无法进行此操作，请稍后重试',
+                            originalError: e
+                        },
+                        log
+                    )
                 } else {
                     trackCallback(
                         {
@@ -283,10 +208,10 @@ export class RunfDeployCommand extends Command {
 }
 
 @ICommand()
-export class RunfDownloadCommand extends Command {
+export class CloudFunctionDownloadCommand extends Command {
     get options() {
         return {
-            cmd: 'cloudrunfunction',
+            cmd: 'cloudfunction',
             childCmd: 'download',
             options: [
                 {
@@ -304,7 +229,7 @@ export class RunfDownloadCommand extends Command {
             ],
             requiredEnvId: false,
             autoRunLogin: true,
-            desc: '下载云函数 2.0 服务代码'
+            desc: '下载云函数服务代码'
         }
     }
 
@@ -329,6 +254,7 @@ export class RunfDownloadCommand extends Command {
          */
         if (!serviceName) {
             const { shortName } = await getPackageJsonName(path.join(targetDir, 'package.json'))
+
             serviceName = await _inputServiceName(shortName)
 
             if (serviceName !== shortName) {
@@ -371,7 +297,7 @@ export class RunfDownloadCommand extends Command {
          * 执行拉取
          */
         try {
-            await IAC.FunctionV2.pull(
+            await IAC.Function.pull(
                 {
                     cwd: targetDir,
                     envId: envId,
@@ -395,10 +321,10 @@ export class RunfDownloadCommand extends Command {
 }
 
 @ICommand()
-export class RunfRunCommand extends Command {
+export class CloudFunctionRunCommand extends Command {
     get options() {
         return {
-            cmd: 'cloudrunfunction',
+            cmd: 'cloudfunction',
             childCmd: 'run',
             options: [
                 {
@@ -415,53 +341,10 @@ export class RunfRunCommand extends Command {
                     flags: '-w, --watch',
                     desc: `是否启用热重启模式，如启用，将会在文件变更时自动重启服务，默认为 false
                     `
-                },
-                {
-                    flags: '--dry-run',
-                    desc: `是否不启动服务，只验证代码可以正常加载，默认为 false
-                    `
-                },
-                {
-                    flags: '--logDirname <logDirname>',
-                    desc: `日志文件目录，默认为 ./logs
-                    `
-                },
-                {
-                    flags: '--functionsConfigFile <functionsConfigFile>',
-                    desc: `多函数定义配置文件，默认为 ./cloudbase-functions.json。
-                                             环境变量: FUNCTIONS_CONFIG_FILE
-                    `
-                },
-                {
-                    flags: '--loadAllFunctions',
-                    desc: `是否加载 "functionsRoot" 目录中的所有函数。默认为 false
-                    `
-                },
-                {
-                    flags: '--enableCors <enableCors>',
-                    desc: `为已配置的源启用跨域资源共享（CORS），默认值为 false
-                                             环境变量: ENABLE_CORS
-                    `
-                },
-                {
-                    flags: '--allowedOrigins <allowedOrigins>',
-                    desc: `设置 CORS 允许的源。默认允许 localhost 和 127.0.0.1。
-                                             支持通配符源，例如 ['.example.com']。
-                                             多个源应该用逗号分隔。
-                                             示例：--allowedOrigins .example.com,www.another.com
-                                             环境变量：ALLOWED_ORIGINSS
-                                             `
-                },
-                {
-                    flags: '--extendedContext <extendedContext>',
-                    desc: `用于解析 context.extendedContext 的值。""表示该功能已关闭。默认值为 null
-                                             示例：--extendedContext '{"a":1,"b":2}'
-                                             环境变量：EXTENDED_CONTEXT
-                                             `
                 }
             ],
             requiredEnvId: false,
-            desc: '本地运行云函数 2.0 代码'
+            desc: '本地运行云函数代码'
         }
     }
 
@@ -472,22 +355,13 @@ export class RunfRunCommand extends Command {
         const defaultIgnoreFiles = ['logs/*.*']
 
         /**
-         * 环境ID
-         */
-        const envConfig: any = camelcaseKeys(await IACUtils.loadEnv(process.cwd()))
-
-        /**
          * 增加临时访问凭证，用于本地调试
          */
         const credential = await getCredential(ctx, options)
-        process.env.EXTENDED_CONTEXT = JSON.stringify({
-            tmpSecret: {
-                secretId: credential.secretId,
-                secretKey: credential.secretKey,
-                token: credential.token
-            },
-            envId: envConfig.envId
-        })
+        ;(process.env.TCB_ENV = ctx.envId),
+            (process.env.TENCENTCLOUD_SECRETID = credential.secretId)
+        process.env.TENCENTCLOUD_SECRETKEY = credential.secretKey
+        process.env.TENCENTCLOUD_SESSIONTOKEN = credential.token
 
         if (watchFlag.some((flag) => args.includes(flag))) {
             const cmd = args.filter((arg) => !watchFlag.includes(arg)).join(' ')
