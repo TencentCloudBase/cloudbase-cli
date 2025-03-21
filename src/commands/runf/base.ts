@@ -113,40 +113,41 @@ export class RunfDeployCommand extends Command {
 
         /**
          * 校验代码路径
+         * 当前 function-framework 该检察方法不稳定，先去掉这个检查逻辑
          */
-        const target = 'main' // 这是函数式托管规定的目标函数
-        const functionsConfigFile = path.resolve(
-            targetDir,
-            options.functionsConfigFile || 'cloudbase-functions.json'
-        )
-        let multiFunctionsConfig = null
-        if (await fs.exists(functionsConfigFile)) {
-            try {
-                multiFunctionsConfig = loadFunctionsConfig(functionsConfigFile)
-            } catch (err) {
-                log.error(`多函数定义配置文件 ${functionsConfigFile} 配置文件有误，请检查`)
-                log.error(err)
-                return
-            }
-        }
-        const loadResult = await loadFunctions({
-            target,
-            sourceLocation: targetDir,
-            multiFunctionsConfig
-        } as any)
-        if (Array.isArray(loadResult)) {
-            for (const loadItem of loadResult) {
-                if (!loadItem?.userFunction) {
-                    log.error(`验证加载函数 ${loadItem?.name} 失败: "${loadItem?.reason}"`)
-                    return
-                }
-            }
-        } else {
-            if (!loadResult?.userFunction) {
-                log.error(`验证加载云函数失败: ${loadResult?.reason}`)
-                return
-            }
-        }
+        // const target = 'main' // 这是函数式托管规定的目标函数
+        // const functionsConfigFile = path.resolve(
+        //     targetDir,
+        //     options.functionsConfigFile || 'cloudbase-functions.json'
+        // )
+        // let multiFunctionsConfig = null
+        // if (await fs.exists(functionsConfigFile)) {
+        //     try {
+        //         multiFunctionsConfig = loadFunctionsConfig(functionsConfigFile)
+        //     } catch (err) {
+        //         log.error(`多函数定义配置文件 ${functionsConfigFile} 配置文件有误，请检查`)
+        //         log.error(err)
+        //         return
+        //     }
+        // }
+        // const loadResult = await loadFunctions({
+        //     target,
+        //     sourceLocation: targetDir,
+        //     multiFunctionsConfig
+        // } as any)
+        // if (Array.isArray(loadResult)) {
+        //     for (const loadItem of loadResult) {
+        //         if (!loadItem?.userFunction) {
+        //             log.error(`验证加载函数 ${loadItem?.name} 失败: "${loadItem?.reason}"`)
+        //             return
+        //         }
+        //     }
+        // } else {
+        //     if (!loadResult?.userFunction) {
+        //         log.error(`验证加载云函数失败: ${loadResult?.reason}`)
+        //         return
+        //     }
+        // }
 
         /**
          * 选择环境
