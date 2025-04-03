@@ -16,6 +16,7 @@ export const outputHelpInfo = () => {
     service           [cmd]                      HTTP 访问服务管理操作
     run:deprecated    [cmd]                      云托管环境管理操作 (BAAS 或 RUN 类型环境)
     run               [cmd]                      云托管环境管理操作 (TCBR 类型环境)
+    cloudrun          [cmd]                      云托管服务管理操作（新版云开发平台）
     cloudrunfunction  [cmd]                      云函数 2.0 服务管理操作`
 
     const options = `

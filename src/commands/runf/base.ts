@@ -1,83 +1,15 @@
-import { loadFunctions, loadFunctionsConfig, runCLI } from '@cloudbase/functions-framework'
-import fs from 'fs-extra'
+import { runCLI } from '@cloudbase/functions-framework'
+import { CloudAPI as _CloudAPI, IAC, utils as IACUtils } from '@cloudbase/iac-core'
 import camelcaseKeys from 'camelcase-keys'
-import { IAC, utils as IACUtils, CloudAPI as _CloudAPI } from '@cloudbase/iac-core'
 import inquirer from 'inquirer'
+import nodemon from 'nodemon'
 import path from 'path'
 import { ArgsOptions, CmdContext, EnvId, InjectParams, Log, Logger } from '../../decorators'
-import {
-    CloudApiService,
-    loadingFactory,
-    printHorizontalTable,
-    getPrivateSettings,
-    authSupevisor
-} from '../../utils'
 import { Command, ICommand } from '../common'
 import { EnvSource } from '../constants'
-import { getPackageJsonName, selectEnv } from '../utils'
-import nodemon from 'nodemon'
+import { getCredential, getPackageJsonName, isDirectoryEmptyOrNotExists, selectEnv, trackCallback } from '../utils'
 
 const { CloudAPI } = _CloudAPI
-const scfService = CloudApiService.getInstance('tcb')
-
-// @ICommand()
-export class RunfListCommand extends Command {
-    get options() {
-        return {
-            cmd: 'cloudrunfunction',
-            childCmd: 'list',
-            options: [
-                {
-                    flags: '-e, --envId <envId>',
-                    desc: '环境 Id'
-                }
-            ],
-            requiredEnvId: false,
-            autoRunLogin: true,
-            desc: '查看函数式托管服务列表'
-        }
-    }
-
-    @InjectParams()
-    async execute(@EnvId() envId, @Log() log: Logger) {
-        const loading = loadingFactory()
-
-        if (!envId) {
-            envId = await _selectEnv()
-        } else {
-            log.info(`当前环境 Id：${envId}`)
-        }
-
-        /**
-         * 获取函数列表代码示例
-         */
-        try {
-            loading.start('获取函数式托管服务列表中…')
-            let serverListRes: any = await scfService
-                .request('DescribeCloudBaseRunServers', {
-                    EnvId: envId,
-                    Limit: 100,
-                    Offset: 0
-                })
-                .finally(() => loading.stop())
-
-            const serverList = serverListRes.CloudBaseRunServerSet?.filter(
-                (item) => item.Tag === 'function'
-            )
-
-            const head = ['服务名称', '状态', '创建时间', '更新时间']
-            const tableData = serverList.map((serverItem) => [
-                serverItem.ServerName,
-                serverItem.Status,
-                serverItem.CreatedTime,
-                serverItem.UpdatedTime
-            ])
-            printHorizontalTable(head, tableData)
-        } catch (e) {
-            log.error('获取函数式托管服务列表失败：' + e.message)
-        }
-    }
-}
 
 @ICommand()
 export class RunfDeployCommand extends Command {
@@ -110,44 +42,6 @@ export class RunfDeployCommand extends Command {
         let { serviceName, source } = options
 
         const targetDir = path.resolve(source || process.cwd())
-
-        /**
-         * 校验代码路径
-         * 当前 function-framework 该检察方法不稳定，先去掉这个检查逻辑
-         */
-        // const target = 'main' // 这是函数式托管规定的目标函数
-        // const functionsConfigFile = path.resolve(
-        //     targetDir,
-        //     options.functionsConfigFile || 'cloudbase-functions.json'
-        // )
-        // let multiFunctionsConfig = null
-        // if (await fs.exists(functionsConfigFile)) {
-        //     try {
-        //         multiFunctionsConfig = loadFunctionsConfig(functionsConfigFile)
-        //     } catch (err) {
-        //         log.error(`多函数定义配置文件 ${functionsConfigFile} 配置文件有误，请检查`)
-        //         log.error(err)
-        //         return
-        //     }
-        // }
-        // const loadResult = await loadFunctions({
-        //     target,
-        //     sourceLocation: targetDir,
-        //     multiFunctionsConfig
-        // } as any)
-        // if (Array.isArray(loadResult)) {
-        //     for (const loadItem of loadResult) {
-        //         if (!loadItem?.userFunction) {
-        //             log.error(`验证加载函数 ${loadItem?.name} 失败: "${loadItem?.reason}"`)
-        //             return
-        //         }
-        //     }
-        // } else {
-        //     if (!loadResult?.userFunction) {
-        //         log.error(`验证加载云函数失败: ${loadResult?.reason}`)
-        //         return
-        //     }
-        // }
 
         /**
          * 选择环境
@@ -558,40 +452,4 @@ async function _inputServiceName(defaultVal: string = '') {
     ]
     const answers = await inquirer.prompt(questions)
     return answers['serviceName']
-}
-
-async function getCredential(ctx: any, options: any) {
-    let credential
-    if (ctx.hasPrivateSettings) {
-        process.env.IS_PRIVATE = 'true'
-        const privateSettings = getPrivateSettings(ctx.config, options.cmd)
-        credential = privateSettings?.credential
-    } else {
-        credential = await authSupevisor.getLoginState()
-    }
-    return credential
-}
-
-async function isDirectoryEmptyOrNotExists(dirPath: string): Promise<boolean> {
-    try {
-        // 检查目录是否存在
-        const exists = await fs.pathExists(dirPath)
-        if (!exists) {
-            return true
-        }
-
-        // 读取目录内容
-        const files = await fs.readdir(dirPath)
-        return files.length === 0
-    } catch (error) {
-        return true
-    }
-}
-
-function trackCallback(message, log: Logger) {
-    if (message.type === 'error') {
-        log.error(message.details)
-    } else {
-        log.info(message.details)
-    }
 }
