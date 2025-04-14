@@ -1,10 +1,7 @@
 #!/usr/bin/env node
-const os = require('os')
 const yargsParser = require('yargs-parser')
 const chalk = require('chalk')
-const address = require('address')
 const { program } = require('commander')
-const Sentry = require('@sentry/node')
 const logSymbols = require('log-symbols')
 const didYouMean = require('didyoumean')
 const updateNotifier = require('update-notifier')
@@ -17,11 +14,11 @@ const execa = require('execa')
 const semver = require('semver')
 
 const pkg = require('../package.json')
-const store = require('../lib/utils/store')
 const { ALL_COMMANDS } = require('../lib/constant')
 const { getProxy } = require('../lib/utils/net')
 const { getCloudBaseConfig, getPrivateSettings } = require('../lib/utils/config')
 const { registerCommands } = require('../lib')
+const { beaconAction } = require('../lib/utils/report')
 
 const regionSupported = ['ap-shanghai', 'ap-beijing', 'ap-guangzhou']
 const regionSupportedMap = {
@@ -53,18 +50,6 @@ async function main() {
         process.exit(1)
     }
 
-    // Sentry 错误上报
-    Sentry.init({
-        release: pkg.version,
-        dsn: 'https://fff0077d06624655ad70d1ee25df419e@report.url.cn/sentry/1782',
-        httpsProxy: getProxy() || '',
-        serverName: os.hostname(),
-        integrations: [
-            new Sentry.Integrations.OnUnhandledRejection({
-                mode: 'none'
-            })
-        ]
-    })
 
     // 输出版本信息
     console.log(chalk.gray(`CloudBase CLI ${pkg.version}`))
@@ -83,19 +68,6 @@ async function main() {
     }
     // 注册命令
     await registerCommands()
-
-    // 设置 Sentry 上报的用户 uin
-    Sentry.configureScope((scope) => {
-        try {
-            const credential = store.authStore.get('credential') || {}
-            scope.setUser({
-                uin: credential.uin || '',
-                ip: address.ip() || ''
-            })
-        } catch (e) {
-            Sentry.captureException(e)
-        }
-    })
 
     // 设置 options 选项
     program.storeOptionsAsProperties(false)
@@ -173,6 +145,13 @@ async function main() {
      * 处理异常
      */
     async function errorHandler(err) {
+        beaconAction.report('tcb_cli_error', {
+            name: err.name,
+            message: err.message,
+            stack: err.stack,
+            requestId: err.requestId,
+            canIgnore: 'false'
+        })
         process.emit('tcbError')
         const stackIngoreErrors = ['TencentCloudSDKHttpException', 'CloudBaseError']
         // 忽略自定义错误的错误栈

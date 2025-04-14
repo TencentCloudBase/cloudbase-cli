@@ -1,3 +1,0 @@
-I submitted a bug report to tencent bug bounty program detailing the risk of github credentials compromise and the issue if supply chain attack but my report is closed as low risk.
-
-This file is an example of supply chain attack that can be caused by an attacker.
