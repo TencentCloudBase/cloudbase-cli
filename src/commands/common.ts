@@ -1,5 +1,4 @@
 import chalk from 'chalk'
-import * as Sentry from '@sentry/node'
 import { EventEmitter } from 'events'
 import { program, Command as Commander, Option } from 'commander'
 import yargsParser from 'yargs-parser'
@@ -16,6 +15,7 @@ import {
     getPrivateSettings
 } from '../utils'
 import { login } from '../auth'
+import { beaconAction } from '../utils/report'
 
 type PrivateCredential = Pick<Credential, 'secretId' | 'secretKey'>
 
@@ -175,6 +175,7 @@ export abstract class Command extends EventEmitter {
     private createProgram(instance: Commander, deprecate: boolean, newCmd?: string) {
         const {
             cmd,
+            childCmd,
             desc,
             options,
             requiredEnvId = true,
@@ -216,10 +217,11 @@ export abstract class Command extends EventEmitter {
             if (!withoutAuth && !loginState) {
                 if (autoRunLogin) {
                     console.log(chalk.bold.yellowBright('无有效身份信息，将自动为您打开授权页面。'))
-                    await execWithLoading(() => login(), {
+                    const execResult = await execWithLoading(() => login(), {
                         startTip: '请在浏览器中打开的授权页面进行授权...',
                         successTip: '授权登录成功！'
                     })
+                    loginState = execResult.credential
                 } else {
                     throw new CloudBaseError('无有效身份信息，请使用 cloudbase login 登录')
                 }
@@ -230,6 +232,19 @@ export abstract class Command extends EventEmitter {
                     '未识别到有效的环境 Id，请使用 cloudbaserc 配置文件进行操作或通过 -e 参数指定环境 Id'
                 )
             }
+
+            // 增加上报公参
+            beaconAction.addAdditionalParams({
+                login_uin: loginState?.['uin'],
+                envId: envId || loginState?.['envId']
+            })
+
+            // 上报执行的命令信息
+            beaconAction.report('tcb_cli_exec_command', {
+                cmd,
+                childCmd,
+                desc
+            })
 
             const ctx: ICommandContext = {
                 cmd,
@@ -276,7 +291,6 @@ export abstract class Command extends EventEmitter {
             console.log(content, '\n')
         } catch (e) {
             loading.stop()
-            Sentry.captureException(e)
         }
     }
 
@@ -289,7 +303,6 @@ export abstract class Command extends EventEmitter {
             await collectUsage(cmd)
         } catch (e) {
             // 上报错误
-            Sentry.captureException(e)
         }
     }
 
