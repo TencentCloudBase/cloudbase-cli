@@ -1,6 +1,6 @@
 {
     "name": "@cloudbase/cli",
-    "version": "2.6.14",
+    "version": "2.6.15",
     "description": "cli tool for cloudbase",
     "main": "lib/index.js",
     "scripts": {
@@ -91,5 +91,6 @@
         "rimraf": "^3.0.2",
         "ts-jest": "^27",
         "typescript": "^4.7.2"
-    }
+    },
+    "packageManager": "yarn@3.6.2+sha512.2c2f8b9615e6659773f65cdec7cf92ef773a98a99e611579601f61c7a91ec94c89c929aac86f1cee819421a9b0db7acfd53ec3ebb95af44f77f77634b08b9557"
 }
