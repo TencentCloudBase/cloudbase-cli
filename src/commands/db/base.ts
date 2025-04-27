@@ -232,7 +232,7 @@ export class DbPushCommand extends Command {
             ],
             requiredEnvId: false,
             autoRunLogin: true,
-            desc: '从云端拉取多个数据模型到本地',
+            desc: '将本地数据模型推送到云端',
         }
     }
 
